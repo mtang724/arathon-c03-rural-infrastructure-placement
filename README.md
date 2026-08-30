@@ -5,199 +5,204 @@
 > Where would one additional relay, repeater, small cell, or measurement campaign
 > deliver the greatest improvement?
 
-Given a UE drive test that covers roughly 7% of a rural service area near Ames, Iowa, the
-challenge is to move from *describing* weak service to *recommending* a limited, defensible
-intervention: predict performance where nothing was measured, then choose where one
-additional asset does the most good.
+A van drove roughly 7% of a rural service area near Ames, Iowa and recorded 7,144
+measurements. This repository turns that into a recommendation: predict service where nobody
+drove, then choose where one additional asset does the most good — and say honestly how much
+that answer depends on what you assumed.
 
-## The shared platform
+---
 
-[`common/`](common/) is what makes the approaches comparable rather than merely
-adjacent: one simulator contract, one backtest testbench, one planner.
+## What we found
+
+**Coverage today is 44% of route-km and 37% of area** (service available at least half the
+time, across the 178 km² survey box).
+
+**One macro-class site at 41.97955, −93.83471 takes that to 69% and 59%** — 6.8 km
+south-west, 37 m mast, on the road network.
+
+**The brief's asset menu cannot solve this.** A donor relay adds 1.4 route-km and a small
+cell 0.7, against the macro's 28.6. The fitted law is two-slope — n = 1.80 inside 3 km, 3.35
+beyond — so in the far field the 20–26 dB deficit of a relay costs more range than a lower
+mast can recover. Saying so is a finding, not a failure to answer.
+
+**Optimising beats the naive baseline the brief names**, in 8 of 8 configurations, by a
+median factor of **1.52×**. The brief's suggested baseline — "the single worst measured
+point" — is itself decent, landing at the 90th percentile of random placement, which is why
+beating it is worth measuring rather than assuming.
+
+**But what you call "service" matters more than which physics you use.** Sweeping 198
+combinations of model, asset, criterion, threshold and weighting:
+
+| varying… | median move in the recommended site |
+|---|---|
+| **criterion** (availability vs uplink) | **4.24 km** |
+| asset class | 3.35 km |
+| **propagation model** | **2.06 km** |
+| threshold | 1.28 km |
+| route/area weighting | 1.21 km |
+
+Weeks of propagation modelling narrowed the model term to 2 km. The criterion term is twice
+that, and it was *chosen*, not measured.
+
+**And buildability decides among near-equivalent sites.** Requiring grid power within 1 km
+moves the recommendation **11.1 km** while costing a quarter of the benefit. Independently,
+a 200-draw Monte Carlo reproduces the exact pick in only 10% of draws and needs a **3 km**
+radius to reach 99%. Two analyses, one conclusion: **the answer is a neighbourhood, not a
+pin.**
+
+---
+
+## Try it
+
+The deliverable is an interactive planner. No build step — open the file.
 
 | | |
 |---|---|
-| [`common/README.md`](common/README.md) | the contract — two methods, and your model works with every tool here |
-| [`common/BACKTEST.md`](common/BACKTEST.md) | the testbench — identical splits, buffer, seed and metrics for every model |
-| [`common/PLANNER.md`](common/PLANNER.md) | the planner — every simulator, every service definition, every weighting, re-solved live |
+| [`planner.html`](planner.html) | four simulators, eight service definitions, three asset classes, live before/after, an optimiser and three sensitivity sweeps |
+| [`planner_constrained.html`](planner_constrained.html) | the same, plus five open-data siting constraints and the cost of respecting them — see [CONSTRAINTS.md](CONSTRAINTS.md) |
 
-`common/` never imports an approach; approaches import `common` and expose their
-models through it. Adding a new approach therefore touches no existing one.
-[`terrain-approach/src/adapter.py`](terrain-approach/src/adapter.py) is the
-reference implementation, with one analytic model and one tabulated model that
-share nothing except the interface.
+To rebuild everything from the measurements:
+
+```bash
+pip install numpy scipy pandas scikit-learn rasterio   # + torch for pinn-approach
+python run_pipeline.py               # features → simulators → testbench → bundles → planner
+```
+
+Roughly 3.5 minutes. Approaches whose dependencies are absent are skipped with a message,
+and their committed bundles are carried, so a machine without `torch` or a GPU still gets a
+complete planner.
+
+---
+
+## The four deliverables
+
+| The brief asks for | Answered in |
+|---|---|
+| Before/after coverage under explicit service thresholds | The planner's live before/after; [terrain-approach/README.md](terrain-approach/README.md) |
+| Robustness to model uncertainty | [`reports/robustness.json`](terrain-approach/reports/robustness.json) — 200-draw Monte Carlo; [`sionna-approach/analysis/uncertainty.py`](sionna-approach/analysis/uncertainty.py) |
+| Gains per intervention, and sensitivity to placement constraints | [RECOMMENDATIONS.md](RECOMMENDATIONS.md) — the 198-combination sweep; [CONSTRAINTS.md](CONSTRAINTS.md) — five open-data constraint layers |
+| A scenario planner judges can click | [`planner.html`](planner.html), [`planner_constrained.html`](planner_constrained.html) |
+
+---
 
 ## Approaches
 
-Each approach lives in its own folder and can be read and run independently.
+Four independent models of the same network, each in its own folder, each runnable alone.
+All four are in the planner's dropdown.
 
-| Folder | Approach | Status |
-|---|---|---|
-| [`sionna-approach/`](sionna-approach/) | Physics-based ray tracing (Sionna RT) over real terrain and OSM building geometry | Twin validated at 8.58 dB RMSE on held-out blocks — [report](sionna-approach/REPORT.md). Siting optimisation not started |
-| [`terrain-approach/`](terrain-approach/) | Two-slope path-loss law fitted to the measurements, plus ITU-R P.526 terrain diffraction; greedy coverage siting | Propagation validated at **7.35 dB RMSE in sample, 9.66 dB held out by geography (R² +0.15)**. Siting solved, scenario planner shipped. Availability step remains weak — see [README](terrain-approach/README.md) |
-| [`pinn-approach/`](pinn-approach/) | Physics-informed neural network (ReVeal / ReVeal-MT, DySPAN'25) — learned shadowing field over a parametric multi-transmitter path-loss law | **Last on geography.** 5.63 dB in sample — best of all five — but 15.83 / 15.09 dB held out, alongside `terrain-fno`'s 14.04 / 11.47. Kept for the diagnosis, not the accuracy: the published ReLU makes the physics loss a no-op, the PDE term is unobservable from a route, and every extra input is also a location label — [report](pinn-approach/README.md) |
+| Folder | Method | Held out by geography | Verdict |
+|---|---|---|---|
+| [`sionna-approach/`](sionna-approach/) | Ray tracing (Sionna RT) over reconstructed terrain and building geometry, plus ITU-R P.526 profile diffraction | **7.95 / 7.80 dB** | **Most stable.** Barely notices which rows it was shown — 7.6 → 8.0 dB from in-sample to held-out |
+| [`terrain-approach/`](terrain-approach/) | Two-slope path-loss law fitted to the measurements, with P.526 diffraction and Fresnel clearance | 9.66 / 9.78 dB | Wins where it is fitted (7.33 dB), degrades 2.5 dB off it. Ships the siting solver and the planner |
+| [`pinn-approach/`](pinn-approach/) | Physics-informed network (ReVeal / ReVeal-MT, DySPAN'25) | 15.83 / 15.09 dB | **Last on geography.** Best in sample (5.63 dB). Kept for the diagnosis, not the accuracy |
+| `terrain-fno` (in [`terrain-approach/`](terrain-approach/)) | Fourier neural operator on the terrain profile | 13.13 / 11.66 dB | **Indistinguishable from its own shuffled control** (13.16 / 11.67), and from the backbone with terrain deleted (13.11 / 11.55). The operator extracts nothing from the profile |
 
-Other approaches are being explored in parallel — add a sibling folder, a row here, and an
-adapter implementing [the shared contract](common/README.md#1-the-contract).
+**The pattern is the result, and the controls are what make it readable.** A 128-point
+terrain profile is very nearly a unique location fingerprint — its nearest neighbour in
+profile space sits a median 12.2 m away on the ground, and 97.2% are within 50 m. So on a
+random split a flexible learner reaches the answer by looking up its own training set rather
+than learning propagation, which is why the random-split column is uninterpretable for these
+two models and why the testbench applies a 200 m training buffer.
 
-## The terrain approach
+The FNO experiment shipped the control that proves it: `fno_residual` scores 13.13 dB on
+KMeans blocks, its **shuffled control** — the same model fed profiles paired with the wrong
+links — scores 13.16, and the backbone with terrain terms deleted scores 13.11. Three ways
+of saying the operator extracted nothing from the terrain.
+[NEURAL_OPERATOR.md](terrain-approach/NEURAL_OPERATOR.md) predicted this before running it;
+[pinn-approach/README.md](pinn-approach/README.md) diagnoses the same failure independently.
 
-Where `sionna-approach/` solves propagation by ray-tracing a reconstructed scene, this one
-fits a parametric law to the measurements and adds terrain only where the data says terrain
-matters. It runs in seconds and it carries a mechanism, so it can answer the counterfactual
-the brief actually asks — *what happens if we put a transmitter over there?*
+**Read the splits, not the headline.** A random split leaks badly — consecutive samples are
+22 m apart. Only the geographically blocked columns speak to the 89% of the area nobody
+drove, which is the entire deliverable.
 
-**Model** — two-slope log-distance path loss, n = 1.80 inside 3 km and 3.35 beyond, with one
-azimuth harmonic for the three-sector beam. Terrain enters as ITU-R P.526 knife-edge
-diffraction and first-Fresnel clearance, computed against USGS 3DEP 1/3 arc-second elevation
-with a 4/3-earth bulge correction, and both orthogonalised against log-distance so they
-cannot absorb the exponent. Availability is a sample-weighted isotonic curve on predicted
-RSRP. Siting is a greedy maximum-coverage solve over 4,731 demand cells weighted 70%
-route-km and 30% area.
+---
 
-**Validation** — 7.35 dB RMSE in sample, **9.66 dB held out by geography (R² +0.15)**. Two
-blocking schemes are reported rather than one, because on a radial single-tower survey each
-cut tests a different extrapolation; see the note in the shared facts below.
+## How it fits together
 
-**What it concludes** — 44% of route-km has service today. One macro-class site at
-41.97955, −93.83471 takes that to 69% and area coverage from 37% to 59%. A donor relay adds
-1.4 route-km and a small cell 0.7, because a 20 dB power deficit costs an order of magnitude
-of radius. **The brief's menu does not contain an asset that can fill a 9 km hole**, and
-saying so is the finding rather than a failure to find one.
+[`common/`](common/) is what makes the approaches comparable rather than merely adjacent:
+one simulator contract, one testbench, one planner. `common/` never imports an approach;
+approaches import `common` and expose their models through it, so adding one touches no
+existing one.
 
-**Where it fails** — the availability step. Asked whether a given 200 m cell has service,
-the model scores 59.5% against a 63.9% base rate. Received power it predicts well; service
-state it does not. Read the ratios, not the absolute percentages —
-[`terrain-approach/MODEL.md`](terrain-approach/MODEL.md) §4 is the full account, including
-two bugs the backtest caught.
+| | |
+|---|---|
+| [`common/README.md`](common/README.md) | the contract — implement two methods and every tool here works with your model |
+| [`common/BACKTEST.md`](common/BACKTEST.md) | identical splits, buffer, seed and metrics for every model |
+| [`common/PLANNER.md`](common/PLANNER.md) | every simulator, service definition and weighting, re-solved live |
 
-**Deliverables** — [`planner.html`](planner.html) at the repository root is the
-parameterised planner: pick the simulator, the service definition (availability, RSRP, SINR,
-RSRQ, or uplink/downlink throughput percentiles), the target, and the route-versus-area
-weighting, and it re-solves the siting live. Three buttons sweep each of those axes and
-report how far the recommended site moves. Alongside it, three map views and
-[`ARA_Challenge3.pptx`](ARA_Challenge3.pptx) — a fourteen-slide deck built entirely from
-native PowerPoint objects, with one slide reserved per simulator so it can be presented
-before all four have landed.
+[`terrain-approach/src/adapter.py`](terrain-approach/src/adapter.py) is the reference
+implementation, with one analytic and one tabulated model sharing nothing but the interface.
 
-> The older single-model page has been **deleted**. Its JavaScript evaluated an
-> incomplete form of the fitted model — missing the dual slope, the Fresnel term and the
-> orthogonalisation offsets — leaving it optimistic for a new node by a mean of 5.95 dB,
-> RMS 8.37 dB. Its four analysis tabs have not been ported and are outstanding. See
-> [`common/PLANNER.md`](common/PLANNER.md).
+**Two bundle directories exist, and both are read.** `reports/bundle_<name>.json` is written
+by `common/bundle.py`; `bundles/<name>.json` is committed by hand for models whose
+dependencies are not installed everywhere. `run_pipeline.py` scans both and dedupes on the
+simulator's name. Globbing only the first silently dropped a model from the planner once.
 
-## Shared context
+---
 
-- [`COTS_Challenge_3.pdf`](COTS_Challenge_3.pdf) — the challenge brief
-- [`Rural_COTS_RAN_Description.pdf`](Rural_COTS_RAN_Description.pdf) — dataset brief
+## Documentation
 
-The measurement dataset itself is **not in this repository** — see Licence below.
+**Start here** — [COMPARISON.md](COMPARISON.md), the two headline models on one testbench ·
+[RECOMMENDATIONS.md](RECOMMENDATIONS.md), where to build and what it depends on ·
+[CONSTRAINTS.md](CONSTRAINTS.md), where an asset can actually go.
 
-### Which columns are actually useful
+| Approach | Documents |
+|---|---|
+| Ray tracing | [README](sionna-approach/README.md) · [SIMULATION.md](sionna-approach/SIMULATION.md) how the pipeline works · [REPORT.md](sionna-approach/REPORT.md) results · [PARAMETERS.md](sionna-approach/PARAMETERS.md) every parameter with provenance · [RESULTS.md](sionna-approach/RESULTS.md) run log · [RUNNING.md](sionna-approach/RUNNING.md) setup incl. GPU · [DATA_REQUEST.md](sionna-approach/DATA_REQUEST.md) what to ask ARA for |
+| Terrain | [README](terrain-approach/README.md) · [MODEL.md](terrain-approach/MODEL.md) · [NEURAL_OPERATOR.md](terrain-approach/NEURAL_OPERATOR.md) |
+| PINN | [README](pinn-approach/README.md) |
 
-Measured from the file, not assumed. Verdicts are for modelling service quality and siting;
-an approach with a different objective may weigh them differently.
+---
+
+## About the data
+
+`extracted/COTS_Dataset/COTS.csv` — 7,144 UE measurements, 19–20 March 2026, Quectel RG530
+on an ARA Ericsson COTS RAN. Twelve columns; four carry most of the value.
 
 | column | verdict | evidence |
 |---|---|---|
-| `lat`, `lon` | **essential** | position; everything geometric depends on them |
-| `rsrp` | **essential** | 5.91 bits over 82 levels, std 16.8 dB; best predictor of uplink (rho 0.78) |
-| `cellid` | **essential** | 6 distinct values; identifies the serving sector, and its *null* state is the Challenge-3 signal |
+| `lat`, `lon` | **essential** | position |
+| `rsrp` | **essential** | 5.91 bits over 82 levels; best predictor of uplink (ρ 0.78). Every RMSE here is on this |
+| `cellid` | **essential** | serving sector — and its *null* state is the Challenge-3 signal |
 | `timestamp_local` | **essential** | segments the 4 runs, enables leak-free splits, gives the ~2 dB repeatability floor |
-| `uplink` | **high** | the binding constraint; "underserved" must be defined on it |
-| `sinr` | **moderate, untapped** | 4.71 bits over 45 levels, rho 0.57 with uplink; the route to validating interference |
-| `downlink` | **low** | useful as a contrast - saturates, rho only 0.34, which is what proves uplink binds |
-| `ping_ms` | **low** | rho -0.16 Pearson, **-0.02 Spearman** with uplink - essentially decoupled from radio |
-| `rsrq` | **near-zero** | **1.45 bits** over 12 levels, std 1.22 dB; its apparent correlation is co-variation with RSRP |
-| `band` | **zero** | 1 unique value across all 7,144 rows |
-| `arfcn` | **zero as a feature** | 2 values (`630720`, `-1`) - but decodes to 3.4608 GHz, which is foundational |
+| `uplink` | **high** | the binding constraint |
+| `sinr` | **moderate, untapped** | the only way to tell interference-limited from coverage-limited |
+| `downlink` | low | saturates; ρ 0.34 — which is what proves uplink binds |
+| `ping_ms` | low | ρ −0.02 Spearman with uplink |
+| `rsrq` | near-zero | 1.45 bits over 12 levels |
+| `band`, `arfcn` | zero as features | single-valued — but `arfcn` decodes to 3.4608 GHz, which is foundational |
 
-Three things that table does not show:
+### Traps worth not rediscovering
 
-- **`arfcn` is worthless per row and critical once.** It sets the carrier frequency, hence
-  wavelength, Fresnel radii and every material property in a physical model.
-- **The most valuable content is the missingness.** 42% of rows have no valid serving cell,
-  and those are exactly the locations Challenge 3 exists to fix. Any pipeline starting with
-  `dropna()` deletes the answer.
-- **Derived features beat most raw columns.** Distance to the serving site correlates -0.78
-  with RSRP; bearing from the site recovers the sector azimuths; run ID enables the
-  repeatability estimate. All three outrank `ping_ms`, `rsrq`, `band` and `arfcn` combined.
-
-### Defining "underserved" — the choice that decides the answer
-
-Candidate definitions barely overlap, so they are not competing thresholds for one thing;
-they are different failure modes needing different interventions.
-
-| definition | % of route | *additional* to no-service |
-|---|---|---|
-| **no serving cell** | **42.3%** | - |
-| `sinr < 0` | 15.9% | **1,115 locations** |
-| `uplink < 10 Mbps` | 6.1% | **381 locations** |
-| `ping > 100 ms` | 3.6% | 187 |
-| `rsrp < -110 dBm` | 2.3% | 143 |
-| `downlink < 10 Mbps` | 0.6% | 16 |
-
-- **no serving cell** -> coverage failure; a relay fixes this
-- **served but low uplink** -> power- or capacity-limited; a relay probably fixes this
-- **served, decent RSRP, negative SINR** -> interference-limited; **a relay does not fix
-  this and may make it worse**
-
-Folding that third group into "underserved" leads to recommending an asset that adds to the
-interference. `sinr` is the parameter that prevents it, and nothing here has used it yet.
-
-Uplink degradation with distance is monotonic and is the quantitative case for intervening:
-
-| distance from Agronomy | median uplink | p10 | below 10 Mbps |
-|---|---|---|---|
-| 0-2 km | 62.9 Mbps | 31.5 | 0.4% |
-| 4-6 km | 31.5 | 10.5 | 9.4% |
-| 6-8 km | 15.5 | 2.3 | **30.7%** |
-| 8-12 km | 10.5 | 1.6 | **42.4%** |
-
-**Route importance.** 11.9% of 100 m cells were driven on 2+ separate runs, and they contain
-33% of all samples - a weak but usable proxy for the route weighting the brief asks for.
-
-### Facts about the data worth not rediscovering
-
-- **42% of rows have no serving cell** (`cellid` null, or `FFFFFFFFF` with `arfcn = -1`).
-  Those rows are a no-service state, not missing data, and they are the strongest signal in
-  the dataset. A naive `dropna()` throws away exactly what the challenge is about.
-- **`sinr` and `rsrq` load as object dtype** — 11 rows contain a literal `'-'`. Always
-  `pd.to_numeric(..., errors='coerce')`.
-- **Uplink is the binding constraint, not downlink.** Downlink saturates ~230 Mbps for any
-  SINR > 0; uplink tracks RSRP hard and spans 8–63 Mbps. Define "underserved" on uplink, or
-  a downlink-based objective will call everything fine.
-- **Missing uplink/downlink is not missing-at-random** — it is missing exactly where
-  service failed, which biases a service surface optimistic in the places that matter most.
-- **Consecutive samples are ~22 m apart**, so a random train/test split leaks badly. The
-  brief requires geographically separated test segments: split by spatial block or by run.
-- Only 4 of 12 cells ever serve, and **Research Park serves 0 of 7,144 rows** — a free
+- **42% of rows have no serving cell.** They are a measured *absence* of service, not
+  missing data, and they are the locations the challenge exists to fix. A pipeline starting
+  with `dropna()` deletes the answer.
+- **`sinr` and `rsrq` load as object dtype** — 11 rows contain a literal `'-'`.
+- **`cellid = FFFFFFFFF` with `arfcn = -1`** is a no-service sentinel that still carries RSRP.
+- **Consecutive samples are ~22 m apart**, so a random split leaks. Split by spatial block or
+  by run; the testbench uses a 200 m training buffer.
+- **Missing uplink/downlink is not missing-at-random** — it is missing exactly where service
+  failed, which biases a service surface optimistic where it matters most.
+- **Uplink is the binding constraint.** Downlink saturates near 230 Mbps for any SINR > 0.
+  A downlink-based objective declares the network healthy everywhere — it finds 43 bad rows
+  in the whole dataset, against 3,023 with no service at all.
+- **Only 4 of 12 cells ever serve, and Research Park serves 0 of 7,144 rows** — a free
   negative control for any propagation model.
-- **Terrain shadowing dominates between 2 and 6 km and is irrelevant beyond it.** A
-  Fresnel-obstructed cell is 2.25–2.39× more likely to have no serving cell than a clear cell
-  the same distance out (p < 10⁻⁷); past 6 km the link budget has already gone and the effect
-  vanishes. Bare line-of-sight is the wrong test — only 13% of links are geometrically
-  blocked, but **46% intrude on the first Fresnel zone**. The holes are grazing paths.
-- **Spatial cross-validation needs care on a radial survey.** Geography and the model's
-  covariates are nearly the same variable here, so a contiguous held-out region is also a
-  held-out slice of covariate space. KMeans on position carves out the near-tower cluster and
-  leaves only **8.2%** of test points inside the training distance range — it measures
-  extrapolation, not generalisation, and it will make a sound model look broken. Angular
-  wedges keep 90% and hold out a bearing sector instead.
-- **Fresnel clearance is 96.5% correlated with log-distance.** Fit it as a free term and it
-  absorbs the distance effect, collapsing the path-loss exponent to 0.53. Orthogonalise
-  terrain features against log-distance before fitting.
-- **Terrain relief across the survey box is 98 m**, which is more than enough to shadow a
-  link at 3.46 GHz from a 120 ft mast. The first Fresnel radius is 10–14 m at mid-path, which
-  is what makes 1/3 arc-second (~10 m) the right DEM resolution and 1 m an oversample.
+
+### The measurement floor is ~2 dB
+
+255 locations were revisited on separate runs with the same serving cell; RSRP agrees to
+2.1 dB. Model error is 7.8–9.8 dB, so the gap is **systematic and spatially deterministic**,
+not noise — recoverable in principle, though six scene refinements failed to recover it.
+
+---
 
 ## Licence
 
-The measurement dataset is **Arathon-only while non-public**. It may not be copied,
-redistributed or published before ARA's official release. It is excluded from this
-repository by `.gitignore`, along with derived files that carry measurement values or
-coordinates. Keep this repository private.
+The measurement dataset is **Arathon-only while non-public** and may not be redistributed
+before ARA's official release. This repository is private; see the note in `.gitignore` for
+what that governs.
 
-Scene geometry derives from **OpenStreetMap (© OpenStreetMap contributors, ODbL)** and NASA
-SRTM / Mapzen terrain tiles; USGS 3DEP elevation is public domain. Attribute these in any
-published figure.
+Scene geometry derives from **OpenStreetMap (© OpenStreetMap contributors, ODbL)**,
+Microsoft US Building Footprints (ODbL), NASA SRTM / Mapzen terrain tiles, and USGS 3DEP
+elevation and NAIP imagery (public domain). Attribute these in any published figure.
