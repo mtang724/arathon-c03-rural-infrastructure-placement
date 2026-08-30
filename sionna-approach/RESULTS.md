@@ -45,9 +45,9 @@ configuration scores **9.77 dB on 800 rows and 8.58 dB on all rows** (`tilt-0` v
 
 ## Best model: Microsoft footprints + profile diffraction
 
-The two independent improvements stack almost additively. Ishan's building-source change
-(`../terrain-approach/`, and REPORT.md 2.2) and the ITU-R P.526 profile diffraction added
-here fix different deficiencies, and each covers the other's weakness.
+The two independent improvements stack almost additively. The building-source change
+(REPORT.md 2.2, commit 06426e8) and the ITU-R P.526 profile diffraction added here fix
+different deficiencies, and each covers the other's weakness.
 
 | scene | ray tracer only | **+ profile diffraction** |
 |---|---|---|
