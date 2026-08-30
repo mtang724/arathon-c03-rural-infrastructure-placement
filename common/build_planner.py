@@ -88,8 +88,30 @@ def _thin(b: CoverageBundle, keep_every: int):
     return b
 
 
+def measured_points(csv_path, keep_every=1):
+    """The drive test itself, so the page shows evidence next to prediction.
+
+    A newcomer looking at a coverage surface cannot tell which parts are
+    measured and which are inferred, and on this survey that is the whole
+    question -- the van covers about 7% of the area. Drawing the samples in a
+    contrasting warm hue against the cool prediction ramp makes the distinction
+    immediate rather than something you have to be told.
+
+    Carries three fields per sample: position, and whether a serving cell was
+    present. The no-service rows are the important ones; they are measured
+    absences of service, not missing data.
+    """
+    import pandas as pd
+    df = pd.read_csv(csv_path, dtype={"cellid": str})
+    if keep_every > 1:
+        df = df.iloc[::keep_every]
+    served = ~(df.cellid.isna() | df.cellid.eq("FFFFFFFFF"))
+    return [[round(float(a), 5), round(float(b), 5), int(c)]
+            for a, b, c in zip(df.lat, df.lon, served)]
+
+
 def build(bundle_paths, dem_path=None, out="planner.html", keep_every=2,
-          verbose=True):
+          measurements=None, verbose=True):
     bundles = [CoverageBundle.load(p) for p in bundle_paths]
     if not bundles:
         raise SystemExit("no bundles given")
@@ -132,6 +154,7 @@ def build(bundle_paths, dem_path=None, out="planner.html", keep_every=2,
         "dem": _dem_block(dem_path) if dem_path else
                {"ny": 1, "nx": 1, "lat0": 0, "lon0": 0, "dlat": 1, "dlon": 1,
                 "z": [0]},
+        "pts": measured_points(measurements) if measurements else [],
     }
     if any(b.prediction.mode == "analytic" for b in bundles) and not dem_path:
         raise SystemExit("an analytic bundle needs --dem: the page walks the "
@@ -141,7 +164,8 @@ def build(bundle_paths, dem_path=None, out="planner.html", keep_every=2,
     out.write_text(TPL.replace("__DATA__", json.dumps(data, separators=(",", ":"))),
                    encoding="utf-8")
     if verbose:
-        print(f"[planner] {out} ({out.stat().st_size / 1e6:.2f} MB)")
+        print(f"[planner] {out} ({out.stat().st_size / 1e6:.2f} MB), "
+              f"{len(data['pts']):,} measured samples")
         for b in bundles:
             print(f"[planner]   {b.simulator.label} [{b.prediction.mode}] "
                   f"{len(b.prediction.candidates)} candidates, "
@@ -156,8 +180,10 @@ def main():
     ap.add_argument("--out", default="planner.html")
     ap.add_argument("--keep-every", type=int, default=2,
                     help="thin tabulated candidates by this factor (page only)")
+    ap.add_argument("--measurements", default=None,
+                    help="measurement CSV, drawn as the evidence layer")
     a = ap.parse_args()
-    build(a.bundles, a.dem, a.out, a.keep_every)
+    build(a.bundles, a.dem, a.out, a.keep_every, a.measurements)
 
 
 if __name__ == "__main__":

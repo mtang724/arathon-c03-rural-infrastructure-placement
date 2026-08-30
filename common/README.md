@@ -114,6 +114,24 @@ model for the baseline, calibrates every service criterion against **your**
 model's RSRP, precomputes RSRP from every candidate to every demand cell, and
 solves the greedy siting. See [`schema.py`](schema.py) for the format.
 
+### If your model is slow, thin the lattice first
+
+The cost of a bundle is dominated by **inference, not fitting**. The full
+candidate set is 627 sites × 4,731 cells × 2 mast heights = **5.9 million link
+predictions**, and a model with no closed form — a ray tracer, a neural operator
+— walks a full terrain profile for every one of them. That is roughly 760
+million elevation lookups, and it can take hours.
+
+```python
+build(my_sim, df, macro_lat, macro_lon, out="bundles/my-model.json",
+      max_candidates=60)      # about ten minutes instead of hours
+```
+
+Enough to prove your model reaches the planner and to compare its recommended
+site against another model's. It is a **resolution reduction**, so say so: the
+site comes from a coarser lattice and should be quoted to about a kilometre
+rather than as a pole. Run it unthinned before quoting a final site.
+
 ### Two prediction modes
 
 **`analytic`** — your model declares a formula family and its coefficients, and

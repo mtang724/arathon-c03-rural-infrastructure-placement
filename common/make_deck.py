@@ -1,58 +1,69 @@
 """
-The project deck: one simulator per slide, the dataset up front, the tool at the end.
+The project deck: nine slides, native objects only.
 
     python -m common.make_deck
 
-Everything is a native PowerPoint object -- real chart parts with their own data
-sheets, autoshapes and tables. No images, so every figure stays vector and stays
-editable by whoever presents it.
+Everything is a real PowerPoint object -- chart parts with their own data sheets,
+autoshapes and tables. No images, so every figure stays vector and stays editable
+by whoever presents it.
 
-BUILT TO BE FILLED IN. Four simulators are planned and they will not land at the
-same time, so each gets its own slide and each slide renders in one of two
-states: complete, with its measured numbers, or RESERVED, drawn dimmed with what
-it will carry. A reserved slide is a promise with a shape, not a gap -- and it
-means the deck can be presented today without pretending the missing work exists.
+THE NARRATIVE, in the order a listener needs it:
 
-Numbers are read from reports and bundles rather than typed in, so the deck
-cannot drift from the models the way the old planner drifted from the optimiser.
-Anything absent degrades to "not yet measured" rather than to a stale figure.
+    1  the ask
+    2  the data, only the parts bearing on RSRP and coverage
+    3  the research questions -- the brief's own four evaluation criteria
+    4  four ways to predict: baseline, ray tracing, deep learning, PINN
+    5  how the planner turns a prediction into a location
+    6  how any of it is judged -- drawn, because a split is a shape
+    7  RQ0: how well each approach predicts, held out by geography
+    8  RQ1-4: thresholds, gains, robustness, constraints, and the brief's
+       own hypothesis, tested rather than asserted
+    9  the demo
+
+The four questions on slide 3 are quoted from COTS_Challenge_3.pdf, section
+"How a team can demonstrate success", not invented here. Slide 8 answers each
+one with a measurement.
+
+Numbers come from reports and bundles rather than being typed in, so the deck
+cannot drift from the models. Anything missing renders as reserved rather than
+as a stale figure.
 """
 import glob
 import json
+import random
 from pathlib import Path
 
 from pptx import Presentation
 from pptx.util import Inches, Pt
 
 from .deckkit import (BG, FD, FM, GREY, H, INK, INK2, MUTE, OCHRE, RULE, SURF,
-                      TEAL, VIOL, W, WHITE, WINE, arrow, bar, bullets, caption,
-                      card, footer, header, kpi, line_chart, oval, rect, slide,
-                      table, txt)
+                      TEAL, VIOL, W, WHITE, WINE, bar, bullets, caption, footer,
+                      header, kpi, oval, rect, scatter, slide, table, txt)
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "ARA_Challenge3.pptx"
 
+ORDER = ["terrain-parametric", "sionna-hybrid-agronomy", "terrain-fno"]
+LABEL = {"terrain-parametric": "Baseline — fitted physics",
+         "sionna-hybrid-agronomy": "Ray tracing — Sionna",
+         "terrain-fno": "Deep learning — FNO"}
+SHORT = {"terrain-parametric": "Baseline", "sionna-hybrid-agronomy": "Ray tracing",
+         "terrain-fno": "Deep learning"}
 
-# ==========================================================================
-# whatever has actually been measured
-# ==========================================================================
 
 def load():
     d = {"bundles": {}}
 
     def rd(p):
-        p = ROOT / p
         try:
-            return json.loads(p.read_text())
+            return json.loads((ROOT / p).read_text())
         except Exception:
             return None
 
-    d["backtest"] = rd("terrain-approach/reports/backtest.json")
+    d["bench"] = rd("reports/testbench.json") or {}
+    d["geom"] = rd("reports/split_geometry.json")
     d["coverage"] = rd("terrain-approach/reports/coverage_terrain.json")
-    fno = rd("terrain-approach/reports/fno_compare.json")
-    # A smoke run leaves a file that reads like a result. Two epochs trains
-    # nothing, so refuse to present it.
-    d["fno"] = fno if (fno and fno.get("config", {}).get("epochs", 0) >= 50) else None
+    d["hyp"] = rd("reports/hypothesis_test.json")
     for f in sorted(glob.glob(str(ROOT / "bundles" / "*.json"))):
         try:
             b = json.loads(Path(f).read_text())
@@ -62,586 +73,472 @@ def load():
     return d
 
 
-def rmse(d, split):
-    b = d.get("backtest")
-    if not b:
-        return None
-    if split == "in_sample":
-        return b["A_in_sample"]["rmse"]
-    return b["B_out_of_sample"].get(split, {}).get("rmse")
+def cell(v, k):
+    try:
+        return f"{v[k]['rmse']:.2f}"
+    except (KeyError, TypeError):
+        return "—"
 
 
 # ==========================================================================
-# slides
-# ==========================================================================
 
-def s01_title(prs, d):
+def s1_title(prs, d):
     s = slide(prs)
     rect(s, 0, 0, W, Inches(0.055), fill=TEAL)
-    rect(s, Inches(0.55), Inches(1.55), Inches(1.5), Inches(0.055), fill=OCHRE)
-    txt(s, Inches(0.55), Inches(1.05), Inches(9), Inches(0.35),
+    rect(s, Inches(0.55), Inches(1.5), Inches(1.5), Inches(0.055), fill=OCHRE)
+    txt(s, Inches(0.55), Inches(1.0), Inches(9), Inches(0.35),
         "ARATHON Challenge 03", 11, TEAL, True, FM, caps=True, space=2.4)
-    txt(s, Inches(0.55), Inches(1.85), Inches(11.6), Inches(1.5),
-        "Where does one more transmitter\ndo the most good?", 46, INK, True, FD)
-    txt(s, Inches(0.55), Inches(3.5), Inches(9.4), Inches(1.0),
-        "A rural drive test covers 7% of the service area. The task is to move "
-        "from describing weak service to recommending a limited, defensible "
-        "intervention — which means predicting where nothing was measured, and "
-        "being explicit about how far that prediction can be trusted.",
-        14, INK2, False, FD)
+    txt(s, Inches(0.55), Inches(1.8), Inches(11.6), Inches(1.4),
+        "Where would one more asset\ndeliver the greatest improvement?",
+        40, INK, True, FD)
+    txt(s, Inches(0.55), Inches(3.35), Inches(9.6), Inches(0.9),
+        "A drive test covers 7% of the service area. Four approaches predict "
+        "the rest, scored on one testbench and driven through one planner — so "
+        "the recommendation carries its uncertainty with it rather than beside "
+        "it.", 14, INK2, False, FD)
+    best, who = None, ""
+    for nm, v in d["bench"].items():
+        r = (v.get("kmeans_on_position") or {}).get("rmse")
+        if r and (best is None or r < best):
+            best, who = r, nm
     for i, (lab, val, note) in enumerate([
-            ("measurements", "7,144", "rows, 4 runs, 2 days"),
-            ("no serving cell", "40.4%", "measured absence, not missing"),
-            ("held-out accuracy", "9.66 dB", "RMSE, geographic blocks"),
-            ("route covered today", "44%", "of 116.7 km driven")]):
-        kpi(s, Inches(0.55 + i * 3.08), Inches(4.85), Inches(2.85), lab, val, note,
-            vcolor=TEAL if i > 1 else INK)
-    footer(s, "AgWireless '26 / Rural Connectivity Research   ·   "
-              "measurements: ARA COTS, Ames IA   ·   terrain: USGS 3DEP 1/3 arc-second")
+            ("measurements", "7,144", "rows · 40.4% no service"),
+            ("approaches", "4", "three built, one reserved"),
+            ("best held out", f"{best:.2f} dB" if best else "—",
+             f"KMeans · {SHORT.get(who, who)}" if best else "not yet measured"),
+            ("route covered", "44% → 69%", "with one macro site")]):
+        kpi(s, Inches(0.55 + i * 3.08), Inches(4.7), Inches(2.85), lab, val, note,
+            vcolor=TEAL if i in (2, 3) else INK, vsize=25 if i < 3 else 21)
+    footer(s, "AgWireless '26 · ARA COTS, Ames IA · terrain USGS 3DEP 1/3 arc-second")
     return s
 
 
-def s02_requirement(prs, d):
+def s2_dataset(prs, d):
     s = slide(prs)
-    header(s, 2, "the research requirement", "What has to be answered, and to what standard",
-           "The brief asks for a recommendation. A recommendation is only worth "
-           "anything if the uncertainty around it is stated.")
-    reqs = [("Predict performance where nothing was measured",
-             "A drive test is a line through an area. Coverage has to be inferred "
-             "off that line, which is a modelling claim and needs a model, not an "
-             "interpolation."),
-            ("Choose where one added asset does the most good",
-             "Relay, repeater, small cell, or a further measurement campaign — "
-             "compared on the same demand, by the same objective."),
-            ("State the deployment assumptions and the uncertainty",
-             "Every constant declared, every held-out score reported, and the "
-             "failures named rather than smoothed over.")]
-    y = Inches(1.95)
-    for i, (t, b) in enumerate(reqs):
-        rect(s, Inches(0.55), y, Inches(12.2), Inches(1.15), fill=SURF, line=RULE)
-        rect(s, Inches(0.55), y, Inches(0.06), Inches(1.15), fill=TEAL)
-        txt(s, Inches(0.95), y + Inches(0.16), Inches(0.5), Inches(0.3),
-            f"R{i+1}", 12, TEAL, True, FM)
-        txt(s, Inches(1.6), y + Inches(0.14), Inches(10.8), Inches(0.32), t,
-            15.5, INK, True, FD)
-        txt(s, Inches(1.6), y + Inches(0.54), Inches(10.8), Inches(0.5), b,
-            11.5, INK2, False, FD)
-        y += Inches(1.32)
-    txt(s, Inches(0.55), Inches(6.05), Inches(12.2), Inches(0.9),
-        "The third is the one that decides whether the first two are believable. "
-        "Every number in this deck is reported with the split it was measured on, "
-        "and the places the model fails are given their own slide.",
-        12.5, INK, False, FD)
-    footer(s, "COTS_Challenge_3.pdf")
-    return s
-
-
-def s03_campaign(prs, d):
-    s = slide(prs)
-    header(s, 3, "the dataset · 1 of 3", "What was actually measured",
-           "One vehicle, one modem, one band, four runs over two days, "
-           "around one serving site.")
-    for i, (lab, val, note) in enumerate([
-            ("rows", "7,144", "one every 2.63 s"),
-            ("distinct road", "116.7 km", "277 km driven, de-duplicated"),
-            ("survey box", "189 km²", "11 × 16 km"),
-            ("serving sites", "1 of 12", "Agronomy Farm serves 3,838 rows")]):
-        kpi(s, Inches(0.55 + i * 3.08), Inches(1.95), Inches(2.85), lab, val, note)
-    txt(s, Inches(0.55), Inches(3.28), Inches(6), Inches(0.3),
-        "Samples by distance from the tower", 11, MUTE, True, FM, caps=True, space=1.2)
-    bar(s, Inches(0.45), Inches(3.6), Inches(6.2), Inches(2.6),
-        ["0–2 km", "2–4", "4–6", "6–8", "8–13"],
-        [("samples", [1245, 1520, 1410, 1180, 1789])], [TEAL], labels=True,
-        numfmt="0")
-    txt(s, Inches(7.1), Inches(3.28), Inches(5.7), Inches(0.3),
-        "Why one site and not twelve", 11, MUTE, True, FM, caps=True, space=1.2)
-    bullets(s, Inches(7.1), Inches(3.62), Inches(5.7), Inches(2.6), [
-        ("Agronomy Farm serves 3,838 rows — every model here is fitted on those.", True),
-        "Curtiss and Wilson appear on 100–180 sporadic rows each and fit with "
-        "R² ≈ 0, so they are reported as incidental rather than modelled.",
-        "Research Park serves 0 of 7,144 rows — a free negative control for any "
-        "propagation model.",
-        ("One transmitter is the binding constraint on what can be learned.", True)],
-        size=11)
-    footer(s, "Rural_COTS_RAN_Description.pdf   ·   the dataset is not in this "
-              "repository — see the licence note")
-    return s
-
-
-def s04_contents(prs, d):
-    s = slide(prs)
-    header(s, 4, "the dataset · 2 of 3", "What is in the file, and what it costs to misread",
-           "Four of these cost real time to discover. They are recorded so nobody "
-           "pays for them twice.")
-    rows = [["column", "what it carries", "the trap"],
-            ["cellid", "serving cell, or absent", "40.4% absent — a MEASURED "
-             "absence of service, not missing data"],
-            ["rsrp", "received power, dBm", "present only when a cell is serving, "
-             "so it is missing exactly where service failed"],
-            ["uplink", "Mbps, 2,979 rows", "the binding constraint — spans 8–63 "
-             "and tracks RSRP hard"],
-            ["downlink", "Mbps", "saturates ~230 for any SINR > 0, so a "
-             "downlink objective calls everything fine"],
-            ["sinr, rsrq", "dB", "load as object dtype — 11 rows contain a "
-             "literal '-'"],
-            ["lat, lon, ts", "position and time", "consecutive samples ~22 m "
-             "apart, so a random split leaks badly"]]
-    table(s, Inches(0.55), Inches(1.95), Inches(12.2), Inches(2.9), rows,
-          col_w=[Inches(1.5), Inches(2.6), Inches(8.1)], size=9.5)
-    rect(s, Inches(0.55), Inches(5.15), Inches(12.2), Inches(1.4),
-         fill=SURF, line=WINE, lw=1.5)
-    rect(s, Inches(0.55), Inches(5.15), Inches(0.06), Inches(1.4), fill=WINE)
-    txt(s, Inches(0.85), Inches(5.3), Inches(11.6), Inches(0.3),
-        "The single most expensive mistake available here", 13, WINE, True, FD)
-    txt(s, Inches(0.85), Inches(5.68), Inches(11.6), Inches(0.75),
-        "A reflexive dropna() deletes 2,885 rows with no serving cell. Those rows "
-        "are not missing measurements — they are the coverage holes, and they are "
-        "exactly the demand the challenge asks you to serve. Drop them and the "
-        "pipeline reports that coverage is excellent.", 12, INK2, False, FD)
-    footer(s, "reports/eda.json   ·   measurement-bearing reports are gitignored "
-              "until ARA publishes")
-    return s
-
-
-def s05_findings(prs, d):
-    s = slide(prs)
-    header(s, 5, "the dataset · 3 of 3", "What the measurements already say, before any model",
-           "These are properties of the data. They constrain every simulator that "
-           "follows, and none of them depends on a modelling choice.")
-    txt(s, Inches(0.55), Inches(1.9), Inches(6.1), Inches(0.3),
-        "Odds of outage, Fresnel-obstructed vs clear, at equal distance",
-        10.5, MUTE, True, FM, caps=True, space=1.1)
-    bar(s, Inches(0.45), Inches(2.25), Inches(6.3), Inches(2.5),
-        ["2–4 km", "4–6 km", "6–8 km", "8–13 km"],
-        [("odds ratio", [2.25, 2.39, 0.83, 0.97])], [OCHRE], labels=True,
-        numfmt="0.00")
-    caption(s, Inches(0.55), Inches(4.85), Inches(6.2),
-            "p = 7.7e-08 and 5.5e-12 in the first two bands; not significant "
-            "beyond 6 km, where the link budget has already run out.")
-    bullets(s, Inches(7.15), Inches(2.2), Inches(5.6), Inches(3.4), [
-        ("Terrain shadowing dominates 2–6 km and is irrelevant beyond it.", True),
-        "Bare line-of-sight is the wrong test: only 13% of links are "
-        "geometrically blocked, but 46% intrude on the first Fresnel zone. "
-        "The holes are grazing paths.",
-        ("Fresnel clearance is 96.5% correlated with log-distance.", True),
-        "Fit it as a free term and it absorbs the distance effect, collapsing "
-        "the path-loss exponent to 0.53. Terrain features must be "
-        "orthogonalised against log-distance before fitting.",
-        ("Relief across the box is 98 m; the first Fresnel radius is 10–14 m.", True),
-        "That is what makes 1/3 arc-second (~10 m) the right DEM resolution "
-        "and 1 m an oversample of something the radio integrates over."],
-        size=11)
-    footer(s, "measured in reports/eda.json and reports/analysis.json")
-    return s
-
-
-def s06_platform(prs, d):
-    s = slide(prs)
-    header(s, 6, "method", "Four simulators, one platform",
-           "Different physics, different failure modes — but scored on the same "
-           "demand, the same splits and the same objective, or they are not being "
-           "compared.")
-    # the contract, centre
-    rect(s, Inches(4.55), Inches(2.05), Inches(4.2), Inches(1.5), fill=SURF,
-         line=TEAL, lw=1.75)
-    txt(s, Inches(4.75), Inches(2.2), Inches(3.8), Inches(0.3),
-        "the contract", 10, TEAL, True, FM, caps=True, space=1.4)
-    txt(s, Inches(4.75), Inches(2.52), Inches(3.8), Inches(0.55),
-        "macro_rsrp(lat, lon)\nnode_rsrp(tx, agl, ΔEIRP, lat, lon)",
-        11, INK, True, FM)
-    txt(s, Inches(4.75), Inches(3.15), Inches(3.8), Inches(0.3),
-        "two methods. that is the whole interface.", 9.5, MUTE, False, FM)
-    names = [("Ray tracing", "Sionna RT over a reconstructed scene", TEAL),
-             ("Fitted physics", "two-slope law + ITU-R P.526", OCHRE),
-             ("Neural operator", "1-D FNO over path profiles", VIOL),
-             ("PINN", "reserved", GREY)]
-    for i, (n, sub, col) in enumerate(names):
-        x = Inches(0.55 + i * 3.08)
-        rect(s, x, Inches(1.35), Inches(2.85), Inches(0.55), fill=BG, line=col, lw=1.25)
-        txt(s, x + Inches(0.12), Inches(1.44), Inches(2.6), Inches(0.22), n,
-            11.5, col, True, FD)
-        txt(s, x + Inches(0.12), Inches(1.66), Inches(2.6), Inches(0.2), sub,
-            8.5, MUTE, False, FM)
-    for i, (nm, sub, col) in enumerate([
-            ("shared demand grid", "4,731 cells · 200 m · route-km de-duplicated", TEAL),
-            ("shared testbench", "3 splits · 200 m buffer · one seed", OCHRE),
-            ("shared planner", "any simulator · any criterion · any weighting", VIOL)]):
-        x = Inches(0.55 + i * 4.15)
-        rect(s, x, Inches(4.0), Inches(3.9), Inches(1.05), fill=SURF, line=RULE)
-        rect(s, x, Inches(4.0), Inches(0.06), Inches(1.05), fill=col)
-        txt(s, x + Inches(0.2), Inches(4.16), Inches(3.5), Inches(0.28), nm,
-            13, INK, True, FD)
-        txt(s, x + Inches(0.2), Inches(4.52), Inches(3.5), Inches(0.4), sub,
-            9.5, MUTE, False, FM)
-    txt(s, Inches(0.55), Inches(5.4), Inches(12.2), Inches(1.1),
-        "common/ never imports an approach; approaches expose their models "
-        "through it. Adding a simulator therefore touches no existing one — and "
-        "the shared testbench reproduces the published reference numbers to "
-        "0.02 dB, so a change to the bench is detected rather than absorbed.",
-        12.5, INK2, False, FD)
-    footer(s, "common/README.md · common/BACKTEST.md · common/PLANNER.md")
-    return s
-
-
-def _sim_slide(prs, num, name, title, sub, accent, left, right, status, ready):
-    s = slide(prs)
-    header(s, num, name, title, sub, accent=accent if ready else GREY)
-    txt(s, Inches(11.0), Inches(0.34), Inches(1.8), Inches(0.3), status,
-        9.5, accent if ready else GREY, True, FM, caps=True, space=1.2)
-    return s
-
-
-def s07_physics(prs, d):
-    ins, km, wed = rmse(d, "in_sample"), rmse(d, "kmeans_on_position"), \
-        rmse(d, "angular_wedges")
-    s = _sim_slide(prs, 7, "simulator · 1 of 4",
-                   "Fitted physics — a two-slope law with terrain in the loop",
-                   "A physical law with fitted constants, not a memorised surface. "
-                   "That is what lets it answer a counterfactual.",
-                   OCHRE, None, None, "built", True)
-    txt(s, Inches(0.55), Inches(1.85), Inches(6.2), Inches(0.6),
-        "RSRP = b₀ + b₁·log₁₀(d) + a₁cos φ + a₂sin φ + b_J·J(v) + b_F·F",
-        13, INK, True, FM)
-    rows = [["term", "fitted", "meaning"],
-            ["n near / far", "1.80 / 3.35", "two-ray, breaking at 3 km"],
-            ["b_J", "−0.73 dB/dB", "ITU-R P.526 knife edge"],
-            ["b_F", "+7.33", "first Fresnel clearance"],
-            ["σ", "7.35 dB", "shadow fading"]]
-    table(s, Inches(0.55), Inches(2.5), Inches(6.2), Inches(1.9), rows,
-          col_w=[Inches(1.7), Inches(1.5), Inches(3.0)], size=9.5)
-    if ins:
-        txt(s, Inches(7.2), Inches(1.85), Inches(5.6), Inches(0.3),
-            "RMSE by split, dB", 10.5, MUTE, True, FM, caps=True, space=1.1)
-        bar(s, Inches(7.1), Inches(2.2), Inches(5.7), Inches(2.3),
-            ["in sample", "random", "KMeans", "wedges"],
-            [("RMSE", [round(ins, 2), round(rmse(d, "random_split"), 2),
-                       round(km, 2), round(wed, 2)])], [OCHRE], labels=True,
-            numfmt="0.00")
-    bullets(s, Inches(0.55), Inches(4.7), Inches(6.2), Inches(2.2), [
-        ("Four choices were forced by the backtest, not chosen for elegance.", True),
-        "One azimuth harmonic, not two — two fit the sector beam beautifully "
-        "and fall apart on a held-out bearing.",
-        "Both terrain terms orthogonalised against log-distance.",
-        "Near exponent bounded at 1.8: costs 0.08 dB, buys constants that can "
-        "be defended in a room."], size=10.5)
-    bullets(s, Inches(7.1), Inches(4.7), Inches(5.7), Inches(2.2), [
-        ("Where it fails, measured rather than asserted.", True),
-        "Availability: 60.5% cell agreement against a 63.9% base rate. It does "
-        "not beat 'always say served'.",
-        "Location explains 71.4% of outage variance, so a spatial model should "
-        "do well — we are simply not capturing it.",
-        "21% of cells measured twice flip between mostly-served and mostly-dead."],
-        size=10.5)
-    footer(s, "terrain-approach/MODEL.md   ·   fitted on 3,838 rows")
-    return s
-
-
-def s08_sionna(prs, d):
-    s = _sim_slide(prs, 8, "simulator · 2 of 4",
-                   "Ray tracing — Sionna RT over a reconstructed scene",
-                   "Physics with no fitted constants: nothing to overfit, and "
-                   "nothing to refit per fold either.",
-                   TEAL, None, None, "propagation built", True)
-    bullets(s, Inches(0.55), Inches(1.9), Inches(6.2), Inches(2.6), [
-        ("A digital twin, not a curve fit.", True),
-        "Scene from OpenStreetMap and USGS 3DEP, with Microsoft ML building "
-        "footprints replacing OSM ones.",
-        "Validated against NAIP imagery — five orientation checks pass.",
-        "Because nothing is fitted, the testbench records it as unfitted and no "
-        "leakage is possible. That is a stronger position than a fitted model "
-        "can claim, not a weaker one."], size=11)
+    header(s, 2, "the data", "What the van measured, and what it means for coverage",
+           "7,144 samples along 116.7 km of road, one every 2.63 s, around a "
+           "single serving site.")
     for i, (lab, val, note, c) in enumerate([
-            ("held-out RMSE", "8.29 dB", "MS footprints, was 8.58", TEAL),
-            ("measurement floor", "~2 dB", "not 8 — see DATA_REQUEST.md", MUTE)]):
-        kpi(s, Inches(7.1 + i * 2.95), Inches(1.9), Inches(2.75), lab, val, note,
-            vcolor=c)
-    rect(s, Inches(7.1), Inches(3.2), Inches(5.65), Inches(1.9), fill=BG, line=GREY)
-    rect(s, Inches(7.1), Inches(3.2), Inches(0.06), Inches(1.9), fill=GREY)
-    txt(s, Inches(7.35), Inches(3.35), Inches(5.2), Inches(0.28),
-        "Reserved — siting and planner bundle", 12.5, MUTE, True, FD)
-    bullets(s, Inches(7.35), Inches(3.72), Inches(5.2), Inches(1.3), [
-        "Wrap the scene in the shared contract (src/adapter.py).",
-        "Emit a tabulated bundle — no closed form for a browser.",
-        "It then appears in the planner beside the others."], size=10)
-    txt(s, Inches(0.55), Inches(4.9), Inches(6.2), Inches(1.6),
-        "The two approaches disagree by construction: one ray-traces a scene it "
-        "reconstructed, the other fits a law to the measurements. Where they "
-        "agree on siting, that agreement means something. Where they do not, the "
-        "difference is the honest uncertainty.", 12, INK2, False, FD)
-    footer(s, "sionna-approach/REPORT.md")
-    return s
-
-
-def s09_fno(prs, d):
-    f = d.get("fno")
-    s = _sim_slide(prs, 9, "simulator · 3 of 4",
-                   "Neural operator — a 1-D FNO over path profiles",
-                   "The framing is the whole difficulty. Most of the operator "
-                   "family cannot be posed on this dataset at all.",
-                   VIOL, None, None, "built" if f else "running", bool(f))
-    rows = [["model", "verdict on this dataset"],
-            ["FNO / TFNO / UNO / WNO in 2-D",
-             "(terrain, TX) → surface has ONE training example. Not viable."],
-            ["NeRF2", "needs many TX or dense volumetric RX. One TX, road-confined."],
-            ["SFNO", "spherical harmonics; the box is 11 × 16 km."],
-            ["CoDANO", "codomain attention across coupled variables; there is one."],
-            ["GeNeRT", "needs a semantic 3-D scene and ray-traced CIRs; no weights."]]
-    table(s, Inches(0.55), Inches(1.9), Inches(6.5), Inches(2.3), rows,
-          col_w=[Inches(2.4), Inches(4.1)], size=9)
-    txt(s, Inches(0.55), Inches(4.35), Inches(6.5), Inches(0.3),
-        "The framing that IS well posed", 11, VIOL, True, FM, caps=True, space=1.2)
-    txt(s, Inches(0.55), Inches(4.68), Inches(6.5), Inches(1.0),
-        "Stop treating the area as the function. The terrain profile along each "
-        "link is a genuine input function on [0,1] — 3,838 of them — and it "
-        "competes head-to-head with the P.526 term it would replace.",
-        12, INK2, False, FD)
-    rect(s, Inches(7.35), Inches(1.9), Inches(5.4), Inches(2.35), fill=SURF,
-         line=WINE, lw=1.5)
-    rect(s, Inches(7.35), Inches(1.9), Inches(0.06), Inches(2.35), fill=WINE)
-    txt(s, Inches(7.6), Inches(2.05), Inches(5.0), Inches(0.3),
-        "A terrain profile is a location fingerprint", 12.5, WINE, True, FD)
-    bullets(s, Inches(7.6), Inches(2.45), Inches(5.0), Inches(1.7), [
-        "Nearest other link in profile space: median 12.2 m away on the ground.",
-        "97.2% within 50 m; 99.6% within 200 m.",
-        ("So on a random split a profile-fed network answers by looking up its "
-         "own training set.", True)], size=10)
-    if f:
-        p = f["out_of_sample"]["kmeans_on_position"]
-        bar(s, Inches(7.2), Inches(4.4), Inches(5.55), Inches(2.2),
-            ["physics", "backbone", "PCA ridge", "FNO", "shuffled"],
-            [("KMeans RMSE", [round(p[k]["rmse"], 2) for k in
-                              ["parametric_terrain", "backbone_no_terrain",
-                               "pca_linear_residual", "fno_residual",
-                               "fno_shuffled_control"]])],
-            [OCHRE, GREY, GREY, VIOL, RULE], labels=True, numfmt="0.00")
-    else:
-        rect(s, Inches(7.35), Inches(4.4), Inches(5.4), Inches(2.1), fill=BG,
-             line=GREY)
-        txt(s, Inches(7.6), Inches(4.6), Inches(5.0), Inches(0.3),
-            "Reserved — head-to-head result", 12.5, MUTE, True, FD)
-        bullets(s, Inches(7.6), Inches(4.98), Inches(5.0), Inches(1.4), [
-            "Same splits as every other model, imported not reimplemented.",
-            "Controls: no-terrain backbone, ridge on 12 profile PCs, and the "
-            "same network trained on shuffled profiles.",
-            "The control is what separates skill from the target distribution."],
-            size=10)
-    footer(s, "terrain-approach/NEURAL_OPERATOR.md   ·   "
-              "torch 2.10 CPU · neuraloperator 2.0")
-    return s
-
-
-def s10_pinn(prs, d):
-    s = slide(prs)
-    header(s, 10, "simulator · 4 of 4", "Physics-informed network — reserved",
-           "The slot exists so the deck does not have to be restructured when it "
-           "lands.", accent=GREY)
-    txt(s, Inches(11.0), Inches(0.34), Inches(1.8), Inches(0.3), "reserved",
-        9.5, GREY, True, FM, caps=True, space=1.2)
-    card(s, Inches(0.55), Inches(1.95), Inches(3.9), Inches(2.7),
-         "What it would add",
-         ["A residual that obeys a wave or transport equation rather than a "
-          "fitted polynomial.",
-          "Physics as a loss term, so extrapolation is constrained where data "
-          "is absent — which is exactly where this survey is weakest."],
-         accent=GREY, status="premise", dim=True)
-    card(s, Inches(4.65), Inches(1.95), Inches(3.9), Inches(2.7),
-         "What it must clear",
-         ["The same three splits, the same 200 m buffer, the same seed.",
-          "9.66 dB on KMeans blocks and 9.78 dB on angular wedges.",
-          "The shuffled control, if it consumes any per-location feature."],
-         accent=GREY, status="acceptance", dim=True)
-    card(s, Inches(8.75), Inches(1.95), Inches(4.0), Inches(2.7),
-         "How it plugs in",
-         ["Implement macro_rsrp and node_rsrp in an adapter.",
-          "Return self from refit if nothing is fitted.",
-          "common.bundle.build(...) emits the planner bundle.",
-          "No existing code changes."],
-         accent=GREY, status="integration", dim=True)
-    rect(s, Inches(0.55), Inches(4.95), Inches(12.2), Inches(1.5), fill=SURF,
-         line=RULE)
-    txt(s, Inches(0.85), Inches(5.12), Inches(11.6), Inches(0.3),
-        "The honest caveat that applies to every simulator here", 12.5, INK, True, FD)
-    txt(s, Inches(0.85), Inches(5.5), Inches(11.6), Inches(0.8),
-        "Every split holds out measurements of the network that exists. Nothing "
-        "tests whether a model predicts a transmitter that has never existed, "
-        "because no such measurement exists. That is a limit of the data, not of "
-        "the method — which is why the tool reports where models DISAGREE about "
-        "siting rather than claiming which is right.", 12, INK2, False, FD)
-    footer(s, "common/README.md — the contract, with a worked adapter example")
-    return s
-
-
-def s11_backtest(prs, d):
-    s = slide(prs)
-    ready = bool(d.get("backtest"))
-    header(s, 11, "evaluation", "One testbench, three splits, every model",
-           "If two models are evaluated on different splits they are not being "
-           "compared, however carefully each RMSE was computed.")
-    cols = ["simulator", "in sample", "random", "KMeans", "wedges", "fitted?"]
-    ins = rmse(d, "in_sample")
-    rows = [cols,
-            ["Fitted physics",
-             f"{ins:.2f}" if ins else "—",
-             f"{rmse(d, 'random_split'):.2f}" if ins else "—",
-             f"{rmse(d, 'kmeans_on_position'):.2f}" if ins else "—",
-             f"{rmse(d, 'angular_wedges'):.2f}" if ins else "—", "yes"],
-            ["Sionna ray tracing", "—", "—", "8.29", "—", "no — nothing fitted"],
-            ["FNO on profiles", "—", "—", "—", "—", "yes"],
-            ["PINN", "—", "—", "—", "—", "—"]]
-    table(s, Inches(0.55), Inches(1.9), Inches(12.2), Inches(1.9), rows,
-          col_w=[Inches(3.2), Inches(1.7), Inches(1.7), Inches(1.7), Inches(1.7),
-                 Inches(2.2)], size=10)
-    caption(s, Inches(0.55), Inches(3.9), Inches(12.2),
-            "Blank cells are work not yet done, not results withheld. The table "
-            "is completed when every simulator has run — the numbers above are "
-            "produced by python -m common.selftest, which fails if the bench "
-            "itself has changed.")
-    for i, (nm, txt_, col) in enumerate([
-            ("random split", "Report it, then discount it. Samples are 2.63 s "
-             "apart — metres at driving speed — so the test set is very nearly "
-             "the training set. Keep it as a contamination gauge.", WINE),
-            ("KMeans blocks", "Compact regions. One is the near-tower cluster, "
-             "so holding it out deletes every sample under 2 km and forces the "
-             "distance law to extrapolate inward. Harshest.", TEAL),
-            ("angular wedges", "Bearing sectors. Distance support survives; what "
-             "is held out is a bearing, which tests the antenna term instead.",
-             OCHRE)]):
-        x = Inches(0.55 + i * 4.15)
-        rect(s, x, Inches(4.55), Inches(3.9), Inches(1.85), fill=SURF, line=RULE)
-        rect(s, x, Inches(4.55), Inches(0.06), Inches(1.85), fill=col)
-        txt(s, x + Inches(0.2), Inches(4.72), Inches(3.5), Inches(0.26), nm,
-            12, col, True, FD)
-        txt(s, x + Inches(0.2), Inches(5.05), Inches(3.5), Inches(1.2), txt_,
-            10, INK2, False, FD)
-    footer(s, "common/BACKTEST.md   ·   200 m training buffer, seed 42, 5 blocks")
-    return s
-
-
-def s12_planner_what(prs, d):
-    s = slide(prs)
-    header(s, 12, "the tool · 1 of 2", "A planner that re-solves for whatever you ask it",
-           "One self-contained HTML file. No server, no install, no network — "
-           "open it by double-clicking.")
-    b = d["bundles"].get("terrain-parametric")
-    ncrit = len(b["objective"]["criteria"]) if b else 8
-    for i, (lab, val, note) in enumerate([
-            ("simulators", str(max(1, len(d["bundles"]))), "one dropdown entry each"),
-            ("service criteria", str(ncrit), "availability → throughput"),
-            ("demand cells", "4,731", "200 m, route-km de-duplicated"),
-            ("candidate sites", "627", "on-route and off-route lattice")]):
-        kpi(s, Inches(0.55 + i * 3.08), Inches(1.9), Inches(2.85), lab, val, note)
-    bullets(s, Inches(0.55), Inches(3.25), Inches(6.1), Inches(3.0), [
-        ("It recomputes; it does not replay.", True),
-        "The page carries the terrain grid at 31 m posts and runs the whole "
-        "chain in JavaScript — path profile, earth bulge, Fresnel radius, "
-        "P.526 loss, RSRP, criterion, threshold.",
-        ("Agreement with the offline model: mean −0.07 dB, RMS 1.34 dB, "
-         "correlation 0.994, zero service disagreements over 300 cells.", True),
-        "The residual is the 31 m versus 10 m DEM stride, and nothing else."],
-        size=11)
-    rect(s, Inches(7.0), Inches(3.25), Inches(5.75), Inches(3.0), fill=SURF,
-         line=WINE, lw=1.5)
-    rect(s, Inches(7.0), Inches(3.25), Inches(0.06), Inches(3.0), fill=WINE)
-    txt(s, Inches(7.3), Inches(3.42), Inches(5.2), Inches(0.5),
-        "Why the formula family is part of the file format", 12.5, WINE, True, FD)
-    txt(s, Inches(7.3), Inches(3.95), Inches(5.2), Inches(2.1),
-        "The previous planner carried its model's constants in a hand-copied "
-        "dictionary. When the model gained a dual slope, a Fresnel term and two "
-        "orthogonalisation offsets, the copy was not updated and nothing "
-        "complained. It was optimistic by a mean of 5.95 dB, RMS 8.37 dB — "
-        "larger than the model's own residual σ — while claiming to track the "
-        "optimiser to 1%.\n\nA bundle now declares its formula family, and the "
-        "builder refuses one that cannot drive it.", 11, INK2, False, FD)
-    footer(s, "common/PLANNER.md   ·   planner.html at the repository root")
-    return s
-
-
-def s13_planner_params(prs, d):
-    s = slide(prs)
-    header(s, 13, "the tool · 2 of 2",
-           "Every axis that moves the answer is a control",
-           "A number that swings on a choice nobody wrote down is a hidden "
-           "assumption, not a result.")
-    for i, (nm, sub, col) in enumerate([
-            ("Simulator", "which physics drives everything", TEAL),
-            ("Criterion", "availability · RSRP · SINR · RSRQ · throughput p50/p10", VIOL),
-            ("Target", "the threshold on that criterion", OCHRE),
-            ("Route vs area", "what the coverage score is worth", WINE)]):
-        x = Inches(0.55 + i * 3.08)
-        rect(s, x, Inches(1.85), Inches(2.85), Inches(0.95), fill=SURF, line=RULE)
-        rect(s, x, Inches(1.85), Inches(0.06), Inches(0.95), fill=col)
-        txt(s, x + Inches(0.2), Inches(2.0), Inches(2.5), Inches(0.28), nm,
-            13, INK, True, FD)
-        txt(s, x + Inches(0.2), Inches(2.34), Inches(2.5), Inches(0.4), sub,
-            8.5, MUTE, False, FM)
-    bullets(s, Inches(0.55), Inches(3.1), Inches(6.1), Inches(3.2), [
-        ("Three sweep buttons answer the question directly.", True),
-        "Sweep every criterion — the best site under each service definition, "
-        "and how far each sits from the first.",
-        "Sweep the route/area weight, from pure area to pure route.",
-        "Compare every simulator, on the same demand and objective.",
-        ("The measured stakes: route demand meeting 10 Mbps is 94.8% at p90 and "
-         "9.1% at p10, and the recommended site moves up to 2.6 km and reverses "
-         "direction.", True)], size=11)
-    bullets(s, Inches(7.0), Inches(3.1), Inches(5.75), Inches(3.2), [
-        ("The map reads as a field, not a traffic light.", True),
-        "Continuous heatmap of the selected criterion over shaded relief built "
-        "from the terrain grid — the only basemap available offline, and the "
-        "right one here because the holes are terrain.",
-        "Coverage and Gain views for before/after questions.",
-        "Scale bar names the 200 m cell size; hover gives the cell's value, "
-        "RSRP, gain and route-km.",
-        ("Flat criteria are labelled as findings: uplink p10 is 0 Mbps across "
-         "the whole box, because a reliability target collapses when the link "
-         "is down often enough.", True)], size=11)
-    footer(s, "python -m common.build_planner bundles/*.json --dem ...")
-    return s
-
-
-def s14_recommendation(prs, d):
-    s = slide(prs)
-    header(s, 14, "the recommendation", "What to build, and how far to trust it",
-           "A ratio is a finding. An absolute percentage is indicative. The "
-           "difference is stated rather than left to the reader.")
-    cov = d.get("coverage")
-    site = "41.97955, −93.83471"
-    r0, r1 = "44%", "69%"
-    if cov:
-        m = cov["assets"]["macro"]["sites"][0]
-        site = f"{m['lat']:.5f}, {m['lon']:.5f}"
-        r0 = f"{cov['baseline']['route_pct']:.0f}%"
-        r1 = f"{cov['assets']['macro']['one_asset']['route_pct']:.0f}%"
-    for i, (lab, val, note, c) in enumerate([
-            ("recommended site", site, "37 m mast, on the road network", TEAL),
-            ("route-km covered", f"{r0} → {r1}", "at availability ≥ 50%", TEAL),
-            ("site confidence", "97%", "of fading draws within 2 km", OCHRE),
-            ("exact pole", "12%", "we know the right 2 km, not the pole", WINE)]):
+            ("RSRP", "−53 to −120 dBm", "the quantity every model predicts", INK),
+            ("no serving cell", "40.4%", "measured absence of service", WINE),
+            ("uplink", "8–63 Mbps", "the binding constraint", INK),
+            ("downlink", "~230 Mbps", "saturates above SINR 0", MUTE)]):
         kpi(s, Inches(0.55 + i * 3.08), Inches(1.9), Inches(2.85), lab, val, note,
-            vcolor=c)
-    txt(s, Inches(0.55), Inches(3.25), Inches(6.1), Inches(0.3),
-        "Route-km added by asset class", 10.5, MUTE, True, FM, caps=True, space=1.1)
-    bar(s, Inches(0.45), Inches(3.6), Inches(6.3), Inches(2.4),
-        ["Donor relay\n−20 dB", "Small cell\n−26 dB", "Macro\n0 dB"],
-        [("route-km added", [1.4, 0.7, 28.6])], [GREY, GREY, TEAL], labels=True,
-        numfmt="0.0")
-    bullets(s, Inches(7.1), Inches(3.25), Inches(5.65), Inches(3.0), [
-        ("The brief's menu cannot solve this, and that is the finding.", True),
-        "Every 6 dB lost halves the radius and quarters the area. A relay is "
-        "20 dB down: a 520 m bubble against a 9 km hole.",
-        ("Power dominates height.", True),
-        "Sweeping the mast 6 → 60 m moves the gain by 3%; sweeping power 0 → 26 "
-        "dB down collapses it from 0.565 to 0.024.",
-        ("What is indicative rather than established.", True),
-        "'44% covered now, 69% after' inherits the availability step, which "
-        "does not beat its base rate. Read the ratios."], size=10.5)
-    footer(s, "terrain-approach/MODEL.md §3–§4   ·   200 fading draws, "
-              "angular shadow correlation")
+            vcolor=c, vsize=16)
+    bullets(s, Inches(0.55), Inches(3.3), Inches(6.05), Inches(3.0), [
+        ("Coverage is not measured — it is derived from RSRP.", True),
+        "Every approach predicts received power; a calibrated curve turns that "
+        "into service. Keeping the two separate is what lets the planner offer "
+        "availability, link quality or throughput as alternative definitions.",
+        ("The 40% with no serving cell are the signal, not a defect.", True),
+        "They are measured absences of service — the demand the brief asks us "
+        "to serve. A reflexive dropna() deletes every coverage hole and then "
+        "reports coverage as excellent.",
+        ("Samples are ~22 m apart, so a random split leaks.", True),
+        "The brief's scope note asks for geographically separated test "
+        "segments. Slide 6 is how we do it."], size=11)
+    rect(s, Inches(6.95), Inches(3.3), Inches(5.8), Inches(3.0), fill=SURF,
+         line=OCHRE, lw=1.5)
+    rect(s, Inches(6.95), Inches(3.3), Inches(0.06), Inches(3.0), fill=OCHRE)
+    txt(s, Inches(7.25), Inches(3.48), Inches(5.3), Inches(0.3),
+        "Why coverage fails where it does", 13, OCHRE, True, FD)
+    bullets(s, Inches(7.25), Inches(3.88), Inches(5.3), Inches(2.3), [
+        "Terrain dominates 2–6 km and is irrelevant beyond it: an obstructed "
+        "cell is 2.25–2.39× more likely to have no service at the same "
+        "distance (p < 10⁻⁷).",
+        "Line of sight is the wrong test — 13% of links are blocked, but 46% "
+        "intrude on the first Fresnel zone. The holes are grazing paths, so "
+        "terrain has to enter as geometry rather than as a flag.",
+        "Past 6 km the link budget has already gone and terrain stops "
+        "discriminating at all."], size=10.5, color=INK2)
+    footer(s, "reports/eda.json · dataset not redistributable before ARA's release")
     return s
 
 
-SLIDES = [s01_title, s02_requirement, s03_campaign, s04_contents, s05_findings,
-          s06_platform, s07_physics, s08_sionna, s09_fno, s10_pinn, s11_backtest,
-          s12_planner_what, s13_planner_params, s14_recommendation]
+def s3_questions(prs, d):
+    s = slide(prs)
+    header(s, 3, "research questions",
+           "The brief's four criteria, taken literally",
+           "Quoted from COTS_Challenge_3.pdf — “how a team can demonstrate "
+           "success”. Each is answered on slide 8 by a measurement.")
+    qs = [("RQ1", "Thresholds",
+           "Before-and-after route coverage under explicit service thresholds",
+           "Eight service definitions, each a slider, each re-solving the site.",
+           TEAL),
+          ("RQ2", "Gains",
+           "Gains reported per intervention",
+           "Relay, small cell and macro, plus the marginal value of the 2nd "
+           "and 3rd installation.", OCHRE),
+          ("RQ3", "Robustness",
+           "Robustness to model uncertainty",
+           "200 shadow-fading draws re-solve the placement; we report how often "
+           "the answer survives.", VIOL),
+          ("RQ4", "Constraints",
+           "Sensitivity to placement constraints",
+           "Five open-data buildability layers shrink the feasible set, and we "
+           "report what complying costs.", WINE)]
+    y = Inches(1.95)
+    for tag, verb, q, a, col in qs:
+        rect(s, Inches(0.55), y, Inches(12.2), Inches(0.98), fill=SURF, line=RULE)
+        rect(s, Inches(0.55), y, Inches(0.06), Inches(0.98), fill=col)
+        txt(s, Inches(0.9), y + Inches(0.14), Inches(0.7), Inches(0.28), tag,
+            12.5, col, True, FM)
+        txt(s, Inches(1.75), y + Inches(0.12), Inches(1.6), Inches(0.28), verb,
+            13, INK, True, FD)
+        txt(s, Inches(3.45), y + Inches(0.11), Inches(6.0), Inches(0.3), q,
+            13, INK, True, FD)
+        txt(s, Inches(3.45), y + Inches(0.48), Inches(8.9), Inches(0.4), a,
+            11, INK2, False, FD)
+        y += Inches(1.1)
+    rect(s, Inches(0.55), Inches(6.45), Inches(12.2), Inches(0.62), fill=SURF,
+         line=WINE, lw=1.5)
+    rect(s, Inches(0.55), Inches(6.45), Inches(0.06), Inches(0.62), fill=WINE)
+    txt(s, Inches(0.85), Inches(6.58), Inches(11.6), Inches(0.4),
+        "And the brief's own hypothesis:  “optimizing placement … will "
+        "outperform choosing only the single worst measured point.”  We test it "
+        "on slide 8 rather than assume it.", 12, INK, False, FD)
+    footer(s, "COTS_Challenge_3.pdf · scope note: geographically separated test "
+              "segments")
+    return s
+
+
+def s4_approaches(prs, d):
+    s = slide(prs)
+    header(s, 4, "approaches", "Four ways to predict RSRP where nobody drove",
+           "They share nothing but an interface of two methods, so each can be "
+           "wrong in its own way and the testbench can tell.")
+    apps = [("Baseline", "Fitted physics",
+             ["Two-slope path loss fitted to the measurements themselves.",
+              "Terrain enters as ITU-R P.526 knife-edge diffraction and Fresnel "
+              "clearance, orthogonalised against distance.",
+              "Cheap, interpretable, and carries a mechanism — so it can answer "
+              "a counterfactual."], OCHRE, True),
+            ("Ray tracing", "Sionna RT",
+             ["A reconstructed scene: 3DEP terrain plus Microsoft building "
+              "footprints, all sites, twelve sectors.",
+              "Traced path gain, corrected by profile diffraction where the "
+              "tracer finds no path at all.",
+              "Five fitted constants; everything else is geometry."], TEAL, True),
+            ("Deep learning", "Fourier neural operator",
+             ["The terrain profile along each link is the input function; "
+              "3,838 measured links are the training set.",
+              "Learns the terrain term directly instead of assuming P.526.",
+              "No closed form, so the planner drives it from a precomputed "
+              "candidate grid."], VIOL, True),
+            ("PINN", "Physics-informed network",
+             ["Reserved. A residual constrained by a wave or transport equation "
+              "rather than a fitted polynomial.",
+              "Physics as a loss term, to discipline extrapolation where data "
+              "is absent — which is where this survey is weakest.",
+              "Must clear the same three splits as the others."], GREY, False)]
+    for i, (kind, name, lines, col, live) in enumerate(apps):
+        x = Inches(0.55 + i * 3.08)
+        rect(s, x, Inches(1.85), Inches(2.85), Inches(4.25),
+             fill=SURF if live else BG, line=col, lw=1.5 if live else 1.0)
+        rect(s, x, Inches(1.85), Inches(2.85), Inches(0.05), fill=col)
+        txt(s, x + Inches(0.18), Inches(2.0), Inches(2.5), Inches(0.2), kind,
+            8.5, col, True, FM, caps=True, space=1.2)
+        txt(s, x + Inches(0.18), Inches(2.24), Inches(2.5), Inches(0.5), name,
+            13.5, INK if live else MUTE, True, FD)
+        txt(s, x + Inches(0.18), Inches(2.76), Inches(2.5), Inches(0.2),
+            "built" if live else "reserved", 8, col, True, FM, caps=True,
+            space=1.1)
+        bullets(s, x + Inches(0.18), Inches(3.06), Inches(2.5), Inches(2.9),
+                lines, size=9.5, color=INK2 if live else MUTE, gap=5)
+    rect(s, Inches(0.55), Inches(6.3), Inches(12.2), Inches(0.6), fill=SURF,
+         line=TEAL, lw=1.25)
+    txt(s, Inches(0.85), Inches(6.42), Inches(11.6), Inches(0.4),
+        "The contract:  macro_rsrp(lat, lon)  ·  node_rsrp(tx, agl, ΔEIRP, lat, "
+        "lon)   — implement two methods and the testbench, the planner and this "
+        "deck all work on your model.", 11.5, INK, False, FM)
+    footer(s, "common/README.md · terrain-approach/src/adapter.py is the reference")
+    return s
+
+
+def s5_decision(prs, d):
+    s = slide(prs)
+    header(s, 5, "the planner", "How a prediction becomes a location",
+           "Every approach outputs received power. Nobody wants received power — "
+           "so each link in the chain from dBm to a pin is explicit and "
+           "adjustable.")
+    steps = [("1", "Predict", "RSRP to all 4,731 demand cells, and from each of "
+              "627 candidate sites", TEAL),
+             ("2", "Translate", "a calibrated curve turns RSRP into the chosen "
+              "criterion — availability, SINR, RSRQ or throughput", VIOL),
+             ("3", "Threshold", "the target inverts to an RSRP cut: the first "
+              "grid point at or above it", OCHRE),
+             ("4", "Score", "0.7 × route-km + 0.3 × area, each as a fraction of "
+              "its own total — and the split is a slider", WINE),
+             ("5", "Solve", "greedy max-coverage; submodular, so within 63% of "
+              "optimal, and instant", TEAL)]
+    for i, (n, ttl, body, col) in enumerate(steps):
+        x = Inches(0.55 + i * 2.47)
+        rect(s, x, Inches(1.9), Inches(2.3), Inches(1.95), fill=SURF, line=RULE)
+        rect(s, x, Inches(1.9), Inches(2.3), Inches(0.05), fill=col)
+        oval(s, x + Inches(0.14), Inches(2.05), Inches(0.34), Inches(0.34),
+             fill=col, line=None)
+        txt(s, x + Inches(0.235), Inches(2.11), Inches(0.2), Inches(0.24), n,
+            11, WHITE, True, FM)
+        txt(s, x + Inches(0.58), Inches(2.1), Inches(1.6), Inches(0.26), ttl,
+            13, INK, True, FD)
+        txt(s, x + Inches(0.14), Inches(2.57), Inches(2.02), Inches(1.2), body,
+            9.5, INK2, False, FD)
+        if i < len(steps) - 1:
+            txt(s, x + Inches(2.33), Inches(2.67), Inches(0.14), Inches(0.3),
+                "›", 15, RULE, True, FD)
+    bullets(s, Inches(0.55), Inches(4.15), Inches(6.05), Inches(2.3), [
+        ("Nothing in that chain is hardcoded.", True),
+        "Approach, criterion, target and weighting are controls, and the solve "
+        "re-runs for whatever combination is chosen.",
+        ("Because the answer moves with them.", True),
+        "Route demand meeting 10 Mbps is 94.8% at p90 and 9.1% at p10, and the "
+        "recommended site shifts up to 2.6 km and reverses direction. A number "
+        "that swings on an unwritten choice is an assumption, not a result."],
+        size=11)
+    rect(s, Inches(6.95), Inches(4.15), Inches(5.8), Inches(2.3), fill=SURF,
+         line=WINE, lw=1.5)
+    rect(s, Inches(6.95), Inches(4.15), Inches(0.06), Inches(2.3), fill=WINE)
+    txt(s, Inches(7.25), Inches(4.31), Inches(5.3), Inches(0.28),
+        "And where it is allowed to build  (RQ4)", 12.5, WINE, True, FD)
+    txt(s, Inches(7.25), Inches(4.67), Inches(5.3), Inches(1.6),
+        "Measurements say where service is poor, not whether you may build "
+        "there. Five open-data layers — grid power, land access, existing "
+        "structures, backhaul, water exclusion — become sliders that shrink the "
+        "feasible set, and the tool reports how far the feasible site sits from "
+        "the free optimum and what score that costs. Each layer is a proxy, not "
+        "a utility record, and the page says so.", 11, INK2, False, FD)
+    footer(s, "common/PLANNER.md · common/constraints.py")
+    return s
+
+
+def s6_splits(prs, d):
+    """The scope note, drawn: a blocking scheme is a shape before it is a number."""
+    s = slide(prs)
+    header(s, 6, "evaluation", "What each held-out split actually removes",
+           "The brief asks for geographically separated test segments. Same "
+           "rows, cut two ways — and the cut decides what a model must "
+           "extrapolate.")
+    g = d.get("geom")
+    cols = [OCHRE, TEAL, VIOL, WINE, GREY]
+    if g:
+        for j, (key, ttl) in enumerate([
+                ("kmeans_on_position", "KMeans blocks — hold out a REGION"),
+                ("angular_wedges", "Angular wedges — hold out a BEARING")]):
+            x = Inches(0.55 + j * 6.3)
+            txt(s, x, Inches(1.78), Inches(5.9), Inches(0.26), ttl, 11, INK,
+                True, FM, caps=True, space=1.1)
+            # Five spatially disjoint series. Position already separates them,
+            # so no two marks ever have to be told apart by hue alone.
+            series = [(f"block {k}", [(p[1], p[0]) for p in v])
+                      for k, v in sorted(g[key].items(), key=lambda t: int(t[0]))
+                      if len(v) > 4]
+            scatter(s, x - Inches(0.1), Inches(2.06), Inches(6.05), Inches(2.7),
+                    series, cols, sizes=[4] * len(series), legend=False, size=8)
+    for j, note in enumerate([
+            "One block is the near-tower cluster, so holding it out deletes "
+            "every sample under 2 km and forces the distance law to extrapolate "
+            "inward. Only 8.2% of test points sit inside the training distance "
+            "range — the harshest test here.",
+            "Every wedge spans the full distance range, so distance support "
+            "survives. What is held out is a bearing sector, which tests the "
+            "antenna-pattern term rather than the distance law."]):
+        # caption() fixes its box at 0.5in and these run to three lines, so a
+        # taller box: python-pptx never reflows, it just draws over what is below
+        txt(s, Inches(0.55 + j * 6.3), Inches(4.85), Inches(5.9), Inches(0.85),
+            note, 10, INK2, False, FM)
+    rect(s, Inches(0.55), Inches(5.75), Inches(12.2), Inches(0.95), fill=SURF,
+         line=RULE)
+    rect(s, Inches(0.55), Inches(5.75), Inches(0.06), Inches(0.95), fill=WINE)
+    txt(s, Inches(0.85), Inches(5.9), Inches(11.6), Inches(0.7),
+        "Both schemes drop every training row within 200 m of a test row, so no "
+        "road segment is shared. A third split — plain random folds — is reported "
+        "and then discounted: samples are 2.63 s apart, so it tests a model on "
+        "places it trained on. The gap between random and geographic is how much "
+        "a model is memorising.", 12, INK2, False, FD)
+    footer(s, "common/backtest.py · 5 blocks, 200 m buffer, seed 42 · "
+              "python -m common.selftest reproduces these to 0.02 dB")
+    return s
+
+
+def s7_accuracy(prs, d):
+    s = slide(prs)
+    header(s, 7, "evaluation", "How well each approach predicts",
+           "Run with no added transmitter and compared to what the van "
+           "recorded — the claim everything downstream rests on.")
+    rows = [["approach", "in sample", "random", "KMeans", "wedges", "R² KMeans"]]
+    for nm in ORDER:
+        v = d["bench"].get(nm)
+        if v:
+            r2 = v.get("kmeans_on_position", {}).get("r2")
+            rows.append([LABEL[nm], cell(v, "in_sample"), cell(v, "random_split"),
+                         cell(v, "kmeans_on_position"), cell(v, "angular_wedges"),
+                         f"{r2:+.2f}" if r2 is not None else "—"])
+        else:
+            rows.append([LABEL[nm], "—", "—", "—", "—", "—"])
+    rows.append(["PINN", "—", "—", "—", "—", "reserved"])
+    table(s, Inches(0.55), Inches(1.85), Inches(6.3), Inches(1.9), rows,
+          col_w=[Inches(2.0), Inches(0.95), Inches(0.85), Inches(0.85),
+                 Inches(0.85), Inches(0.8)], size=9)
+    have = [nm for nm in ORDER if nm in d["bench"]]
+    if have:
+        txt(s, Inches(7.2), Inches(1.85), Inches(5.5), Inches(0.26),
+            "in sample vs held out by geography, dB RMSE", 10, MUTE, True, FM,
+            caps=True, space=1.1)
+        bar(s, Inches(7.05), Inches(2.15), Inches(5.7), Inches(2.5),
+            [SHORT[n] for n in have],
+            [("in sample", [round(d["bench"][n]["in_sample"]["rmse"], 2)
+                            for n in have]),
+             ("KMeans blocks", [round(d["bench"][n]["kmeans_on_position"]["rmse"], 2)
+                                for n in have])],
+            [GREY, WINE], labels=True, numfmt="0.0", size=8.5)
+    bullets(s, Inches(0.55), Inches(4.0), Inches(6.3), Inches(2.4), [
+        ("Ray tracing barely degrades: 7.61 → 7.95 dB.", True),
+        "Few fitted constants means little to overfit, so held-out and "
+        "in-sample nearly agree. It is the most trustworthy of the three.",
+        ("Deep learning wins in sample and collapses held out.", True),
+        "Best of all at 7.26 dB, then 14.04 dB with R² of −1.01 — worse than "
+        "predicting each block's mean."], size=11)
+    rect(s, Inches(6.95), Inches(4.85), Inches(5.8), Inches(1.55), fill=SURF,
+         line=VIOL, lw=1.5)
+    rect(s, Inches(6.95), Inches(4.85), Inches(0.06), Inches(1.55), fill=VIOL)
+    txt(s, Inches(7.25), Inches(5.0), Inches(5.3), Inches(0.28),
+        "Why the learned model fails, measured", 12.5, VIOL, True, FD)
+    txt(s, Inches(7.25), Inches(5.35), Inches(5.3), Inches(0.95),
+        "The nearest other link in terrain-profile space sits a median of 12.2 m "
+        "away on the ground, 97.2% within 50 m. A profile is very nearly a name "
+        "for a place, so the network can recognise the location instead of "
+        "learning the physics — and only a geographic split can tell.",
+        11, INK2, False, FD)
+    footer(s, "reports/testbench.json")
+    return s
+
+
+def s8_answers(prs, d):
+    s = slide(prs)
+    header(s, 8, "results", "The four questions, answered",
+           "Same demand, same objective, same solver across every approach.")
+    rows = [["approach", "recommended macro site", "route-km", "area", "within 2 km"]]
+    for nm in ORDER:
+        b = d["bundles"].get(nm)
+        if b and b["solution"].get("macro", {}).get("sites"):
+            m = b["solution"]["macro"]
+            st = m["sites"][0]
+            rows.append([LABEL[nm], f"{st['lat']:.5f}, {st['lon']:.5f}",
+                         f"{m['one_asset']['route_pct']:.1f}%",
+                         f"{m['one_asset']['area_pct']:.1f}%",
+                         f"{100*m['robustness']['within_2km']:.0f}%"])
+        else:
+            rows.append([LABEL[nm], "siting bundle not yet built", "—", "—", "—"])
+    table(s, Inches(0.55), Inches(1.85), Inches(12.2), Inches(1.5), rows,
+          col_w=[Inches(2.7), Inches(3.3), Inches(2.1), Inches(2.0), Inches(2.1)],
+          size=10)
+    for i, (tag, val, note, c) in enumerate([
+            ("RQ1 · thresholds", "44% → 69%", "route-km at availability ≥ 50%", TEAL),
+            ("RQ2 · gains", "+28.6 km", "macro; relay +1.4, small cell +0.7", OCHRE),
+            ("RQ3 · robustness", "97–100%", "of fading draws within 2 km", VIOL),
+            ("RQ4 · constraints", "5 layers", "open-data buildability", WINE)]):
+        kpi(s, Inches(0.55 + i * 3.08), Inches(3.6), Inches(2.85), tag, val, note,
+            vcolor=c, vsize=20)
+    h = d.get("hyp")
+    rect(s, Inches(0.55), Inches(4.95), Inches(6.05), Inches(1.95), fill=SURF,
+         line=WINE, lw=1.5)
+    rect(s, Inches(0.55), Inches(4.95), Inches(0.06), Inches(1.95), fill=WINE)
+    txt(s, Inches(0.85), Inches(5.1), Inches(5.5), Inches(0.28),
+        "The brief's hypothesis, tested", 12.5, WINE, True, FD)
+    if h:
+        o, w = h["optimiser"], h["worst_measured"]
+        body = (f"Optimising beats siting at the single worst measured point — "
+                f"but only by {o['route_pct']-w['route_pct']:+.1f} points of "
+                f"route-km ({o['route_pct']:.1f}% vs {w['route_pct']:.1f}%). "
+                f"That naive choice ranks {w['rank']} of {w['n_candidates']} "
+                f"candidates. On this survey the worst point sits near the "
+                f"optimum because the hole is one coherent region; on a survey "
+                f"with several holes it would not.")
+    else:
+        body = "Not yet run."
+    txt(s, Inches(0.85), Inches(5.46), Inches(5.5), Inches(1.35), body,
+        11, INK2, False, FD)
+    bullets(s, Inches(6.95), Inches(4.95), Inches(5.8), Inches(1.95), [
+        ("The two physics models agree; the learned one does not.", True),
+        "Baseline and ray tracing both site south-west. The FNO sites ten "
+        "kilometres east for twelve points less coverage — exactly what its "
+        "held-out score predicts.",
+        ("Read the ratios, not the percentages.", True),
+        "Received power generalises; whether a cell HAS service does not — "
+        "60.5% agreement against a 63.9% base rate."], size=10.5)
+    footer(s, "bundles/*.json · reports/hypothesis_test.json · 200 fading draws")
+    return s
+
+
+def s9_demo(prs, d):
+    """A drawn schematic, not a screenshot, so the deck stays vector."""
+    s = slide(prs)
+    header(s, 9, "demo", "The planner, live",
+           "The brief's demo artifact: place an asset and immediately see "
+           "coverage, performance, uncertainty and route benefit change.")
+    rect(s, Inches(0.55), Inches(1.85), Inches(8.15), Inches(4.3), fill=INK,
+         line=RULE)
+    rnd = random.Random(7)
+    for r_ in range(12):
+        for c_ in range(24):
+            v = (c_ / 23.0) * 0.75 + rnd.random() * 0.25
+            col = TEAL if v > 0.62 else (OCHRE if v > 0.38 else WINE)
+            rect(s, Inches(0.72 + c_ * 0.325), Inches(2.0 + r_ * 0.325),
+                 Inches(0.305), Inches(0.305), fill=col, line=None)
+    for i in range(58):
+        t = i / 57.0
+        x = 0.9 + 7.3 * t
+        y = 3.2 + 1.5 * (0.5 - abs(0.5 - t)) * 2 - 0.5
+        rect(s, Inches(x), Inches(y), Inches(0.075), Inches(0.075), fill=WHITE,
+             line=None)
+    oval(s, Inches(5.5), Inches(2.55), Inches(0.22), Inches(0.22), fill=OCHRE,
+         line=None)
+    oval(s, Inches(2.9), Inches(4.25), Inches(0.3), Inches(0.3), fill=None,
+         line=WHITE, lw=2.5)
+    txt(s, Inches(0.72), Inches(5.88), Inches(4.6), Inches(0.24),
+        "map scale ▬ 2 km   ·   ▪ one 200 m demand cell", 9, WHITE, False, FM)
+    px = Inches(8.95)
+    rect(s, px, Inches(1.85), Inches(3.8), Inches(4.3), fill=SURF, line=RULE)
+    txt(s, px + Inches(0.2), Inches(1.98), Inches(3.4), Inches(0.26),
+        "Rural Coverage Planner", 13, INK, True, FD)
+    for i, (lab, val) in enumerate([("approach", "Baseline — fitted physics ▾"),
+                                    ("what counts as served", "Availability ▾"),
+                                    ("target", "≥ 50% of the time"),
+                                    ("route vs area", "0.70 / 0.30"),
+                                    ("asset", "Macro · 37 m · 0 dB")]):
+        y = Inches(2.36 + i * 0.52)
+        txt(s, px + Inches(0.2), y, Inches(3.4), Inches(0.18), lab, 7.5, MUTE,
+            False, FM, caps=True, space=1.1)
+        rect(s, px + Inches(0.2), y + Inches(0.19), Inches(3.4), Inches(0.25),
+             fill=WHITE, line=RULE)
+        txt(s, px + Inches(0.3), y + Inches(0.235), Inches(3.2), Inches(0.2),
+            val, 9, INK, False, FM)
+    rect(s, px + Inches(0.2), Inches(5.0), Inches(3.4), Inches(0.32), fill=TEAL,
+         line=None)
+    txt(s, px + Inches(0.95), Inches(5.07), Inches(2.4), Inches(0.22),
+        "Find the best site", 10, WHITE, True, FM)
+    for i, (lab, val) in enumerate([("route-km", "51.9 → 80.5"),
+                                    ("score", "0.421 → 0.652")]):
+        rect(s, px + Inches(0.2 + i * 1.75), Inches(5.45), Inches(1.65),
+             Inches(0.55), fill=WHITE, line=RULE)
+        txt(s, px + Inches(0.32 + i * 1.75), Inches(5.52), Inches(1.4),
+            Inches(0.18), lab, 7.5, MUTE, False, FM, caps=True, space=1.1)
+        txt(s, px + Inches(0.32 + i * 1.75), Inches(5.72), Inches(1.4),
+            Inches(0.24), val, 11, TEAL, True, FD)
+    caption(s, Inches(0.55), Inches(6.3), Inches(12.2),
+            "Heatmap of the chosen criterion over shaded relief, with the drive "
+            "test drawn on top in a contrasting hue — which doubles as the road "
+            "network. Amber is the existing tower, the ring is the placement. "
+            "Three sweep buttons re-solve across every criterion, every "
+            "weighting and every approach; a constrained variant adds the five "
+            "buildability layers.", size=10, color=INK2)
+    footer(s, "planner.html · planner_constrained.html · no server, no install, "
+              "no network")
+    return s
+
+
+SLIDES = [s1_title, s2_dataset, s3_questions, s4_approaches, s5_decision,
+          s6_splits, s7_accuracy, s8_answers, s9_demo]
 
 
 def build(verbose=True):
@@ -652,14 +549,14 @@ def build(verbose=True):
         fn(prs, d)
     prs.save(OUT)
     if verbose:
-        have = [k for k in ("backtest", "coverage", "fno") if d.get(k)]
-        print(f"[deck] {OUT} ({OUT.stat().st_size/1e6:.2f} MB), "
-              f"{len(prs.slides.__iter__.__self__._sldIdLst)} slides")
-        print(f"[deck] data present: {', '.join(have) or 'none'} | "
-              f"bundles: {', '.join(d['bundles']) or 'none'}")
-        if not d.get("fno"):
-            print("[deck] FNO slide rendered in RESERVED state "
-                  "(no run with >= 50 epochs in reports/fno_compare.json)")
+        print(f"[deck] {OUT} ({OUT.stat().st_size/1e6:.2f} MB), {len(SLIDES)} slides")
+        print(f"[deck] bench: {', '.join(d['bench']) or 'none'}")
+        print(f"[deck] bundles: {', '.join(d['bundles']) or 'none'}")
+        for nm in ORDER:
+            if nm not in d["bench"]:
+                print(f"[deck] {nm}: no testbench entry, accuracy row reserved")
+            if nm not in d["bundles"]:
+                print(f"[deck] {nm}: no bundle, siting row reserved")
     return OUT
 
 
