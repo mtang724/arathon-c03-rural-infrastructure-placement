@@ -37,6 +37,55 @@ configuration scores **9.77 dB on 800 rows and 8.58 dB on all rows** (`tilt-0` v
 | `h60` | Terrain | medium_dry_ground | 60 | 0 | off | 0.92 | **9.55** | 0.810 | -0.85 | 24.7 | 1947 |
 | `full-diffuse` | Terrain | medium_dry_ground | 30 | 0 | off | 0.82 | **8.61** | 0.824 | +1.72 | 26.1 | 1761 |
 | `h90` | Terrain | medium_dry_ground | 90 | 0 | off | 0.95 | **11.32** | 0.785 | -2.06 | 24.4 | 2032 |
+| `msbld-h4` | Terrain | medium_dry_ground | 30 | 0 | off | 0.80 | **8.29** | 0.832 | +1.73 | 26.3 | 1718 |
+| `msbld-h6` | Terrain | medium_dry_ground | 30 | 0 | off | 0.79 | **8.32** | 0.831 | +1.86 | 26.4 | 1713 |
+| `msbld-h10` | Terrain | medium_dry_ground | 30 | 0 | off | 0.77 | **9.32** | 0.787 | +1.78 | 26.7 | 1681 |
+| `msbld-h4-dump` | Terrain | medium_dry_ground | 30 | 0 | off | 0.80 | **8.31** | 0.830 | +1.67 | 26.3 | 1719 |
+
+
+## Best model: Microsoft footprints + profile diffraction
+
+The two independent improvements stack almost additively. Ishan's building-source change
+(`../terrain-approach/`, and REPORT.md 2.2) and the ITU-R P.526 profile diffraction added
+here fix different deficiencies, and each covers the other's weakness.
+
+| scene | ray tracer only | **+ profile diffraction** |
+|---|---|---|
+| OpenStreetMap buildings | 8.61 | 8.10 |
+| **Microsoft ML buildings** | 8.31 | **7.97** |
+
+Better footprints *cost* link rate (0.82 -> 0.80) because more buildings occlude more
+paths, which would normally mean more unmodelled cells. The hybrid fills those with
+physics, so 1,281 linked points become 1,688 predicted and the coverage penalty vanishes.
+
+### Compared with the terrain-approach on its own protocols
+
+`analysis/compare_splits.py` rescores this model under the two blocking schemes and the
+200 m training buffer that `../terrain-approach/src/backtest.py` uses, because a 2 km
+checkerboard is an easier test: it surrounds every test block with training blocks, and
+the residual correlation length is only ~300 m (`analysis/uncertainty.py`).
+
+| protocol | ray-tracing hybrid | terrain-approach |
+|---|---|---|
+| KMeans blocks + 200 m buffer | **7.92 dB**, R2 0.728 | 9.66 dB, R2 0.154 |
+| angular wedges + 200 m buffer | **8.21 dB**, R2 0.706 | 9.78 dB, R2 0.054 |
+
+Two caveats that no care removes. The row sets differ -- terrain-approach includes outage
+rows and all sites, this uses served Agronomy rows beyond 50 m -- and its test RSRP has
+std ~10.5 dB against ~15.2 dB here, so **R2 is not comparable** (it normalises by test
+variance) and even the RMSE gap is indicative. A clean comparison needs both models
+predicting the same rows.
+
+The buffer drops 19% of training rows and moves this model's RMSE by less than 0.01 dB,
+because the hybrid fits only three parameters. Insensitivity to the training set is why
+it transfers.
+
+**The two approaches converged independently on the same physics.** terrain-approach fits
+ITU-R P.526 knife-edge diffraction and first-Fresnel clearance against 3DEP with a
+4/3-earth bulge; this approach arrived at the same mechanism from a residual diagnostic.
+They also agree on asset power: their menu uses -20 dB for a donor relay and -26 dB for a
+small cell, against -19.2 dB (5 W small cell) and -23.1 dB (2 W repeater) derived
+independently from ARA's published specs in [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 
 ## Paired rescoring — the numbers above are NOT comparable across rows
