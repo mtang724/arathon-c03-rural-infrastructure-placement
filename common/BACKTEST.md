@@ -38,6 +38,48 @@ nothing else.
 
 ---
 
+## Verifying the bench itself
+
+Before trusting any number it gives you, check that the bench still measures what
+it measured before:
+
+```bash
+python -m common.selftest   --adapter terrain-approach/src:adapter:ParametricSimulator   --data terrain-approach/data/labeled_terrain.csv   --site "Agronomy Farm" --expect 7.35,7.33,9.66,9.78
+```
+
+```
+contract .......... PASS
+modelling rows .... 3,838
+  random_split         5 folds, test sizes [783, 734, 795, 758, 768]
+  kmeans_on_position   5 folds, test sizes [645, 1603, 472, 439, 679]
+  angular_wedges       4 folds, test sizes [960, 925, 1393, 545]
+
+reference check (tolerance 0.02 dB)
+  in sample        got   7.35   expected   7.35   PASS
+  random split     got   7.33   expected   7.33   PASS
+  kmeans blocks    got   9.66   expected   9.66   PASS
+  angular wedges   got   9.78   expected   9.78   PASS
+```
+
+The failure this guards against is not a crash. It is the bench quietly changing
+*what it measures* — a different row filter, a different blocking seed, a buffer
+that stopped being applied — after which every number is still plausible and no
+longer comparable with anything published earlier. So the test runs the model
+whose numbers are already written down in
+[`MODEL.md`](../terrain-approach/MODEL.md) and checks they come back.
+
+**To check your own model is wired in**, point `--adapter` at your class and drop
+`--expect`:
+
+```bash
+python -m common.selftest --adapter my-approach/src:adapter:MySimulator   --data my-approach/data/labeled.csv --site "Agronomy Farm"
+```
+
+That runs the contract check — which catches a `node_rsrp` that ignores its EIRP
+deficit, a model returning linear watts, and shapes that silently broadcast —
+then the full bench. Without `--expect` it proves the bench *ran*, not that it is
+unchanged; only a published reference can do that.
+
 ## What it asks
 
 Run the simulator **with no added transmitter** and compare it to what the van
