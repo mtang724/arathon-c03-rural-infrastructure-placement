@@ -56,3 +56,12 @@ sionna-approach/scene/mitsuba/meshes/ms_buildings_h*.ply
 # dumps. Derived from the measurement dataset, so excluded on licence grounds as well
 # as size. sionna-approach/simcache/README.md documents how to regenerate every file.
 sionna-approach/simcache/
+
+# A working copy of scene/ made to hand over the Microsoft building meshes. Contains
+# 375 MB .blend files and the 127 MB Geofabrik PBF; the scene/ rules above do not match
+# a directory with a space in the name.
+sionna-approach/scene copy/
+
+# Coverage bundles from common/bundle.py, same policy as bundles/ above: they carry the
+# demand grid and candidate coordinates. Regenerable by run_pipeline.py.
+reports/bundle_*.json
