@@ -27,6 +27,36 @@ Other approaches are being explored in parallel — add a sibling folder and a r
 
 The measurement dataset itself is **not in this repository** — see Licence below.
 
+### Which columns are actually useful
+
+Measured from the file, not assumed. Verdicts are for modelling service quality and siting;
+an approach with a different objective may weigh them differently.
+
+| column | verdict | evidence |
+|---|---|---|
+| `lat`, `lon` | **essential** | position; everything geometric depends on them |
+| `rsrp` | **essential** | 5.91 bits over 82 levels, std 16.8 dB; best predictor of uplink (rho 0.78) |
+| `cellid` | **essential** | 6 distinct values; identifies the serving sector, and its *null* state is the Challenge-3 signal |
+| `timestamp_local` | **essential** | segments the 4 runs, enables leak-free splits, gives the ~2 dB repeatability floor |
+| `uplink` | **high** | the binding constraint; "underserved" must be defined on it |
+| `sinr` | **moderate, untapped** | 4.71 bits over 45 levels, rho 0.57 with uplink; the route to validating interference |
+| `downlink` | **low** | useful as a contrast - saturates, rho only 0.34, which is what proves uplink binds |
+| `ping_ms` | **low** | rho -0.16 Pearson, **-0.02 Spearman** with uplink - essentially decoupled from radio |
+| `rsrq` | **near-zero** | **1.45 bits** over 12 levels, std 1.22 dB; its apparent correlation is co-variation with RSRP |
+| `band` | **zero** | 1 unique value across all 7,144 rows |
+| `arfcn` | **zero as a feature** | 2 values (`630720`, `-1`) - but decodes to 3.4608 GHz, which is foundational |
+
+Three things that table does not show:
+
+- **`arfcn` is worthless per row and critical once.** It sets the carrier frequency, hence
+  wavelength, Fresnel radii and every material property in a physical model.
+- **The most valuable content is the missingness.** 42% of rows have no valid serving cell,
+  and those are exactly the locations Challenge 3 exists to fix. Any pipeline starting with
+  `dropna()` deletes the answer.
+- **Derived features beat most raw columns.** Distance to the serving site correlates -0.78
+  with RSRP; bearing from the site recovers the sector azimuths; run ID enables the
+  repeatability estimate. All three outrank `ping_ms`, `rsrq`, `band` and `arfcn` combined.
+
 ### Facts about the data worth not rediscovering
 
 - **42% of rows have no serving cell** (`cellid` null, or `FFFFFFFFF` with `arfcn = -1`).
