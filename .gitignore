@@ -26,3 +26,5 @@ sionna-approach/scene/preview_*.png
 __pycache__/
 *.pyc
 .DS_Store
+# 16 MB each, regenerate with make_terrain_variants.py from dem_3dep.tif
+sionna-approach/scene/mitsuba/meshes/Terrain3DEP_s3_*.ply

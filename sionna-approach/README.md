@@ -68,7 +68,9 @@ Overpass endpoint; both terrain and OSM are fed from local files.
 
 ## What has been ruled out
 
-Recorded so nobody repeats them:
+Six hypotheses for the ~9 dB residual, each tested and rejected — see
+[`PARAMETERS.md`](PARAMETERS.md) for provenance and [`RESULTS.md`](RESULTS.md) for the run
+log. Reproduce with `scene/run_experiments.sh`.
 
 - **A finer DEM does not help.** USGS 3DEP 1/3 arc-second (10 m posts, 8.2M triangles)
   scores 9.14 dB against the 30 m mesh's 8.99 dB.
@@ -78,12 +80,30 @@ Recorded so nobody repeats them:
 - **`PathSolver` needs chunking.** 800 receivers solve in 15 s; a single 15,742-receiver
   call ran 30 minutes without finishing.
 
-Still open: vegetation is excluded from the scene entirely, and Iowa shelterbelts attenuate
-at 3.46 GHz even in a bare-field March. That is the leading remaining suspect.
+- **Ground permittivity does not matter** — very dry to wet spans 0.13 dB.
+- **Downtilt is harmful** — monotonically worse from 9.77 dB at 0° to 10.23 dB at 10°.
+- **Earth curvature does not matter** — 0.07 dB, and in the wrong direction.
+- **Vegetation is real but small.** The model over-predicts by +4.5 dB on paths crossing
+  woodland, with a clean dose-response, but only 9.2% of paths do, so a perfect correction
+  buys +0.09 dB overall (`scene/veg_diagnostic.py`).
+
+**The pattern is the finding.** Six independent geometric and material hypotheses each moved
+the error by ≲0.15 dB, and the residual sits at 8–9 dB — squarely the range of log-normal
+shadow fading in rural environments (6–10 dB). The deterministic model may already be at the
+floor of what this geometry can explain. If so, the productive direction is to model the
+*distribution* — a predicted mean with an uncertainty band — rather than chase the mean.
+That is also what Challenge 3 asks for, since it wants placement robust to model
+uncertainty.
+
+Note vegetation still matters for the *decision* even though it barely moves RMSE: the model
+over-predicts precisely in wooded areas, so it will call coverage adequate where it is not.
 
 ## Layout
 
 ```
+PARAMETERS.md    every model parameter with provenance: measured / inferred /
+                 assumed / fitted / ruled out
+RESULTS.md       experiment log, auto-generated from scene/experiments.jsonl
 scene/           scripts, the 30 m Mitsuba scene, and the 10 m DEM for hillshading
 RUNNING.md       full guide: setup, coordinates, radio config, what is ruled out
 HANDOFF.md       engineering log: verified facts, gotchas, open problems
