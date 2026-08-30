@@ -101,22 +101,15 @@ def main():
 
     panels = [
         (0, "a  OpenStreetMap buildings, ray tracer only", A,
-         f"RMSE {A['rmse']:.2f} dB   {A['link']:.0%} of cells modelled\n"
-         f"dark = no modelled path, drawn at the floor"),
+         f"RMSE {A['rmse']:.2f} dB   {A['link']:.0%} of cells modelled"),
         (1, "b  Microsoft ML buildings, ray tracer only", B,
-         f"RMSE {B['rmse']:.2f} dB   {B['link']:.0%} of cells modelled\n"
-         f"dark = no modelled path, drawn at the floor"),
+         f"RMSE {B['rmse']:.2f} dB   {B['link']:.0%} of cells modelled"),
         (2, "c  + ITU-R P.526 profile diffraction", C,
          f"RMSE {C['rmse']:.2f} dB   100% of cells modelled"),
     ]
     for k, title, X, sub in panels:
         ax = fig.add_subplot(gs[0, k]); base(ax)
-        # Unmodelled cells are drawn at the floor so the maps read as maps rather than
-        # grey speckle. This is a DISPLAY choice only -- the surface .npz and every
-        # number in this figure use real values, and -120 is 17 dB below what the UE
-        # actually measured at such points (see the commit message for 654d919).
-        show = np.where(np.isfinite(X["img"]), X["img"], VMIN)
-        im = ax.imshow(show, extent=ext, origin="lower", cmap="viridis", norm=norm,
+        im = ax.imshow(X["img"], extent=ext, origin="lower", cmap="viridis", norm=norm,
                        alpha=0.9, zorder=3, interpolation="nearest")
         ax.set_title(title, loc="left", weight="bold")
         ax.text(0.015, 0.03, sub, transform=ax.transAxes, fontsize=8, va="bottom",
