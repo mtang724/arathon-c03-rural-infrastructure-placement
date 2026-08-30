@@ -7,7 +7,7 @@ comparing hillshaded drainage against the imagery.
 
 NAIP is public domain (USDA), so the resulting figure carries no licence encumbrance.
 """
-import json, math, struct
+import json, math, struct, sys, argparse
 import numpy as np, matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -15,6 +15,14 @@ from matplotlib.collections import PolyCollection
 from matplotlib.colors import LightSource
 from pathlib import Path
 from PIL import Image
+
+AP = argparse.ArgumentParser()
+AP.add_argument("--mesh", default="ames_osm_buildings.ply")
+AP.add_argument("--out", default="scene_validation.png")
+AP.add_argument("--source", default="OpenStreetMap")
+AP.add_argument("--nbox", type=int, default=6, help="buildings in the 2x2 km box")
+AP.add_argument("--nrural", default="365", help="buildings in the rural half")
+A = AP.parse_args()
 
 BASE = Path(__file__).resolve().parent
 SCENE = (-93.8950, 41.9200, -93.6250, 42.0500)          # W S E N
@@ -39,7 +47,7 @@ def read_ply(p):
     rec = np.frombuffer(raw, dtype=np.dtype([("n", "u1"), ("v", "<i4", 3)]), count=nf, offset=off)
     return v, rec["v"]
 
-verts, faces = read_ply(BASE / "mitsuba/meshes/ames_osm_buildings.ply")
+verts, faces = read_ply(BASE / "mitsuba/meshes" / A.mesh)
 blat, blon = toGeo(verts[:, 0], verts[:, 1])
 print(f"buildings mesh: {len(verts):,} verts, {len(faces):,} faces")
 print(f"reprojected extent: lat [{blat.min():.4f},{blat.max():.4f}] lon [{blon.min():.4f},{blon.max():.4f}]")
@@ -82,8 +90,8 @@ pp, n = poly_patches(SCENE)
 ax[0, 1].add_collection(PolyCollection(pp, facecolors="#e8453c", edgecolors="none", alpha=0.9))
 ax[0, 1].plot(site[1], site[0], "^", ms=11, mfc="#ff3b30", mec="white", mew=1.3)
 ax[0, 1].set_xlim(SCENE[0], SCENE[2]); ax[0, 1].set_ylim(SCENE[1], SCENE[3])
-ax[0, 1].set_title("b  Our scene — hillshade + building mesh (red)", loc="left", weight="bold")
-ax[0, 1].text(0.015, 0.03, "96.4% of the 10,063 OSM buildings\nsit in Ames, to the east",
+ax[0, 1].set_title(f"b  Our scene — hillshade + {A.source} buildings (red)", loc="left", weight="bold")
+ax[0, 1].text(0.015, 0.03, f"{A.source}: {A.nrural} buildings in the rural half",
               transform=ax[0, 1].transAxes, fontsize=8, va="bottom",
               bbox=dict(fc="white", ec="#ccc", alpha=0.9, pad=3))
 
@@ -92,7 +100,7 @@ ax[1, 0].imshow(naip_zoom, extent=[ZOOM[0], ZOOM[2], ZOOM[1], ZOOM[3]], origin="
 pp, n = poly_patches(ZOOM)
 ax[1, 0].add_collection(PolyCollection(pp, facecolors="none", edgecolors="#ffcc00", lw=0.7))
 ax[1, 0].set_title("c  Alignment test — mesh reprojected onto imagery", loc="left", weight="bold")
-ax[1, 0].text(0.015, 0.03, "the 6 OSM buildings in this 2x2 km box\nland on real roofs — georeferencing is right",
+ax[1, 0].text(0.015, 0.03, f"{A.nbox} {A.source} buildings in this 2x2 km box,\nreprojected onto the imagery",
               transform=ax[1, 0].transAxes, fontsize=8, va="bottom",
               bbox=dict(fc="white", ec="#ccc", alpha=0.92, pad=3))
 ax[1, 0].plot(site[1], site[0], "^", ms=12, mfc="#ff3b30", mec="white", mew=1.4)
@@ -102,9 +110,13 @@ ax[1, 1].imshow(naip_zoom, extent=[ZOOM[0], ZOOM[2], ZOOM[1], ZOOM[3]], origin="
 ax[1, 1].add_collection(PolyCollection(pp, facecolors="#2b6a8f", edgecolors="#123", lw=0.3, alpha=0.95))
 ax[1, 1].plot(site[1], site[0], "^", ms=12, mfc="#ff3b30", mec="white", mew=1.4)
 ax[1, 1].set_title("d  What Sionna traces — and what is missing", loc="left", weight="bold")
-ax[1, 1].text(0.015, 0.03, "every large farm shed, grain bin and tree line\nvisible in (c) is absent from the model",
+ax[1, 1].text(0.015, 0.03, A.footnote if hasattr(A, "footnote") else
+              ("every large farm shed and grain bin visible\nin (c) is absent from the model"
+               if A.source == "OpenStreetMap" else
+               "the sheds and bins OSM omits are now present;\ntree lines still are not"),
               transform=ax[1, 1].transAxes, fontsize=8, va="bottom",
-              bbox=dict(fc="#fff4f4", ec="#e8453c", alpha=0.95, pad=3))
+              bbox=dict(fc="#fff4f4" if A.source == "OpenStreetMap" else "#f2f8f2",
+                        ec="#e8453c" if A.source == "OpenStreetMap" else "#3a8a3a", alpha=0.95, pad=3))
 
 for a in (ax[1, 0], ax[1, 1]):
     a.set_xlim(ZOOM[0], ZOOM[2]); a.set_ylim(ZOOM[1], ZOOM[3])
@@ -112,11 +124,11 @@ for a in ax.ravel():
     a.set_aspect(1 / math.cos(math.radians(site[0])))
 
 fig.suptitle("Scene validation against public-domain aerial imagery — Agronomy Farm, Ames, Iowa"
-             "   ·   georeferencing verified, building coverage is not",
+             f"   ·   building footprints from {A.source}",
              x=0.012, ha="left", weight="bold", fontsize=11.5, y=0.985)
-fig.text(0.012, 0.012, "Imagery: USGS NAIP (public domain).  Buildings: OpenStreetMap "
-         "(© OpenStreetMap contributors, ODbL), reprojected from the exported Mitsuba mesh.  "
-         "Terrain: USGS 3DEP 1/3 arc-second.", fontsize=7, color="#555")
 fig.tight_layout(rect=[0, 0.022, 1, 0.972])
-fig.savefig(BASE.parent / "scene_validation.png", bbox_inches="tight", facecolor="white")
-print("wrote scene_validation.png")
+fig.text(0.012, 0.012, f"Imagery: USGS NAIP (public domain).  Buildings: {A.source} (ODbL), "
+         "reprojected from the exported mesh.  Terrain: USGS 3DEP 1/3 arc-second.",
+         fontsize=7, color="#555")
+fig.savefig(BASE.parent / A.out, bbox_inches="tight", facecolor="white")
+print("wrote", A.out)

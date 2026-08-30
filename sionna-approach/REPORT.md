@@ -105,7 +105,30 @@ rural half where the measurements are. The ones present land on real roofs, so t
 OpenStreetMap incompleteness rather than a pipeline error — but it means buildings are
 effectively unmodelled along the measured route.
 
-### 2.2 The measurement floor is ~2 dB
+### 2.2 Replacing the building source is the one change that helped
+
+Microsoft's US Building Footprints are ML-extracted from imagery, so rural coverage does not
+depend on volunteer mapping. Substituting them raises building counts within 2 km of the
+serving site from **6 to 37**, and across the rural half from **365 to 2,167**.
+
+| buildings | RMSE | r | link rate |
+|---|---|---|---|
+| OpenStreetMap | 8.58 dB | 0.826 | 0.82 |
+| **Microsoft ML, 4 m** | **8.29 dB** | **0.832** | 0.80 |
+| Microsoft ML, 10 m | 9.32 dB | 0.787 | 0.77 |
+
+**+0.29 dB, roughly twice any other single change tested** — and the only one to improve
+correlation as well. Compare `scene_validation.png` with `scene_validation_ms.png`.
+
+Two honest caveats: link rate falls as the extra buildings occlude more paths, so the test
+sets are not identical (1,762 vs 1,718 points); and building height is fitted, not known,
+since the footprints carry none.
+
+That the *only* effective fix was better input data rather than better physics is consistent
+with §3 — and it suggests the next gains lie in what the scene contains, not in how it is
+traced.
+
+### 2.3 The measurement floor is ~2 dB
 
 The campaign comprises four drive runs. 255 locations were revisited on *separate* runs with
 the same serving cell:
@@ -187,10 +210,11 @@ being graded on an easier subset. Any conclusion about height needs a common lin
   the figure distinguishes them.
 - **The antenna is the largest unmodelled object.** Real sector pattern, electrical tilt and
   EIRP are unknown and collapsed into one scalar; `tr38901` may simply be the wrong pattern.
-- **Buildings are effectively absent where the data is.** Only 6 OSM buildings exist within
-  2 km of the serving site, and only 3.6% of the extract's buildings lie in the rural half.
-  Heights are Blosm defaults for the 93% lacking `building:levels`. Aerial imagery shows
-  many large sheds and grain bins that OpenStreetMap simply does not record.
+- **Building height is fitted, not known.** Microsoft footprints carry no height; 4 m fits
+  best and 10 m clearly does not. Real rural buildings vary from 4 m sheds to 25 m grain
+  bins, so a uniform height is a real approximation.
+- **Vegetation is still absent.** Aerial imagery shows tree lines and shelterbelts that
+  neither building source records.
 - **Water bodies (172) and grain bins (29 tagged) are excluded** and untested. Metal silos
   are strong specular scatterers at 8.7 cm.
 - **The sweep in §3 used 800 sampled rows per run.** Those runs are *paired* (identical

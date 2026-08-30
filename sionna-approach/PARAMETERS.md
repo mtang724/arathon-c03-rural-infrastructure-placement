@@ -41,8 +41,8 @@ Provenance keys — **M** measured in the dataset · **I** inferred from the dat
 | Terrain source | AWS skadi 1 arc-second (~30 m) | **A** | Blosm default |
 | Terrain resolution | 30 m posts | **X** | 10 m 3DEP scores 9.14 vs 8.99 dB — **no gain for 18× the geometry** |
 | Earth curvature | **not modelled** | **X** | 4/3-earth correction (8.5 m at 12 km): 10.02 vs 9.95 dB — marginally *worse*. Physically right (link rate 0.88→0.87 as distant receivers drop below the horizon) but swamped by 94 m of terrain relief |
-| Buildings | 10,079 from OSM | **M** | OSM extract |
-| Building heights | Blosm defaults | **A** | only 665 of 10,079 carry `building:levels`, 443 carry `height` |
+| Buildings | 10,357 from Microsoft ML footprints | **M** | OSM has only 6 within 2 km of the site; see below |
+| Building height | 4 m uniform | **F** | Microsoft footprints carry no height; 4-6 m fits, 10 m is clearly too tall |
 | Vegetation | **excluded** | **X** | real but small — see below |
 | Water bodies | excluded | **A** | 172 `natural=water` available, untested |
 | Silos / grain bins | excluded | **A** | 29 `man_made=silo` tagged; metal, untested |
@@ -125,9 +125,33 @@ Verified against USGS NAIP imagery (`scene/verify_vs_aerial.py`, figure
 - The six that do exist land accurately on real roofs, so this is a **completeness** problem
   in OpenStreetMap, not a georeferencing problem in our pipeline.
 
-Buildings are therefore close to absent along the measured rural route. That weakens
-`itu_concrete` as a tuning target and makes building-derived scattering essentially
-unmodelled where the data actually lives.
+Buildings are therefore close to absent along the measured rural route.
+
+### Fixed with Microsoft ML footprints — and it is the only thing that has helped
+
+Microsoft's US Building Footprints are extracted from imagery rather than contributed by
+volunteers, so rural coverage does not depend on mapper attention.
+
+| source | 2x2 km box | rural half | whole extract |
+|---|---|---|---|
+| OpenStreetMap | 6 | 365 | 10,063 |
+| **Microsoft ML** | **37** | **2,167** | 10,357 |
+
+Held out on the full sample, this is the **largest single improvement measured so far** —
+roughly twice any other change tried:
+
+| buildings | RMSE | r | link rate |
+|---|---|---|---|
+| OSM (baseline) | 8.58 dB | 0.826 | 0.82 |
+| **Microsoft, 4 m** | **8.29 dB** | **0.832** | 0.80 |
+| Microsoft, 6 m | 8.32 dB | 0.831 | 0.79 |
+| Microsoft, 10 m | 9.32 dB | 0.787 | 0.77 |
+
+Two caveats. **Link rate falls** from 0.82 to 0.80 as extra buildings occlude more paths, so
+the test sets differ slightly (1,762 vs 1,718 points) and the comparison is not perfectly
+paired. And **height is a free parameter** — the footprints carry none. 4-6 m fits best,
+which is plausible for single-storey rural buildings, but 10 m is clearly too tall, so this
+is fitted rather than known. Regenerate with `build_ms_buildings.py <height>`.
 
 ## What has been ruled out
 

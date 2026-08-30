@@ -13,10 +13,15 @@ facility-location problem.
 
 ![measured, predicted and held-out validation](coverage_validation.png)
 
-Scene validated against public-domain aerial imagery — georeferencing confirmed,
-OpenStreetMap building coverage found wanting:
+Scene validated against public-domain aerial imagery. Georeferencing is confirmed, but
+OpenStreetMap records only 6 buildings within 2 km of the serving site:
 
-![scene validation against NAIP imagery](scene_validation.png)
+![scene validation, OpenStreetMap buildings](scene_validation.png)
+
+Microsoft's ML-extracted footprints raise that to 37, and improve held-out RMSE from
+8.58 dB to **8.29 dB** — the largest single gain of any change tested:
+
+![scene validation, Microsoft ML buildings](scene_validation_ms.png)
 
 ## Status
 
