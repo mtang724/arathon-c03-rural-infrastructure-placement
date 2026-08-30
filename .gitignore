@@ -68,3 +68,8 @@ reports/bundle_*.json
 # browser-automation scratch from verifying the planner
 .playwright-mcp/
 planner.png
+
+# --- pinn-approach ---------------------------------------------------------
+# Torch checkpoints and cached prediction arrays carry measurement coordinates.
+pinn-approach/data/
+pinn-approach/**/*.pt

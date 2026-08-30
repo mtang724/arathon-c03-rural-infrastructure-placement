@@ -55,7 +55,7 @@ def main():
     df = pd.read_csv(csv, dtype={"cellid": str})
     print(f"      {len(df):,} rows")
 
-    # -- 2. the two simulators, behind one contract --------------------------
+    # -- 2. the simulators, behind one contract ------------------------------
     print("=" * 70); print("[2/4] simulators")
     from common.backtest import Testbench
     bench = Testbench.from_frame(df, serving_site="Agronomy Farm")
@@ -74,6 +74,15 @@ def main():
     sims = [ta.ParametricSimulator(bench.rows),
             sa.SionnaHybridSimulator(bench.rows, only_site="Agronomy Farm"),
             sa.SionnaHybridSimulator(bench.rows)]
+
+    # pinn-approach is optional: it is the only model here that needs torch, and
+    # it is third of three, so a machine without torch should still get a full
+    # pipeline rather than a traceback.
+    try:
+        pa = load_by_path("pa_adapter", ROOT / "pinn-approach" / "src" / "adapter.py")
+        sims.append(pa.from_rows(bench.rows))
+    except Exception as e:
+        print(f"      pinn-approach skipped ({type(e).__name__}: {e})")
     for s in sims:
         print(f"      {s.info.name:<26} sigma {s.sigma_db:5.2f} dB  "
               f"fitted on {s.info.fitted_on_rows:,} rows")
