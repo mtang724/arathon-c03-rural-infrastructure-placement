@@ -77,11 +77,10 @@ weighting, and it re-solves the siting live. Three buttons sweep each of those a
 report how far the recommended site moves. Alongside it, three map views and a six-slide
 deck built from native PowerPoint objects.
 
-> [`terrain-approach/planner.html`](terrain-approach/planner.html) is the older
-> single-model page. Its four analysis tabs have not been ported yet, but its numbers are
-> **superseded**: its JavaScript evaluates an incomplete form of the fitted model — missing
-> the dual slope, the Fresnel term and the orthogonalisation offsets — which makes it
-> optimistic for a new node by a mean of 5.95 dB, RMS 8.37 dB. See
+> The older single-model page has been **deleted**. Its JavaScript evaluated an
+> incomplete form of the fitted model — missing the dual slope, the Fresnel term and the
+> orthogonalisation offsets — leaving it optimistic for a new node by a mean of 5.95 dB,
+> RMS 8.37 dB. Its four analysis tabs have not been ported and are outstanding. See
 > [`common/PLANNER.md`](common/PLANNER.md).
 
 ## Shared context

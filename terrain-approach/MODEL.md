@@ -373,18 +373,20 @@ than a coding error.
 
 ## 5. The tool
 
-> **Superseded.** The tool is now [`../planner.html`](../planner.html), built by
+> **Moved.** The tool is now [`../planner.html`](../planner.html), built by
 > `common/build_planner.py`, and it is parameterised over the simulator, the
 > service criterion and the route/area weighting rather than fixed to
-> availability at 50%. `terrain-approach/planner.html` is kept only for its four
-> analysis tabs, which have not been ported. **Do not quote its numbers** — see
-> the correction below.
+> availability at 50%. The old `terrain-approach/planner.html` and its builders
+> have been **deleted** — the correction below is why. Its four analysis tabs
+> (threshold table, live fading draws, per-asset gains, mast/power sensitivity)
+> were not ported and are the outstanding work.
 
-**A correction.** This section used to claim that `terrain-approach/planner.html`
-tracks the offline optimiser to about 1%. That was true when it was written and
-stopped being true when the model gained its dual slope, Fresnel term and
-orthogonalisation offsets: the page's JavaScript carries a hand-copied subset of
-the fitted constants and was never updated, so it still evaluates
+**A correction, and why the old page was deleted rather than kept.** This section
+used to claim that `terrain-approach/planner.html` tracks the offline optimiser to
+about 1%. That was true when it was written and stopped being true when the model
+gained its dual slope, Fresnel term and orthogonalisation offsets: the page's
+JavaScript carried a hand-copied subset of the fitted constants and was never
+updated, so it evaluated
 
 ```
 b0 + slope*log10(d) - deficit + b_diff * J(v)
@@ -392,9 +394,10 @@ b0 + slope*log10(d) - deficit + b_diff * J(v)
 
 while `rsrp_from_node` evaluates that plus `b_dual*dual` and `b_fres*fres`, both
 orthogonalised. Measured over four candidate sites and all 4,731 demand cells,
-the page is **optimistic by a mean of 5.95 dB, RMS 8.37 dB, up to 31 dB** — which
+the page was **optimistic by a mean of 5.95 dB, RMS 8.37 dB, up to 31 dB** — which
 is larger than the model's own 7.35 dB residual σ. Nothing detected it because
-nothing checked that the copy was complete.
+nothing checked that the copy was complete. A page that wrong is worse than no
+page, so it is gone rather than deprecated.
 
 The replacement carries every coefficient the declared formula family requires,
 and `common/schema.py::validate` refuses a bundle that does not. Against Python
@@ -440,7 +443,6 @@ python src/make_deck.py      # the six-slide deck
 | `coverage_terrain.py` | labelled + DEM | `coverage_terrain.json` |
 | `robustness.py` | " | `robustness.json` |
 | `backtest.py` | " | `backtest.json` |
-| `build_coverage_planner.py` | all of the above | `planner.html` |
 
 `src/config.py` holds every tunable assumption; nothing is hard-coded elsewhere.
 

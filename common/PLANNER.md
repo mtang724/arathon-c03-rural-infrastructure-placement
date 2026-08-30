@@ -143,8 +143,8 @@ pass means "the page will load", not "the page is correct".
 
 ## What is not carried over
 
-`terrain-approach/planner.html` (the single-model page) still has four analysis
-tabs — thresholds, live robustness draws, per-asset gains, and a mast/power
-sensitivity sweep — that this page does not yet have. It also still evaluates
-the **incomplete** formula described above, so treat its *numbers* as superseded
-and its *tabs* as a backlog.
+The single-model page it replaces had four analysis tabs — thresholds, live
+robustness draws, per-asset gains, and a mast/power sensitivity sweep — that this
+page does not yet have. That page has been deleted rather than deprecated,
+because it evaluated the **incomplete** formula described above; the tabs are a
+backlog item and should be rebuilt against the bundle, not resurrected.

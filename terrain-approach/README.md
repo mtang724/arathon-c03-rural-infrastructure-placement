@@ -132,10 +132,11 @@ service criterion (availability, RSRP, SINR, RSRQ, uplink/downlink p50 and p10)
 and the route-versus-area weighting, re-solving the siting for whatever
 combination you pick.
 
-> `terrain-approach/planner.html` is the older single-model page. Its four
-> analysis tabs have not been ported yet, but **its numbers are superseded**: its
-> JavaScript carries an incomplete copy of the fitted constants and is optimistic
-> for a new node by a mean of 5.95 dB, RMS 8.37 dB. See [`MODEL.md`](MODEL.md) §5.
+> The old single-model page and its builders have been **deleted**: their
+> JavaScript carried an incomplete copy of the fitted constants and was optimistic
+> for a new node by a mean of 5.95 dB, RMS 8.37 dB — worse than no page. Its four
+> analysis tabs have not been ported and are outstanding. See
+> [`MODEL.md`](MODEL.md) §5.
 
 Either way it is one self-contained HTML file — no server, no install, no network.
 It carries the terrain grid at 31 m posts and runs the whole chain in JavaScript,
@@ -176,20 +177,16 @@ src/
   fno_compare.py       neural operators vs the diffraction physics
   robustness.py        path-specific shadow fading, four correlation models
   backtest.py          the zero-intervention check
-  build_coverage_planner.py + planner_tpl.py   the tool
   make_deck.py         the six-slide deck
 web/
   eda_template.html        the exploratory write-up, __DATA__ injected at build
   analysis_template.html   the full analysis write-up
   build_eda.py             injects reports/eda.json into the template
-  test_js.py               runs a page's JavaScript under QuickJS against a DOM
-                           shim — catches runtime errors before they blank a page
 reports/               fitted constants and model summaries
 data/                  regenerated locally, never committed
 MODEL.md               the maths, in full
 NEURAL_OPERATOR.md     the deep-learning comparison, and why most of it cannot work
 
-planner.html           the scenario planner — open it directly
 coverage_view.html     terrain + coverage, no dependencies
 coverage_map.html      the same over satellite tiles; open from disk
 survey_extent.html     the survey box and every measurement
