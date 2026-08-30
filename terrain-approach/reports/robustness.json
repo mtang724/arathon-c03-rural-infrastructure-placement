@@ -1,0 +1,169 @@
+{
+  "sigma_db": 7.346354177878046,
+  "n_draws": 200,
+  "rho0": 0.6,
+  "theta_c": 45.0,
+  "winner": {
+    "lat": 41.987064319080126,
+    "lon": -93.82923440307773,
+    "gain": 0.23063439264763158
+  },
+  "models": {
+    "rho = 1  (location-shared, the old model)": {
+      "exact": 0.42,
+      "within_1km": 0.825,
+      "within_2km": 1.0,
+      "within_3km": 1.0,
+      "distinct_winners": 13,
+      "top5": [
+        {
+          "lat": 41.987064319080126,
+          "lon": -93.82923440307773,
+          "freq": 0.42,
+          "m_from_winner": 0
+        },
+        {
+          "lat": 41.9795479,
+          "lon": -93.8347064,
+          "freq": 0.22,
+          "m_from_winner": 950
+        },
+        {
+          "lat": 41.9795582,
+          "lon": -93.8298336,
+          "freq": 0.13,
+          "m_from_winner": 836
+        },
+        {
+          "lat": 41.9795893,
+          "lon": -93.8396723,
+          "freq": 0.055,
+          "m_from_winner": 1198
+        },
+        {
+          "lat": 41.976284584980235,
+          "lon": -93.8219816215671,
+          "freq": 0.05,
+          "m_from_winner": 1340
+        }
+      ]
+    },
+    "rho = 0.5 (constant, 3GPP-style)": {
+      "exact": 0.355,
+      "within_1km": 0.79,
+      "within_2km": 1.0,
+      "within_3km": 0.9999999999999999,
+      "distinct_winners": 18,
+      "top5": [
+        {
+          "lat": 41.987064319080126,
+          "lon": -93.82923440307773,
+          "freq": 0.355,
+          "m_from_winner": 0
+        },
+        {
+          "lat": 41.9795582,
+          "lon": -93.8298336,
+          "freq": 0.15,
+          "m_from_winner": 836
+        },
+        {
+          "lat": 41.9795479,
+          "lon": -93.8347064,
+          "freq": 0.145,
+          "m_from_winner": 950
+        },
+        {
+          "lat": 41.976284584980235,
+          "lon": -93.82923440307773,
+          "freq": 0.055,
+          "m_from_winner": 1199
+        },
+        {
+          "lat": 41.987064319080126,
+          "lon": -93.83648718458836,
+          "freq": 0.05,
+          "m_from_winner": 599
+        }
+      ]
+    },
+    "rho(theta) angular  <- default": {
+      "exact": 0.255,
+      "within_1km": 0.7250000000000001,
+      "within_2km": 0.9850000000000001,
+      "within_3km": 0.9999999999999999,
+      "distinct_winners": 17,
+      "top5": [
+        {
+          "lat": 41.987064319080126,
+          "lon": -93.82923440307773,
+          "freq": 0.255,
+          "m_from_winner": 0
+        },
+        {
+          "lat": 41.9795479,
+          "lon": -93.8347064,
+          "freq": 0.225,
+          "m_from_winner": 950
+        },
+        {
+          "lat": 41.9795582,
+          "lon": -93.8298336,
+          "freq": 0.18,
+          "m_from_winner": 836
+        },
+        {
+          "lat": 41.976284584980235,
+          "lon": -93.82923440307773,
+          "freq": 0.065,
+          "m_from_winner": 1199
+        },
+        {
+          "lat": 41.9795893,
+          "lon": -93.8396723,
+          "freq": 0.06,
+          "m_from_winner": 1198
+        }
+      ]
+    },
+    "rho = 0  (fully independent paths)": {
+      "exact": 0.27,
+      "within_1km": 0.74,
+      "within_2km": 0.985,
+      "within_3km": 1.0,
+      "distinct_winners": 20,
+      "top5": [
+        {
+          "lat": 41.987064319080126,
+          "lon": -93.82923440307773,
+          "freq": 0.27,
+          "m_from_winner": 0
+        },
+        {
+          "lat": 41.9795479,
+          "lon": -93.8347064,
+          "freq": 0.145,
+          "m_from_winner": 950
+        },
+        {
+          "lat": 41.9795582,
+          "lon": -93.8298336,
+          "freq": 0.135,
+          "m_from_winner": 836
+        },
+        {
+          "lat": 41.987064319080126,
+          "lon": -93.8219816215671,
+          "freq": 0.07,
+          "m_from_winner": 599
+        },
+        {
+          "lat": 41.976284584980235,
+          "lon": -93.82923440307773,
+          "freq": 0.065,
+          "m_from_winner": 1199
+        }
+      ]
+    }
+  }
+}

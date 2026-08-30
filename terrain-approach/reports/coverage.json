@@ -1,0 +1,285 @@
+{
+  "weights": {
+    "route": 0.7,
+    "area": 0.3
+  },
+  "avail_target": 0.5,
+  "rsrp_threshold_dbm": -88.34999999998826,
+  "totals": {
+    "route_km": 116.65,
+    "area_km2": 189.24000000000007,
+    "n_cells": 4731,
+    "n_candidates": 627
+  },
+  "assets": {
+    "relay": {
+      "label": "Donor-fed relay",
+      "eirp_deficit_db": 20.0,
+      "outside_brief_menu": false,
+      "service_radius_m": 466,
+      "n_feasible": 260,
+      "n_candidates": 627,
+      "sites": [
+        {
+          "rank": 1,
+          "lat": 42.0085378,
+          "lon": -93.8163845,
+          "kind": "on-route",
+          "dist_from_macro_m": 3799,
+          "donor_rsrp_dbm": -90.2,
+          "cumulative_gain": 0.010979410683091495
+        },
+        {
+          "rank": 2,
+          "lat": 41.9973176,
+          "lon": -93.8154098,
+          "kind": "on-route",
+          "dist_from_macro_m": 4346,
+          "donor_rsrp_dbm": -91.6,
+          "cumulative_gain": 0.019795109782419384
+        },
+        {
+          "rank": 3,
+          "lat": 42.0230789,
+          "lon": -93.7935544,
+          "kind": "on-route",
+          "dist_from_macro_m": 1666,
+          "donor_rsrp_dbm": -81.6,
+          "cumulative_gain": 0.02846078745011399
+        }
+      ],
+      "one_asset": {
+        "route_km": 38.050000000000004,
+        "area_km2": 53.640000000000015,
+        "route_km_added": 1.6499999999999986,
+        "area_km2_added": 0.6799999999999926,
+        "route_pct": 32.618945563651955,
+        "area_pct": 28.344958782498413,
+        "score": 0.31336749529305885
+      },
+      "worst_point_baseline": {
+        "lat": 41.9359817,
+        "lon": -93.7960576,
+        "gain": 0.004274842959266889
+      },
+      "optimiser_vs_worst_point": 2.5683775492361947,
+      "robustness": {
+        "n_draws": 200,
+        "random_pick": 0.0038461538461538464,
+        "exact": 0.1,
+        "within_1km": 0.18,
+        "within_2km": 0.405,
+        "within_3km": 0.9850000000000001
+      }
+    },
+    "smallcell": {
+      "label": "Backhauled small cell",
+      "eirp_deficit_db": 26.0,
+      "outside_brief_menu": false,
+      "service_radius_m": 261,
+      "n_feasible": 627,
+      "n_candidates": 627,
+      "sites": [
+        {
+          "rank": 1,
+          "lat": 41.9938618,
+          "lon": -93.6987224,
+          "kind": "on-route",
+          "dist_from_macro_m": 6883,
+          "donor_rsrp_dbm": -96.4,
+          "cumulative_gain": 0.007044823778159071
+        },
+        {
+          "rank": 2,
+          "lat": 41.9942,
+          "lon": -93.8486543,
+          "kind": "on-route",
+          "dist_from_macro_m": 6882,
+          "donor_rsrp_dbm": -96.4,
+          "cumulative_gain": 0.0139628244745173
+        },
+        {
+          "rank": 3,
+          "lat": 42.0085378,
+          "lon": -93.8163845,
+          "kind": "on-route",
+          "dist_from_macro_m": 3799,
+          "donor_rsrp_dbm": -90.2,
+          "cumulative_gain": 0.02055758395777707
+        }
+      ],
+      "one_asset": {
+        "route_km": 37.5,
+        "area_km2": 53.24000000000002,
+        "route_km_added": 1.0999999999999943,
+        "area_km2_added": 0.28000000000000114,
+        "route_pct": 32.147449635662234,
+        "area_pct": 28.13358697949694,
+        "score": 0.3094329083881264
+      },
+      "worst_point_baseline": {
+        "lat": 41.9359817,
+        "lon": -93.7960576,
+        "gain": 0.0019038819115657635
+      },
+      "optimiser_vs_worst_point": 3.700241982111888,
+      "robustness": {
+        "n_draws": 200,
+        "random_pick": 0.001594896331738437,
+        "exact": 0.01,
+        "within_1km": 0.01,
+        "within_2km": 0.025,
+        "within_3km": 0.025
+      }
+    },
+    "macro": {
+      "label": "Macro-class site",
+      "eirp_deficit_db": 0.0,
+      "outside_brief_menu": true,
+      "service_radius_m": 3167,
+      "n_feasible": 627,
+      "n_candidates": 627,
+      "sites": [
+        {
+          "rank": 1,
+          "lat": 41.9758962,
+          "lon": -93.8404306,
+          "kind": "on-route",
+          "dist_from_macro_m": 7462,
+          "donor_rsrp_dbm": -97.2,
+          "cumulative_gain": 0.19306089383364217
+        },
+        {
+          "rank": 2,
+          "lat": 41.97089471793029,
+          "lon": -93.70593711739694,
+          "kind": "off-route",
+          "dist_from_macro_m": 7894,
+          "donor_rsrp_dbm": -97.8,
+          "cumulative_gain": 0.3666684696237519
+        },
+        {
+          "rank": 3,
+          "lat": 41.9505906,
+          "lon": -93.775515,
+          "kind": "on-route",
+          "dist_from_macro_m": 7833,
+          "donor_rsrp_dbm": -97.7,
+          "cumulative_gain": 0.4839220622422463
+        }
+      ],
+      "one_asset": {
+        "route_km": 60.425000000000004,
+        "area_km2": 83.80000000000004,
+        "route_km_added": 24.025,
+        "area_km2_added": 30.840000000000018,
+        "route_pct": 51.80025717959708,
+        "area_pct": 44.28239272880998,
+        "score": 0.4954489784436095
+      },
+      "worst_point_baseline": {
+        "lat": 41.9359817,
+        "lon": -93.7960576,
+        "gain": 0.07409066409795118
+      },
+      "optimiser_vs_worst_point": 2.6057384716974195,
+      "robustness": {
+        "n_draws": 200,
+        "random_pick": 0.001594896331738437,
+        "exact": 0.065,
+        "within_1km": 0.5600000000000002,
+        "within_2km": 0.8300000000000001,
+        "within_3km": 0.9950000000000001
+      }
+    }
+  },
+  "baseline": {
+    "score": 0.30238808460996736,
+    "route_km": 36.400000000000006,
+    "area_km2": 52.96000000000002,
+    "route_pct": 31.204457779682816,
+    "area_pct": 27.9856267173959
+  },
+  "availability_sweep": {
+    "0.25": {
+      "rsrp_threshold": -99.0999999999907,
+      "before": {
+        "route_pct": 95.69224174882126,
+        "area_pct": 89.53709575142676
+      },
+      "relay": {
+        "gain": 0.02216146377646333
+      },
+      "smallcell": {
+        "gain": 0.009817916736542642
+      },
+      "macro": {
+        "gain": 0.06154302050397109
+      }
+    },
+    "0.40": {
+      "rsrp_threshold": -89.29999999998847,
+      "before": {
+        "route_pct": 36.905272181740244,
+        "area_pct": 32.97400126823082
+      },
+      "relay": {
+        "gain": 0.011233056846693346
+      },
+      "smallcell": {
+        "gain": 0.007108235319059575
+      },
+      "macro": {
+        "gain": 0.20484610402265097
+      }
+    },
+    "0.50": {
+      "rsrp_threshold": -88.34999999998826,
+      "before": {
+        "route_pct": 31.204457779682816,
+        "area_pct": 27.9856267173959
+      },
+      "relay": {
+        "gain": 0.010979410683091495
+      },
+      "smallcell": {
+        "gain": 0.007044823778159071
+      },
+      "macro": {
+        "gain": 0.19306089383364217
+      }
+    },
+    "0.65": {
+      "rsrp_threshold": -79.7499999999863,
+      "before": {
+        "route_pct": 7.393913416202314,
+        "area_pct": 6.42570281124498
+      },
+      "relay": {
+        "gain": 0.0043042248176952125
+      },
+      "smallcell": {
+        "gain": 0.0035773160093619666
+      },
+      "macro": {
+        "gain": 0.05835530630655364
+      }
+    },
+    "0.75": {
+      "rsrp_threshold": -79.69999999998629,
+      "before": {
+        "route_pct": 7.393913416202314,
+        "area_pct": 6.404565630944832
+      },
+      "relay": {
+        "gain": 0.0043042248176952125
+      },
+      "smallcell": {
+        "gain": 0.0035773160093619805
+      },
+      "macro": {
+        "gain": 0.05822848322475277
+      }
+    }
+  }
+}
