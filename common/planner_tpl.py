@@ -53,6 +53,20 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 padding:9px;border-radius:5px;cursor:pointer}
 .act.ghost{background:transparent;border:1px solid var(--ln);color:var(--mut)}
 .note{font-size:11px;color:var(--mut);margin-top:6px}
+.lg{margin-top:8px}
+.lgbar{height:12px;border-radius:3px;border:1px solid var(--ln);position:relative}
+.lgtick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg);
+box-shadow:0 0 0 1px var(--pan)}
+.lgax{display:flex;justify-content:space-between;font-size:10px;color:var(--mut);
+margin-top:3px;font-variant-numeric:tabular-nums}
+#tip{position:absolute;pointer-events:none;display:none;z-index:5;
+background:rgba(10,13,17,.94);border:1px solid var(--ln);border-radius:4px;
+padding:6px 8px;font-size:11px;line-height:1.45;white-space:nowrap}
+#tip b{color:var(--acc)}
+.scale{position:absolute;right:12px;bottom:12px;background:rgba(10,13,17,.85);
+border:1px solid var(--ln);border-radius:4px;padding:5px 9px;font-size:10px;
+color:var(--mut);display:flex;align-items:center;gap:7px}
+.sbar{height:3px;background:var(--fg);border-radius:1px}
 .warn{border-left:2px solid var(--warn);padding-left:8px;color:var(--warn);font-size:11px;margin-top:8px}
 .tag{display:inline-block;font-size:10px;border:1px solid var(--ln);border-radius:3px;
 padding:1px 5px;color:var(--mut);margin-left:5px}
@@ -60,8 +74,10 @@ padding:1px 5px;color:var(--mut);margin-left:5px}
 <div class="app">
  <div id="stage">
   <canvas id="cv"></canvas>
+  <div id="tip"></div>
   <div class="hint" id="hint">click to place &middot; drag to pan &middot; scroll to zoom</div>
   <div class="busy" id="busy">computing&hellip;</div>
+  <div class="scale" id="scale"><div class="sbar" id="sbar"></div><span id="slab"></span></div>
  </div>
  <div id="side">
   <h1>Rural Coverage Planner</h1>
@@ -70,6 +86,18 @@ padding:1px 5px;color:var(--mut);margin-left:5px}
   <h2>Simulator</h2>
   <select id="sim"></select>
   <div class="note" id="simNote"></div>
+
+  <h2>Map</h2>
+  <div class="seg" id="view">
+   <button data-v="heat" class="on">Heatmap</button>
+   <button data-v="cover">Coverage</button>
+   <button data-v="gain">Gain</button>
+  </div>
+  <div class="lg">
+   <div class="lgbar" id="lgbar"><div class="lgtick" id="lgtick"></div></div>
+   <div class="lgax"><span id="lgLo"></span><span id="lgMid"></span><span id="lgHi"></span></div>
+  </div>
+  <div class="note" id="lgNote"></div>
 
   <h2>What counts as served</h2>
   <select id="crit"></select>
@@ -135,6 +163,7 @@ const R_EARTH=6371000;
 let VW=0,VH=0,zoom=1,panX=0,panY=0,drag=null,placed=null;
 let bi=0,asset='macro',agl=0,dfc=0,critKey='',target=0,wRoute=0.70;
 let matCache={};                 // "bi|agl" -> Float32Array(nCand*nCell)
+let view='heat',domCache={},relief=null;
 
 function B(){return D.bundles[bi];}
 function nCells(){return B().grid.lat.length;}
@@ -276,11 +305,78 @@ function solve(M,k,cb){
  cb(picks);
 }
 
+/* ---------------- colour ---------------- */
+/* One hue, light to dark: the sequential rule for a continuous magnitude. The
+   ramp is REVERSED against this dark surface so that "near zero" is the step
+   closest to the background and recedes, exactly as the lightest step would on
+   a light surface. A rainbow would encode magnitude as hue, which reads as
+   category and is the classic heatmap mistake. */
+const RAMP=['#0d366b','#104281','#184f95','#1c5cab','#256abf','#2a78d6','#3987e5',
+            '#5598e7','#6da7ec','#86b6ef','#9ec5f4','#b7d3f6','#cde2fb'];
+const RGB=RAMP.map(h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),
+                       parseInt(h.slice(5,7),16)]);
+function ramp(t){
+ t=Math.min(1,Math.max(0,t));
+ const x=t*(RGB.length-1),i=Math.min(RGB.length-2,Math.floor(x)),f=x-i;
+ const a=RGB[i],b=RGB[i+1];
+ return 'rgb('+Math.round(a[0]+(b[0]-a[0])*f)+','+Math.round(a[1]+(b[1]-a[1])*f)
+   +','+Math.round(a[2]+(b[2]-a[2])*f)+')';
+}
+/* criterion value at a predicted RSRP: the same curve the threshold inverts */
+function critAt(r){
+ const b=B(),c=b.objective.criteria[critKey],g=b.objective.rsrp_grid;
+ const step=(g[g.length-1]-g[0])/(g.length-1);
+ let k=Math.round((r-g[0])/step);
+ k=Math.min(c.value.length-1,Math.max(0,k));
+ return c.value[k];
+}
+/* Colour domain from the 2nd-98th percentile of the BASELINE field, so the ramp
+   spends its range where the data is instead of on a couple of outliers, and so
+   it does not shift under the map every time a site is placed. */
+function domain(){
+ const key=bi+'|'+critKey;
+ if(domCache[key])return domCache[key];
+ const b=B(),v=b.baseline_rsrp_dbm.map(critAt).sort((x,y)=>x-y);
+ const lo=v[Math.floor(0.02*(v.length-1))],hi=v[Math.floor(0.98*(v.length-1))];
+ return (domCache[key]=[lo,hi>lo?hi:lo+1e-6]);
+}
+function fmtV(v){
+ const u=B().objective.criteria[critKey].unit;
+ if(u==='fraction')return Math.round(v*100)+'%';
+ if(u==='Mbps')return v.toFixed(v<10?1:0)+' Mbps';
+ return v.toFixed(0)+' '+u;
+}
+
 /* ---------------- rendering ---------------- */
 function proj(la,lo){const b=D.bounds,kx=Math.cos(42*Math.PI/180);
  const w=(b[3]-b[1])*kx,h=(b[2]-b[0]);
  const sc=Math.min(VW/w,VH/h)*zoom;
  return [(lo-b[1])*kx*sc+panX+(VW-w*sc)/2,(b[2]-la)*sc+panY+(VH-h*sc)/2,sc];
+}
+/* Shaded relief from the terrain grid the page already carries. It is the only
+   basemap available offline -- no tiles, no network -- and on this survey it is
+   the RIGHT one anyway: the coverage holes are terrain, so the ground that
+   causes them should be visible under them. */
+function buildRelief(){
+ const M=D.dem;
+ if(!M||M.ny<4||M.nx<4)return null;
+ const c=document.createElement('canvas');c.width=M.nx;c.height=M.ny;
+ const g=c.getContext('2d'),im=g.createImageData(M.nx,M.ny);
+ const ns=Math.abs(M.dlat)*111320, ew=Math.abs(M.dlon)*111320*Math.cos(42*Math.PI/180);
+ for(let i=0;i<M.ny;i++)for(let j=0;j<M.nx;j++){
+  const i0=Math.max(0,i-1),i1=Math.min(M.ny-1,i+1);
+  const j0=Math.max(0,j-1),j1=Math.min(M.nx-1,j+1);
+  const dzdx=(M.z[i*M.nx+j1]-M.z[i*M.nx+j0])/((j1-j0)*ew);
+  const dzdy=(M.z[i1*M.nx+j]-M.z[i0*M.nx+j])/((i1-i0)*ns);
+  // illuminate from the north-west, the cartographic convention
+  const nz=1/Math.sqrt(dzdx*dzdx+dzdy*dzdy+1);
+  const sh=Math.max(0,(-0.5*dzdx*8+0.5*dzdy*8+1)*nz);
+  const v=Math.round(18+40*Math.min(1,sh));
+  const k=(i*M.nx+j)*4;
+  im.data[k]=v;im.data[k+1]=v+2;im.data[k+2]=v+6;im.data[k+3]=255;
+ }
+ g.putImageData(im,0,0);
+ return {cv:c,n:M.lat0,w:M.lon0,s:M.lat0+M.dlat*(M.ny-1),e:M.lon0+M.dlon*(M.nx-1)};
 }
 function draw(){
  const b=B();cx.setTransform(1,0,0,1,0,0);cx.clearRect(0,0,VW,VH);
@@ -288,21 +384,87 @@ function draw(){
  const base=b.baseline_rsrp_dbm;
  const after=placed?placed.arr:null;
  const cd=D.cell_deg,kx=Math.cos(42*Math.PI/180);
+
+ if(relief){
+  const a=proj(relief.n,relief.w),c=proj(relief.s,relief.e);
+  cx.globalAlpha=1;cx.drawImage(relief.cv,a[0],a[1],c[0]-a[0],c[1]-a[1]);
+ }
+ const dm=domain();
  for(let i=0;i<b.grid.lat.length;i++){
   const p=proj(b.grid.lat[i]+cd/2,b.grid.lon[i]-cd/2/kx),sc=p[2];
   const w=cd*kx*sc,h=cd*sc;
   if(p[0]<-w||p[0]>VW||p[1]<-h||p[1]>VH)continue;
-  const wasOn=base[i]>=thr, nowOn=after?(Math.max(base[i],after[i])>=thr):wasOn;
-  let col=null;
-  if(wasOn)col='rgba(61,220,151,.20)';
-  else if(nowOn)col='rgba(77,163,255,.55)';
-  else col='rgba(255,107,107,.16)';
-  cx.fillStyle=col;cx.fillRect(p[0],p[1],Math.max(1,w),Math.max(1,h));
+  const now=after?Math.max(base[i],after[i]):base[i];
+  let col,al=1;
+  if(view==='cover'){
+   const wasOn=base[i]>=thr,nowOn=now>=thr;
+   col=wasOn?'rgba(61,220,151,.30)':(nowOn?'rgba(77,163,255,.62)':'rgba(255,107,107,.18)');
+  }else if(view==='gain'){
+   const d=critAt(now)-critAt(base[i]);
+   if(d<=1e-9)continue;
+   col=ramp(d/Math.max(1e-9,dm[1]-dm[0]));al=.85;
+  }else{
+   col=ramp((critAt(now)-dm[0])/(dm[1]-dm[0]));al=.78;
+  }
+  cx.globalAlpha=al;cx.fillStyle=col;
+  cx.fillRect(p[0],p[1],Math.max(1,w),Math.max(1,h));
+ }
+ // the driven route: where demand was actually measured, not assumed
+ cx.globalAlpha=1;cx.strokeStyle='rgba(230,237,243,.20)';cx.lineWidth=1;
+ for(let i=0;i<b.grid.lat.length;i++){
+  if(b.grid.route_km[i]<=0)continue;
+  const p=proj(b.grid.lat[i]+cd/2,b.grid.lon[i]-cd/2/kx),sc=p[2];
+  const w=cd*kx*sc,h=cd*sc;
+  if(p[0]<-w||p[0]>VW||p[1]<-h||p[1]>VH)continue;
+  cx.strokeRect(p[0]+.5,p[1]+.5,Math.max(1,w)-1,Math.max(1,h)-1);
  }
  const m=proj(b.macro.lat,b.macro.lon);
  cx.fillStyle='#ffb454';cx.beginPath();cx.arc(m[0],m[1],5,0,7);cx.fill();
+ cx.strokeStyle='#0e1116';cx.lineWidth=2;cx.stroke();
  if(placed){const q=proj(placed.lat,placed.lon);
+  cx.strokeStyle='#e6edf3';cx.lineWidth=3;cx.beginPath();cx.arc(q[0],q[1],7,0,7);cx.stroke();
   cx.strokeStyle='#4da3ff';cx.lineWidth=2;cx.beginPath();cx.arc(q[0],q[1],7,0,7);cx.stroke();}
+ drawScale();
+}
+function drawScale(){
+ const sc=proj(D.bounds[0],D.bounds[1])[2];
+ const mPerPx=1/(sc/111320);
+ let m=1000;const targets=[100,200,500,1000,2000,5000,10000];
+ for(const t of targets){if(t/mPerPx<=160){m=t;}}
+ $('sbar').style.width=Math.round(m/mPerPx)+'px';
+ $('slab').textContent=(m>=1000?(m/1000)+' km':m+' m')+' · '+
+   B().grid.grid_m.toFixed(0)+' m cells';
+}
+function legend(){
+ const b=B(),c=b.objective.criteria[critKey],dm=domain();
+ const stops=RAMP.map((h,i)=>h+' '+Math.round(100*i/(RAMP.length-1))+'%').join(',');
+ $('lgbar').style.background='linear-gradient(90deg,'+stops+')';
+ const t=(critAt(thresholdDbm())-dm[0])/(dm[1]-dm[0]);
+ const tk=$('lgtick');
+ if(t>=0&&t<=1){tk.style.display='block';tk.style.left=(100*t)+'%';}
+ else tk.style.display='none';
+ $('lgLo').textContent=fmtV(dm[0]);
+ $('lgMid').textContent=c.label;
+ $('lgHi').textContent=fmtV(dm[1]);
+ /* A criterion can be flat across the whole survey, and that is a result rather
+    than a bug: with most route passes unavailable more than 10% of the time, the
+    p10 of experienced throughput is pinned at zero however fast the link is when
+    it works. Say so, instead of painting a ramp over a constant. */
+ if(dm[1]-dm[0]<=1e-6){
+  $('lgNote').innerHTML='<span style="color:var(--warn)">'+c.label+' is '
+   +fmtV(dm[0])+' across essentially the whole survey box, so the map is flat. '
+   +'That is a finding, not a rendering fault: a reliability criterion collapses '
+   +'when the link is down often enough.</span>';
+  return;
+ }
+ $('lgNote').textContent=view==='cover'
+  ? 'Green: served before. Blue: fixed by this placement. Red: still unserved. '
+    +'Cells are '+b.grid.grid_m.toFixed(0)+' m; the tick marks the current target.'
+  : (view==='gain'
+     ? 'Improvement over the baseline, in '+c.unit+'. Unchanged cells are left '
+       +'showing bare terrain.'
+     : c.label+' after placement, 2nd-98th percentile of the baseline field. '
+       +'The tick marks the current target.');
 }
 
 /* ---------------- UI ---------------- */
@@ -496,7 +658,35 @@ function refreshAll(){
  if(!b.objective.criteria[critKey])critKey=b.objective.default_criterion;
  target=b.objective.criteria[critKey].default_threshold;
  placed=null;$('best').innerHTML='';$('site').innerHTML='';
- refreshCrit();refreshModel();refreshKPI();draw();
+ if(!relief)relief=buildRelief();
+ refreshCrit();refreshModel();refreshKPI();legend();draw();
+}
+function tip(e){
+ if(drag&&drag.m){$('tip').style.display='none';return;}
+ const b=B(),r=cv.getBoundingClientRect(),bd=D.bounds,kx=Math.cos(42*Math.PI/180);
+ const w=(bd[3]-bd[1])*kx,h=(bd[2]-bd[0]),sc=Math.min(VW/w,VH/h)*zoom;
+ const x=e.clientX-r.left-panX-(VW-w*sc)/2, y=e.clientY-r.top-panY-(VH-h*sc)/2;
+ const la=bd[2]-y/sc, lo=bd[1]+x/(kx*sc), cd=D.cell_deg;
+ let bi2=-1,bd2=1e9;
+ for(let i=0;i<b.grid.lat.length;i++){
+  const d=Math.abs(b.grid.lat[i]-la)+Math.abs(b.grid.lon[i]-lo)*kx;
+  if(d<bd2){bd2=d;bi2=i;}
+ }
+ const el=$('tip');
+ if(bi2<0||bd2>cd){el.style.display='none';return;}
+ const base=b.baseline_rsrp_dbm[bi2];
+ const now=placed?Math.max(base,placed.arr[bi2]):base;
+ const thr=thresholdDbm();
+ let s='<b>'+fmtV(critAt(now))+'</b> &middot; '+B().objective.criteria[critKey].label
+  +'<br>RSRP '+now.toFixed(1)+' dBm'
+  +(now>base?' <span style="color:#3ddc97">(+'+(now-base).toFixed(1)+')</span>':'')
+  +'<br>'+(now>=thr?'<span style="color:#3ddc97">served</span>'
+                   :'<span style="color:#ff6b6b">not served</span>')
+  +' &middot; '+b.grid.route_km[bi2].toFixed(2)+' route-km in this '
+  +b.grid.grid_m.toFixed(0)+' m cell';
+ el.innerHTML=s;el.style.display='block';
+ el.style.left=Math.min(VW-230,e.clientX-r.left+14)+'px';
+ el.style.top=Math.max(4,e.clientY-r.top-56)+'px';
 }
 function init(){
  const b0=D.bundles[0];
@@ -516,11 +706,18 @@ function init(){
  $('sim').addEventListener('change',e=>{bi=+e.target.value;matCache={};refreshAll();});
  $('crit').addEventListener('change',e=>{critKey=e.target.value;
    target=B().objective.criteria[critKey].default_threshold;
-   refreshCrit();refreshKPI();draw();});
+   refreshCrit();refreshKPI();legend();draw();});
  $('thr').addEventListener('input',e=>{target=+e.target.value;
    $('thrV').textContent=fmtT();const d=thresholdDbm();
    $('thrDb').textContent=isFinite(d)?d.toFixed(1):'unreachable';
-   refreshKPI();draw();});
+   refreshKPI();legend();draw();});
+ $('view').addEventListener('click',e=>{const v=e.target.getAttribute('data-v');
+   if(!v)return;view=v;
+   Array.prototype.forEach.call($('view').children,
+     x=>x.className=(x.getAttribute('data-v')===v?'on':''));
+   legend();draw();});
+ cv.addEventListener('mousemove',tip);
+ cv.addEventListener('mouseleave',()=>{$('tip').style.display='none';});
  $('w').addEventListener('input',e=>{wRoute=+e.target.value/100;
    $('wV').textContent=wRoute.toFixed(2);refreshKPI();});
  $('agl').addEventListener('input',e=>{agl=+e.target.value;
