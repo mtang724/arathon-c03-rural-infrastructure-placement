@@ -1,0 +1,195 @@
+{
+  "fit": {
+    "orth_fres": [
+      5.21923978400192,
+      -1.246316169827247
+    ],
+    "orth_diff": [
+      -3.093037801190796,
+      1.4110243301348484
+    ],
+    "break_m": 3000.0,
+    "b0": -21.712222972310123,
+    "slope": -18.000000000000007,
+    "az": [
+      -4.8780476606514815,
+      2.511284114317271
+    ],
+    "b_diff": -0.7325494821394564,
+    "b_dual": -15.528444265359347,
+    "b_fres": 7.327137373432593,
+    "sigma": 7.346354177878046,
+    "n_exponent": 1.8000000000000007,
+    "n_far": 3.3528444265359356,
+    "n": 3838
+  },
+  "avail_target": 0.5,
+  "rsrp_threshold": -90.04999999998864,
+  "weights": {
+    "route": 0.7,
+    "area": 0.3
+  },
+  "totals": {
+    "route_km": 116.65,
+    "area_km2": 189.24000000000007
+  },
+  "baseline": {
+    "score": 0.42148053037380184,
+    "route_km": 51.849999999999994,
+    "area_km2": 69.60000000000004,
+    "route_pct": 44.449207029575646,
+    "area_pct": 36.77869372225746
+  },
+  "assets": {
+    "relay": {
+      "label": "Donor-fed relay",
+      "agl_m": 10.0,
+      "deficit_db": 20.0,
+      "n_feasible": 260,
+      "sites": [
+        {
+          "rank": 1,
+          "lat": 42.0085378,
+          "lon": -93.8163845,
+          "kind": "on-route",
+          "ground_m": 340.05851557100794,
+          "dist_from_macro_m": 3799,
+          "cumulative_gain": 0.00901211723062545
+        },
+        {
+          "rank": 2,
+          "lat": 42.0084479,
+          "lon": -93.8422453,
+          "kind": "on-route",
+          "ground_m": 346.985817858893,
+          "dist_from_macro_m": 5842,
+          "cumulative_gain": 0.012883292594657314
+        },
+        {
+          "rank": 3,
+          "lat": 41.9942954,
+          "lon": -93.833689,
+          "kind": "on-route",
+          "ground_m": 345.61765610358646,
+          "dist_from_macro_m": 5787,
+          "cumulative_gain": 0.016564233335988
+        }
+      ],
+      "one_asset": {
+        "route_km": 53.225,
+        "area_km2": 70.08000000000004,
+        "route_km_added": 1.375000000000007,
+        "area_km2_added": 0.480000000000004,
+        "route_pct": 45.627946849549936,
+        "area_pct": 37.03233988585923,
+        "score": 0.4304926476044273
+      },
+      "robustness": {
+        "exact": 0.52,
+        "within_1km": 0.6100000000000001,
+        "within_2km": 0.6150000000000001,
+        "random_pick": 0.0038461538461538464
+      }
+    },
+    "smallcell": {
+      "label": "Backhauled small cell",
+      "agl_m": 10.0,
+      "deficit_db": 26.0,
+      "n_feasible": 627,
+      "sites": [
+        {
+          "rank": 1,
+          "lat": 41.9942,
+          "lon": -93.8486543,
+          "kind": "on-route",
+          "ground_m": 341.2825053517323,
+          "dist_from_macro_m": 6882,
+          "cumulative_gain": 0.004327423167527544
+        },
+        {
+          "rank": 2,
+          "lat": 41.9796348,
+          "lon": -93.8547601,
+          "kind": "on-route",
+          "ground_m": 328.5114378372067,
+          "dist_from_macro_m": 8135,
+          "cumulative_gain": 0.00833160512195652
+        },
+        {
+          "rank": 3,
+          "lat": 42.0085378,
+          "lon": -93.8163845,
+          "kind": "on-route",
+          "ground_m": 340.05851557100794,
+          "dist_from_macro_m": 3799,
+          "cumulative_gain": 0.012099155754019875
+        }
+      ],
+      "one_asset": {
+        "route_km": 52.550000000000004,
+        "area_km2": 69.68000000000004,
+        "route_km_added": 0.70000000000001,
+        "area_km2_added": 0.0799999999999983,
+        "route_pct": 45.04929275610802,
+        "area_pct": 36.82096808285775,
+        "score": 0.4258079535413294
+      },
+      "robustness": {
+        "exact": 0.295,
+        "within_1km": 0.5650000000000001,
+        "within_2km": 0.7,
+        "random_pick": 0.001594896331738437
+      }
+    },
+    "macro": {
+      "label": "Macro-class site",
+      "agl_m": 36.576,
+      "deficit_db": 0.0,
+      "n_feasible": 627,
+      "sites": [
+        {
+          "rank": 1,
+          "lat": 41.9795479,
+          "lon": -93.8347064,
+          "kind": "on-route",
+          "ground_m": 338.2271259030049,
+          "dist_from_macro_m": 6839,
+          "cumulative_gain": 0.23937124181976188
+        },
+        {
+          "rank": 2,
+          "lat": 41.9650155,
+          "lon": -93.7072535,
+          "kind": "on-route",
+          "ground_m": 318.0701817127994,
+          "dist_from_macro_m": 8296,
+          "cumulative_gain": 0.41840901177747747
+        },
+        {
+          "rank": 3,
+          "lat": 41.9505917,
+          "lon": -93.765513,
+          "kind": "on-route",
+          "ground_m": 328.60155088232074,
+          "dist_from_macro_m": 7859,
+          "cumulative_gain": 0.47836359084905966
+        }
+      ],
+      "one_asset": {
+        "route_km": 80.47500000000001,
+        "area_km2": 112.24000000000004,
+        "route_km_added": 28.625000000000014,
+        "area_km2_added": 42.64,
+        "route_pct": 68.98842691813117,
+        "area_pct": 59.31092792221518,
+        "score": 0.6608517721935637
+      },
+      "robustness": {
+        "exact": 0.235,
+        "within_1km": 0.9400000000000001,
+        "within_2km": 1.0,
+        "random_pick": 0.001594896331738437
+      }
+    }
+  }
+}

@@ -1,0 +1,1042 @@
+<title>Seven Thousand Samples</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#FBFCFA; --surface:#F1F4EF; --surface2:#E8EDE6; --panel:#FFFFFF;
+  --ink:#16211C; --ink2:#3A4842; --mute:#65726B;
+  --rule:#DCE2DA; --rule2:#C3CCBF; --grid:#E4E9E1;
+  --c1:#0F6E70; --c2:#8F6200; --c3:#5B3A9B; --c4:#8C1D40;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Source Serif 4",Georgia,serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --pad:clamp(1rem,3.5vw,2.5rem);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --ground:#0E1512; --surface:#161F1B; --surface2:#1E2823; --panel:#141D19;
+  --ink:#E5EBE7; --ink2:#BFCAC4; --mute:#8A968F;
+  --rule:#26332D; --rule2:#38473F; --grid:#212D27;
+  --c1:#4FB3B4; --c2:#D9A227; --c3:#A98BE0; --c4:#E86A93;
+}}
+:root[data-theme="dark"]{
+  --ground:#0E1512; --surface:#161F1B; --surface2:#1E2823; --panel:#141D19;
+  --ink:#E5EBE7; --ink2:#BFCAC4; --mute:#8A968F;
+  --rule:#26332D; --rule2:#38473F; --grid:#212D27;
+  --c1:#4FB3B4; --c2:#D9A227; --c3:#A98BE0; --c4:#E86A93;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--f-body);
+     font-size:16px;line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:0 var(--pad) 5rem}
+header.mast{border-bottom:2px solid var(--ink);padding:clamp(2rem,6vw,4rem) 0 1.5rem;
+            display:flex;flex-direction:column;gap:1rem}
+.eyebrow{font-family:var(--f-mono);font-size:.68rem;font-weight:500;letter-spacing:.16em;
+         text-transform:uppercase;color:var(--c1)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(2.1rem,5.5vw,3.6rem);
+   line-height:1;letter-spacing:-.03em;margin:0}
+.deck{font-family:var(--f-mono);font-size:.82rem;color:var(--mute);max-width:70ch;margin:0;line-height:1.7}
+section{padding-top:3rem}
+h2{font-family:var(--f-display);font-weight:600;font-size:clamp(1.35rem,2.8vw,1.8rem);
+   letter-spacing:-.02em;margin:.2rem 0 .3rem}
+.sub{font-family:var(--f-mono);font-size:.72rem;color:var(--mute);margin:0 0 1rem;letter-spacing:.02em}
+h3{font-family:var(--f-display);font-weight:600;font-size:1rem;margin:1.6rem 0 .4rem}
+p{margin:0 0 .8rem;max-width:74ch;font-size:.94rem;color:var(--ink2)}
+code{font-family:var(--f-mono);font-size:.85em;background:var(--surface2);padding:.06em .3em;border-radius:2px}
+.mono{font-family:var(--f-mono)}
+
+.tiles{display:grid;gap:1px;background:var(--rule2);border:1px solid var(--rule2);
+       grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:1.2rem 0}
+.tile{background:var(--surface);padding:.85rem .9rem;display:flex;flex-direction:column;gap:.15rem}
+.tile .k{font-family:var(--f-display);font-weight:700;font-size:1.7rem;line-height:1;
+         letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.tile .l{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.tile .d{font-size:.78rem;color:var(--mute);line-height:1.35;font-family:var(--f-mono)}
+
+.card{background:var(--panel);border:1px solid var(--rule2);margin:1.1rem 0;padding:1rem}
+.card.wide{padding:1rem 1.1rem}
+.cardhead{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+          border-bottom:1px solid var(--rule);padding-bottom:.5rem;margin-bottom:.8rem;flex-wrap:wrap}
+.cardhead h4{font-family:var(--f-display);font-size:1.05rem;font-weight:700;margin:0;letter-spacing:-.01em}
+.cardhead .meta{font-family:var(--f-mono);font-size:.68rem;color:var(--mute);letter-spacing:.02em}
+.quad{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.9rem}
+.mini{min-width:0}
+.mini .t{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;
+         color:var(--mute);margin-bottom:.25rem}
+.chart{width:100%;position:relative;min-width:0}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--ground);border:1px solid var(--rule2);
+     font-family:var(--f-mono);font-size:.68rem;padding:.35rem .5rem;line-height:1.4;
+     white-space:nowrap;opacity:0;transition:opacity .1s;z-index:9;color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:.3rem .9rem;font-family:var(--f-mono);font-size:.68rem;
+        color:var(--ink2);margin-bottom:.5rem}
+.legend span{display:inline-flex;align-items:center;gap:.35rem}
+.legend i{width:13px;height:3px;border-radius:1.5px}
+.legend i.dot{width:9px;height:9px;border-radius:50%}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.1rem}
+.grid2 .card{margin:0}
+.colgroup{margin:1.3rem 0 .5rem;display:flex;align-items:baseline;gap:.7rem;flex-wrap:wrap}
+.colgroup h4{font-family:var(--f-display);font-size:.95rem;font-weight:700;margin:0;
+             letter-spacing:.02em;text-transform:uppercase}
+.colgroup span{font-family:var(--f-mono);font-size:.68rem;color:var(--mute)}
+.colgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:.8rem}
+.colcard{background:var(--panel);border:1px solid var(--rule2);padding:.8rem .85rem;
+         display:flex;flex-direction:column;gap:.4rem}
+.colcard .nm{font-family:var(--f-mono);font-size:.92rem;font-weight:600;color:var(--ink)}
+.colcard .full{font-family:var(--f-display);font-size:.9rem;font-weight:600;color:var(--c1);
+               line-height:1.25}
+.colcard .tags{display:flex;gap:.3rem;flex-wrap:wrap}
+.colcard .tag{font-family:var(--f-mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;
+              border:1px solid var(--rule2);color:var(--mute);padding:.12rem .32rem;border-radius:2px}
+.colcard .nt{font-size:.8rem;color:var(--ink2);line-height:1.45}
+.colcard .fill{display:flex;align-items:center;gap:.5rem;font-family:var(--f-mono);font-size:.68rem;
+               color:var(--mute)}
+.colcard .fillbar{flex:1;height:7px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.colcard .fillbar i{display:block;height:100%;background:var(--c1)}
+.colcard .odd{font-family:var(--f-mono);font-size:.68rem;color:var(--c2)}
+.valrow{display:flex;align-items:center;gap:.4rem;font-family:var(--f-mono);font-size:.66rem;margin:.12rem 0}
+.valrow .vb{flex:1;height:8px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.valrow .vb i{display:block;height:100%;background:var(--c1)}
+.gloss{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.7rem;margin-top:.7rem}
+.gterm{background:var(--panel);border:1px solid var(--rule2);padding:.7rem .8rem}
+.gterm .t{font-family:var(--f-mono);font-size:.86rem;font-weight:600;color:var(--c1)}
+.gterm .f{font-family:var(--f-display);font-size:.88rem;font-weight:600;margin:.1rem 0 .25rem}
+.gterm .n{font-size:.8rem;color:var(--ink2);line-height:1.45}
+.glabel{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+        color:var(--mute);margin:1.2rem 0 .1rem}
+
+.tscroll{overflow-x:auto;margin:1rem 0;border:1px solid var(--rule2)}
+table{border-collapse:collapse;width:100%;font-size:.82rem;min-width:560px;background:var(--surface)}
+th,td{text-align:left;padding:.45rem .65rem;border-bottom:1px solid var(--rule)}
+thead th{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;
+         color:var(--mute);font-weight:500;background:var(--surface2);
+         border-bottom:1px solid var(--rule2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.w{color:var(--c2);font-weight:600}
+tr:hover td{background:var(--surface2)}
+.bar{height:9px;background:var(--c1);border-radius:2px;display:inline-block;vertical-align:middle}
+.barbg{background:var(--surface2);border-radius:2px;display:inline-block;width:90px;vertical-align:middle}
+
+.seg{display:inline-flex;flex-wrap:wrap;gap:1px;background:var(--rule2);border:1px solid var(--rule2);margin-bottom:.7rem}
+.seg button{background:var(--surface);border:0;color:var(--ink2);font-family:var(--f-mono);
+            font-size:.68rem;padding:.35rem .6rem;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--c1);color:#fff}
+#mapcv{width:100%;height:480px;display:block;cursor:crosshair}
+footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule2);
+       font-family:var(--f-mono);font-size:.7rem;color:var(--mute);line-height:1.7}
+:focus-visible{outline:2px solid var(--c1);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">COTS.csv &middot; exploratory data analysis</div>
+  <h1>Seven Thousand Samples</h1>
+  <p class="deck">Every column, every value, every gap in the ARA rural COTS measurement file, plotted as it arrived. 7,144 rows &times; 12 columns, 19&ndash;20 March 2026. Nothing here is modelled, predicted or recommended &mdash; this document only describes what is in the file.</p>
+</header>
+
+<section>
+  <div class="eyebrow">01</div>
+  <h2>The file at a glance</h2>
+  <p class="sub">counts taken directly from the CSV, before any coercion</p>
+  <div class="tiles" id="tiles"></div>
+</section>
+
+<section>
+  <div class="eyebrow">02</div>
+  <h2>The twelve columns, one by one</h2>
+  <p class="sub">what each column is, what it is called in full, what it holds, and how full it is</p>
+  <p>Grouped the way the dataset's own documentation groups them, but every number below is measured from the file rather than taken from the schema. The bar under each numeric column spans its p1 to p99, with the interquartile box and the median marked.</p>
+  <div id="colcards"></div>
+
+  <h3>Fill levels come in exactly four tiers</h3>
+  <p>Twelve columns, but only four distinct fill rates &mdash; columns go blank in groups, never one at a time.</p>
+  <div class="card wide">
+    <div class="chart" id="c-tiers"></div>
+  </div>
+
+  <h3>Everything in one table</h3>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Column</th><th>Full name</th><th>Type</th><th>Unit</th><th>Present</th><th>Missing</th><th>Fill</th><th>Distinct</th><th>Range</th></tr></thead>
+      <tbody id="tbl-inv"></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">02b</div>
+  <h2>Abbreviations, written out</h2>
+  <p class="sub">every short form used by the columns, the units, or the material shipped with the file</p>
+  <div id="glossary"></div>
+</section>
+
+<section>
+  <div class="eyebrow">03</div>
+  <h2>The blanks are not random</h2>
+  <p class="sub">every distinct missingness pattern in the file, ordered by frequency</p>
+  <p>Nine columns can be blank. If blanks were independent there would be hundreds of combinations. There are twelve, and the top four cover 94% of the file &mdash; the gaps arrive in whole groups, which means they record something about how the measurement was taken rather than random loss.</p>
+  <div class="card wide">
+    <div class="legend" id="lg-miss"></div>
+    <div class="chart" id="c-miss"></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">04</div>
+  <h2>When the samples were taken</h2>
+  <p class="sub">7,144 timestamps across two days &middot; four contiguous runs</p>
+  <div class="card wide">
+    <div class="cardhead"><h4>Every sample on a time axis</h4>
+      <span class="meta" id="meta-time"></span></div>
+    <div class="legend" id="lg-time"></div>
+    <div class="chart" id="c-time"></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="cardhead"><h4>Gap between consecutive samples</h4><span class="meta">log scale</span></div>
+      <div class="chart" id="c-int"></div>
+    </div>
+    <div class="card">
+      <div class="cardhead"><h4>What each run contains</h4><span class="meta">rows by content</span></div>
+      <div class="chart" id="c-runs"></div>
+    </div>
+  </div>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Run</th><th>Day</th><th>Start</th><th>Minutes</th><th>Rows</th><th>With radio</th><th>With ping</th><th>With throughput</th><th>No cell</th></tr></thead>
+      <tbody id="tbl-runs"></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">05</div>
+  <h2>Where the samples were taken</h2>
+  <p class="sub">all 7,144 positions &middot; colour by any column</p>
+  <div class="card wide">
+    <div class="seg" id="mapSeg"></div>
+    <div class="legend" id="lg-map"></div>
+    <div class="chart"><canvas id="mapcv"></canvas></div>
+    <div class="meta mono" id="meta-map" style="font-size:.68rem;color:var(--mute);margin-top:.4rem"></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="cardhead"><h4>Distance moved between samples</h4><span class="meta">metres</span></div>
+      <div class="chart" id="c-step"></div>
+    </div>
+    <div class="card">
+      <div class="cardhead"><h4>Implied speed</h4><span class="meta">mph, from position and time</span></div>
+      <div class="chart" id="c-speed"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">06</div>
+  <h2>Every numeric column, four ways</h2>
+  <p class="sub">distribution &middot; cumulative &middot; percentile ladder &middot; the whole series in time order</p>
+  <p>Eight columns from the file, plus two derived from it: <code>speed_mph</code> and <code>step_m</code> come from consecutive positions and timestamps and appear nowhere in the CSV.</p>
+  <p>Each card below is one column. The histogram shows where values pile up, the cumulative curve reads off any percentile, the ladder gives p1 through p99 explicitly, and the time series plots every non-null value in collection order so drift and run boundaries are visible.</p>
+  <p>Where a column has a long tail the histogram is drawn over p1&ndash;p99 and labelled with how many rows sit beyond it &mdash; the cumulative curve, the ladder and the time series always use the full range, so nothing is hidden.</p>
+  <div id="cards"></div>
+</section>
+
+<section>
+  <div class="eyebrow">07</div>
+  <h2>Percentiles, all columns together</h2>
+  <p class="sub">p1 &middot; p5 &middot; p10 &middot; p25 &middot; p50 &middot; p75 &middot; p90 &middot; p95 &middot; p99</p>
+  <p>The same nine percentiles for every numeric column. Read across a row to see how wide a column's distribution is; the two panels differ only in scaling, because the columns share no common unit.</p>
+  <div class="card wide">
+    <div class="cardhead"><h4>Each column on its own scale</h4>
+      <span class="meta">bar spans p1 to p99 &middot; ticks at each percentile</span></div>
+    <div class="chart" id="c-pctall"></div>
+  </div>
+  <div class="card wide">
+    <div class="cardhead"><h4>Normalised to each column's own range</h4>
+      <span class="meta">0 = that column's minimum, 1 = its maximum</span></div>
+    <div class="legend" id="lg-pctnorm"></div>
+    <div class="chart" id="c-pctnorm"></div>
+  </div>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Column</th><th>n</th><th>min</th><th>p1</th><th>p5</th><th>p10</th><th>p25</th><th>p50</th><th>p75</th><th>p90</th><th>p95</th><th>p99</th><th>max</th></tr></thead>
+      <tbody id="tbl-pct"></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">08</div>
+  <h2>Granularity: what the radio columns can actually express</h2>
+  <p class="sub">exact value counts for the columns that report whole numbers</p>
+  <p>Three columns arrive as integers with no fractional part at all. Plotting their exact value counts shows how much resolution each really carries &mdash; and that one of them barely varies.</p>
+  <div class="grid2" id="discrete"></div>
+</section>
+
+<section>
+  <div class="eyebrow">09</div>
+  <h2>The text columns</h2>
+  <p class="sub">band &middot; cellid &middot; arfcn &mdash; every distinct value and its count</p>
+  <div class="grid2" id="cats"></div>
+  <div class="card wide">
+    <div class="cardhead"><h4>Which cell was serving, over time</h4>
+      <span class="meta">one band per serving cell id &middot; blanks are gaps</span></div>
+    <div class="legend" id="lg-cell"></div>
+    <div class="chart" id="c-cell"></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">10</div>
+  <h2>How the columns move together</h2>
+  <p class="sub">Spearman rank correlation &middot; computed pairwise on rows where both are present</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="cardhead"><h4>Correlation matrix</h4><span class="meta">rank, −1 to +1</span></div>
+      <div class="chart" id="c-corr"></div>
+    </div>
+    <div class="card">
+      <div class="cardhead"><h4>Uplink against downlink</h4><span class="meta" id="meta-ud"></span></div>
+      <div class="chart" id="c-ud"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">11</div>
+  <h2>Structural oddities</h2>
+  <p class="sub">things a first read turns up that a schema does not mention</p>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Observation</th><th>Count</th><th>Where it shows up</th></tr></thead>
+      <tbody id="tbl-odd"></tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  Source: COTS_Dataset/COTS.csv, 7,144 rows &times; 12 columns, with Base_Station_Information.yaml unused here.<br>
+  All figures computed directly from the file by src/eda.py; percentiles are linear-interpolated (numpy default).<br>
+  Dataset is Arathon-restricted and non-public; this document describes its contents, and redistributes none of it.
+</footer>
+</div>
+
+<script>
+const E = __DATA__;
+const NS="http://www.w3.org/2000/svg";
+const C = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const mk = (t,a={}) => { const e=document.createElementNS(NS,t);
+  for(const k in a) e.setAttribute(k,a[k]); return e; };
+const CO = ()=>[C("--c1"),C("--c2"),C("--c3"),C("--c4")];
+const num = v => v==null?"—":(Math.abs(v)>=1000?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.toFixed(2));
+
+function makeSvg(host,W,H){
+  host.innerHTML="";
+  const svg=mk("svg",{viewBox:`0 0 ${W} ${H}`,role:"img",preserveAspectRatio:"xMidYMid meet"});
+  host.appendChild(svg);
+  const tip=document.createElement("div"); tip.className="tip"; host.appendChild(tip);
+  return {svg,tip};
+}
+function sc(d0,d1,r0,r1){ return v=>r0+(v-d0)/((d1-d0)||1)*(r1-r0); }
+function pathOf(pts){return pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");}
+function legend(id,items){const el=document.getElementById(id); if(!el)return;
+  el.innerHTML=items.map(i=>`<span><i class="${i.dot?'dot':''}" style="background:${i.c}"></i>${i.t}</span>`).join("");}
+function gridY(svg,W,P,ys,vals,fmt){
+  vals.forEach(v=>{const y=ys(v);
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-6,y:y+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":9,"font-family":C("--f-mono")});t.textContent=fmt?fmt(v):v;svg.appendChild(t);});}
+function axX(svg,H,P,xs,vals,fmt){
+  vals.forEach(v=>{const x=xs(v);
+    const t=mk("text",{x,y:H-P.b+13,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":9,"font-family":C("--f-mono")});t.textContent=fmt?fmt(v):v;svg.appendChild(t);});}
+function ticks(lo,hi,n){const r=[];for(let i=0;i<=n;i++)r.push(lo+(hi-lo)*i/n);return r;}
+
+/* ---------------- 01 tiles ---------------- */
+(function(){
+  const t=[
+    ["Rows",E.n_rows.toLocaleString(),"one measurement each"],
+    ["Columns",E.n_cols,"12 as delivered"],
+    ["Span",E.time.span_hours.toFixed(1)+" h","19–20 March 2026"],
+    ["Runs",E.runs.length,"gaps over 120 s"],
+    ["Median gap",E.time.interval.median+" s","mode "+E.time.interval.mode+" s"],
+    ["Route extent",E.gps.ns_km+" × "+E.gps.ew_km,"km north–south × east–west"],
+    ["Position-only rows",E.oddities.position_only_rows.toLocaleString(),
+      (100*E.oddities.position_only_rows/E.n_rows).toFixed(0)+"% carry GPS and nothing else"],
+    ["Fully complete rows",E.missing_patterns.rows[0].n.toLocaleString(),
+      E.missing_patterns.rows[0].pct+"% have every column filled"],
+  ];
+  document.getElementById("tiles").innerHTML=t.map(([l,k,d])=>
+    `<div class="tile"><span class="l">${l}</span><span class="k">${k}</span><span class="d">${d}</span></div>`).join("");
+})();
+
+/* ---------------- 02 column cards ---------------- */
+(function(){
+  const D=E.column_detail, host=document.getElementById("colcards");
+  const groups=[];
+  D.forEach(d=>{ let g=groups.find(x=>x.name===d.group);
+    if(!g){g={name:d.group,note:d.group_note,cols:[]};groups.push(g);} g.cols.push(d); });
+
+  groups.forEach(g=>{
+    const hd=document.createElement("div"); hd.className="colgroup";
+    hd.innerHTML=`<h4>${g.name}</h4><span>${g.note}</span>`;
+    host.appendChild(hd);
+    const grid=document.createElement("div"); grid.className="colgrid";
+    host.appendChild(grid);
+
+    g.cols.forEach(d=>{
+      const c=document.createElement("div"); c.className="colcard";
+      let body="";
+      if(d.kind==="numeric"){
+        body=`<div class="chart" id="rb-${d.name}"></div>`;
+      } else if(d.kind==="categorical"){
+        const mx=Math.max(...d.values.map(v=>v.n));
+        body=d.values.map(v=>`<div class="valrow">
+          <span style="width:82px;color:var(--ink)">${v.v}</span>
+          <span class="vb"><i style="width:${(100*v.n/mx).toFixed(1)}%"></i></span>
+          <span style="width:78px;text-align:right;color:var(--ink2)">${v.n.toLocaleString()} · ${v.pct}%</span>
+        </div>`).join("");
+      } else {
+        body=`<div class="nt" style="font-family:var(--f-mono);font-size:.7rem">
+          first &nbsp;${d.first.slice(0,19)}<br>last &nbsp;&nbsp;${d.last.slice(0,19)}<br>
+          span &nbsp;${d.span_hours} hours</div>`;
+      }
+      c.innerHTML=`
+        <div><span class="nm">${d.name}</span></div>
+        <div class="full">${d.full}</div>
+        <div class="tags"><span class="tag">${d.type}</span>
+          ${d.unit!=="—"?`<span class="tag">${d.unit}</span>`:""}
+          <span class="tag">${d.distinct.toLocaleString()} distinct</span>
+          ${d.kind==="numeric"&&d.integer_share===100?`<span class="tag">all integers</span>`:""}</div>
+        <div class="fill"><span class="fillbar"><i style="width:${d.fill_pct}%"></i></span>
+          <span>${d.present.toLocaleString()} present · ${d.missing.toLocaleString()} blank · ${d.fill_pct}%</span></div>
+        ${body}
+        <div class="nt">${d.note}</div>
+        ${d.odd?`<div class="odd">⚠ ${d.odd.n} non-numeric token${d.odd.n>1?"s":""}: ${d.odd.tokens.map(t=>"<code>"+t+"</code>").join(" ")}</div>`:""}`;
+      grid.appendChild(c);
+    });
+  });
+
+  // range strip: p1 -- p99 with the interquartile box and the median
+  D.filter(d=>d.kind==="numeric").forEach(d=>{
+    const el=document.getElementById("rb-"+d.name); if(!el)return;
+    const W=300,H=52,P={l:4,r:4,t:16,b:16};
+    const {svg}=makeSvg(el,W,H);
+    const lo=d.p1, hi=d.p99, xs=sc(lo,hi,P.l+26,W-P.r-26), y=P.t+6;
+    svg.appendChild(mk("line",{x1:xs(lo),x2:xs(hi),y1:y,y2:y,stroke:C("--surface2"),
+      "stroke-width":8,"stroke-linecap":"round"}));
+    svg.appendChild(mk("line",{x1:xs(d.p25),x2:xs(d.p75),y1:y,y2:y,stroke:C("--c1"),
+      "stroke-width":8,"stroke-linecap":"round",opacity:.6}));
+    svg.appendChild(mk("circle",{cx:xs(d.p50),cy:y,r:4.5,fill:C("--c2"),
+      stroke:C("--panel"),"stroke-width":1.6}));
+    const lab=(x,t,anc,col,dy)=>{const e=mk("text",{x,y:y+dy,"text-anchor":anc,fill:col,
+      "font-size":8.5,"font-family":C("--f-mono")});e.textContent=t;svg.appendChild(e);};
+    lab(xs(lo)-5,num(d.min),"end",C("--mute"),3.5);
+    lab(xs(hi)+5,num(d.max),"start",C("--mute"),3.5);
+    lab(xs(d.p50),"p50 "+num(d.p50),"middle",C("--c2"),-9);
+    lab(xs(lo),"p1","start",C("--mute"),16);
+    lab(xs(hi),"p99","end",C("--mute"),16);
+  });
+
+  // full table
+  document.getElementById("tbl-inv").innerHTML=D.map(d=>{
+    const range=d.kind==="numeric"?`${num(d.min)} to ${num(d.max)}`
+      :d.kind==="time"?`${d.span_hours} h`
+      :d.values.slice(0,2).map(v=>v.v).join(", ")+(d.values.length>2?` +${d.values.length-2}`:"");
+    return `<tr><td class="mono">${d.name}</td><td>${d.full}</td>
+      <td class="n" style="color:var(--mute)">${d.type}</td>
+      <td class="n">${d.unit}</td>
+      <td class="n">${d.present.toLocaleString()}</td>
+      <td class="n ${d.missing?'w':''}">${d.missing.toLocaleString()}</td>
+      <td class="n"><span class="barbg"><span class="bar" style="width:${(d.fill_pct*0.9).toFixed(0)}px"></span></span> ${d.fill_pct}%</td>
+      <td class="n">${d.distinct.toLocaleString()}</td>
+      <td class="n">${range}</td></tr>`;}).join("");
+})();
+
+/* ---------------- fill tiers ---------------- */
+(function(){
+  const T=E.fill_tiers, W=980,H=54*T.length+30,P={l:170,r:130,t:14,b:16};
+  const {svg}=makeSvg(document.getElementById("c-tiers"),W,H);
+  const xs=sc(0,E.n_rows,P.l,W-P.r), rowH=(H-P.t-P.b)/T.length;
+  T.forEach((t,i)=>{
+    const y=P.t+i*rowH+rowH/2, h=22;
+    svg.appendChild(mk("rect",{x:xs(0),y:y-h/2,width:xs(E.n_rows)-xs(0),height:h,
+      fill:C("--surface2"),rx:3}));
+    svg.appendChild(mk("rect",{x:xs(0),y:y-h/2,width:Math.max(2,xs(t.present)-xs(0)),
+      height:h,fill:C("--c1"),rx:3,opacity:.85}));
+    const l=mk("text",{x:P.l-10,y:y+4,"text-anchor":"end",fill:C("--ink"),"font-size":10,
+      "font-family":C("--f-mono")});
+    l.textContent=t.columns.length+" col"+(t.columns.length>1?"s":"");svg.appendChild(l);
+    const l2=mk("text",{x:P.l-10,y:y+16,"text-anchor":"end",fill:C("--mute"),"font-size":8.5,
+      "font-family":C("--f-mono")});
+    l2.textContent=t.columns.join(", ");svg.appendChild(l2);
+    const v=mk("text",{x:xs(t.present)+8,y:y+4,fill:C("--ink"),"font-size":11,
+      "font-weight":600,"font-family":C("--f-mono")});
+    v.textContent=t.present.toLocaleString()+" ("+t.pct+"%)";svg.appendChild(v);
+    if(t.missing>0){
+      const m=mk("text",{x:xs(E.n_rows)-6,y:y+4,"text-anchor":"end",fill:C("--mute"),
+        "font-size":9,"font-family":C("--f-mono")});
+      m.textContent=t.missing.toLocaleString()+" blank";svg.appendChild(m);}
+  });
+})();
+
+/* ---------------- 02b glossary ---------------- */
+(function(){
+  const G=E.glossary, host=document.getElementById("glossary");
+  const SEC=[["column","In the column names"],["unit","Units"],
+             ["context","The measurement setting"],["method","How this document reports it"]];
+  SEC.forEach(([kind,label])=>{
+    const items=G.filter(g=>g.where===kind); if(!items.length)return;
+    const h=document.createElement("div"); h.className="glabel"; h.textContent=label;
+    host.appendChild(h);
+    const grid=document.createElement("div"); grid.className="gloss";
+    grid.innerHTML=items.map(g=>`<div class="gterm">
+      <div class="t">${g.term}</div><div class="f">${g.full}</div>
+      <div class="n">${g.note}</div></div>`).join("");
+    host.appendChild(grid);
+  });
+})();
+
+/* ---------------- 03 missingness matrix ---------------- */
+(function(){
+  const M=E.missing_patterns, rows=M.rows, cols=M.columns;
+  const W=980, rowH=26, P={l:96,r:150,t:52,b:14};
+  const H=P.t+rows.length*rowH+P.b;
+  const {svg,tip}=makeSvg(document.getElementById("c-miss"),W,H);
+  const cw=(W-P.l-P.r)/cols.length;
+  cols.forEach((c,j)=>{
+    const t=mk("text",{x:P.l+cw*j+cw/2,y:P.t-10,"text-anchor":"start",fill:C("--mute"),
+      "font-size":9.5,"font-family":C("--f-mono"),
+      transform:`rotate(-42 ${P.l+cw*j+cw/2} ${P.t-10})`});
+    t.textContent=c; svg.appendChild(t);
+  });
+  const maxN=rows[0].n;
+  rows.forEach((r,i)=>{
+    const y=P.t+i*rowH;
+    cols.forEach((c,j)=>{
+      const miss=r.pattern[j]==="1";
+      svg.appendChild(mk("rect",{x:P.l+cw*j+1.5,y:y+4,width:cw-3,height:rowH-9,
+        fill:miss?C("--surface2"):C("--c1"),opacity:miss?1:.88,rx:2}));
+      if(miss){const t=mk("text",{x:P.l+cw*j+cw/2,y:y+rowH/2+3,"text-anchor":"middle",
+        fill:C("--mute"),"font-size":9,"font-family":C("--f-mono")});t.textContent="·";svg.appendChild(t);}
+    });
+    const lbl=mk("text",{x:P.l-8,y:y+rowH/2+3.5,"text-anchor":"end",fill:C("--ink"),
+      "font-size":10.5,"font-family":C("--f-mono"),"font-weight":i<4?600:400});
+    lbl.textContent=r.n.toLocaleString(); svg.appendChild(lbl);
+    const bar=mk("rect",{x:W-P.r+10,y:y+7,width:Math.max(1,(r.n/maxN)*84),height:rowH-15,
+      fill:C("--c1"),opacity:.5,rx:2}); svg.appendChild(bar);
+    const pc=mk("text",{x:W-P.r+100,y:y+rowH/2+3.5,fill:C("--mute"),"font-size":9.5,
+      "font-family":C("--f-mono")}); pc.textContent=r.pct.toFixed(1)+"%"; svg.appendChild(pc);
+  });
+  legend("lg-miss",[{c:C("--c1"),t:"value present"},{c:C("--surface2"),t:"blank"}]);
+})();
+
+/* ---------------- 04 timeline ---------------- */
+(function(){
+  const S=E.series, W=980,H=180,P={l:44,r:16,t:14,b:30};
+  const {svg,tip}=makeSvg(document.getElementById("c-time"),W,H);
+  const tmax=Math.max(...S.t);
+  const xs=sc(0,tmax,P.l,W-P.r);
+  const lanes=[["ping_ms","has ping"],["rsrp","has radio"],["uplink","has throughput"]];
+  const laneH=(H-P.t-P.b)/lanes.length;
+  lanes.forEach((L,i)=>{
+    const y=P.t+i*laneH+laneH/2;
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-6,y:y+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":9,"font-family":C("--f-mono")});t.textContent=L[1];svg.appendChild(t);
+    const g=mk("g");
+    for(let k=0;k<S.t.length;k++){
+      if(S[L[0]][k]==null)continue;
+      const x=xs(S.t[k]);
+      g.appendChild(mk("rect",{x:x-0.4,y:y-laneH*0.32,width:1.1,height:laneH*0.64,
+        fill:CO()[S.run[k]%4],opacity:.75}));
+    }
+    svg.appendChild(g);
+  });
+  E.runs.forEach(r=>{
+    const x=xs(r.t_start);
+    svg.appendChild(mk("line",{x1:x,x2:x,y1:P.t-4,y2:H-P.b,stroke:C("--rule2"),
+      "stroke-width":1,"stroke-dasharray":"2 3"}));
+  });
+  ticks(0,tmax,6).forEach(v=>{
+    const t=mk("text",{x:xs(v),y:H-P.b+14,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":9,"font-family":C("--f-mono")});
+    t.textContent=(v/3600).toFixed(0)+"h";svg.appendChild(t);});
+  legend("lg-time",E.runs.map((r,i)=>({c:CO()[i%4],t:`run ${r.run} · ${r.day.slice(5)} · ${r.n} rows`})));
+  document.getElementById("meta-time").textContent=
+    `${E.time.span_hours} h wall clock · median gap ${E.time.interval.median} s · ${E.time.gaps_over_120s} gaps over 2 min`;
+})();
+
+/* ---------------- interval histogram ---------------- */
+(function(){
+  const T=E.time, W=470,H=210,P={l:40,r:14,t:12,b:34};
+  const {svg}=makeSvg(document.getElementById("c-int"),W,H);
+  const h=T.hist, ed=T.hist_edges, mx=Math.max(...h);
+  const xs=sc(ed[0],ed[ed.length-1],P.l,W-P.r), ys=sc(0,mx,H-P.b,P.t);
+  gridY(svg,W,P,ys,ticks(0,mx,4),v=>Math.round(v));
+  h.forEach((v,i)=>{
+    const x0=xs(ed[i]),x1=xs(ed[i+1]);
+    svg.appendChild(mk("rect",{x:x0,y:ys(v),width:Math.max(1,x1-x0-1),
+      height:(H-P.b)-ys(v),fill:C("--c1"),rx:1}));});
+  [-0.3,0,0.5,1,1.5,2,3,4].forEach(v=>{
+    if(v<ed[0]||v>ed[ed.length-1])return;
+    const t=mk("text",{x:xs(v),y:H-P.b+13,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":9,"font-family":C("--f-mono")});
+    const s=Math.pow(10,v); t.textContent=s<60?s.toFixed(s<1?1:0)+"s":(s/60).toFixed(0)+"m";
+    svg.appendChild(t);});
+  const n=mk("text",{x:W-P.r,y:P.t+8,"text-anchor":"end",fill:C("--mute"),"font-size":9,
+    "font-family":C("--f-mono")});
+  n.textContent=`median ${T.interval.median}s · max ${(T.interval.max/3600).toFixed(1)}h`;
+  svg.appendChild(n);
+})();
+
+/* ---------------- run composition ---------------- */
+(function(){
+  const R=E.runs, W=470,H=210,P={l:40,r:14,t:12,b:44};
+  const {svg}=makeSvg(document.getElementById("c-runs"),W,H);
+  const mx=Math.max(...R.map(r=>r.n));
+  const ys=sc(0,mx,H-P.b,P.t), bw=(W-P.l-P.r)/R.length;
+  gridY(svg,W,P,ys,ticks(0,mx,4),v=>Math.round(v));
+  R.forEach((r,i)=>{
+    const x=P.l+bw*i+bw*.12, w=bw*.76;
+    const parts=[["with_radio",C("--c1")],["with_ping",C("--c2")],["with_throughput",C("--c3")]];
+    svg.appendChild(mk("rect",{x,y:ys(r.n),width:w,height:(H-P.b)-ys(r.n),
+      fill:C("--surface2"),rx:2}));
+    parts.forEach((p,j)=>{
+      const sw=w/3-2, sx=x+j*(w/3)+1;
+      svg.appendChild(mk("rect",{x:sx,y:ys(r[p[0]]),width:sw,height:(H-P.b)-ys(r[p[0]]),
+        fill:p[1],rx:1.5}));});
+    const t=mk("text",{x:x+w/2,y:H-P.b+14,"text-anchor":"middle",fill:C("--ink2"),
+      "font-size":9.5,"font-family":C("--f-mono")});t.textContent="run "+r.run;svg.appendChild(t);
+    const t2=mk("text",{x:x+w/2,y:H-P.b+27,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":8.5,"font-family":C("--f-mono")});t2.textContent=r.n+" rows";svg.appendChild(t2);
+    const t3=mk("text",{x:x+w/2,y:H-P.b+38,"text-anchor":"middle",fill:C("--c2"),
+      "font-size":8.5,"font-family":C("--f-mono")});t3.textContent=r.no_cell_pct+"% no cell";svg.appendChild(t3);
+  });
+  const lg=mk("text",{x:W-P.r,y:P.t+8,"text-anchor":"end",fill:C("--mute"),"font-size":9,
+    "font-family":C("--f-mono")});
+  lg.textContent="grey = all rows · bars = radio / ping / throughput"; svg.appendChild(lg);
+})();
+
+/* ---------------- run table ---------------- */
+(function(){
+  document.getElementById("tbl-runs").innerHTML=E.runs.map(r=>
+    `<tr><td class="n">${r.run}</td><td class="n">${r.day}</td>
+     <td class="n">${r.start.slice(11,19)}</td><td class="n">${r.minutes}</td>
+     <td class="n">${r.n.toLocaleString()}</td><td class="n">${r.with_radio.toLocaleString()}</td>
+     <td class="n">${r.with_ping.toLocaleString()}</td><td class="n">${r.with_throughput.toLocaleString()}</td>
+     <td class="n w">${r.no_cell_pct}%</td></tr>`).join("");
+})();
+
+/* ---------------- 05 map ---------------- */
+(function(){
+  const S=E.series, cv=document.getElementById("mapcv"), cx=cv.getContext("2d");
+  let colorBy="run", VW=0,VH=0,zoom=1,panX=0,panY=0,drag=null;
+  const lats=S.lat, lons=S.lon;
+  const bb={n:Math.max(...lats),s:Math.min(...lats),e:Math.max(...lons),w:Math.min(...lons)};
+  const kx=Math.cos(42*Math.PI/180);
+  const OPTS=[["run","collection run"],["rsrp","rsrp"],["sinr","sinr"],["rsrq","rsrq"],
+              ["ping_ms","ping_ms"],["uplink","uplink"],["downlink","downlink"],
+              ["speed_mph","speed"],["missing","has radio?"]];
+  function fit(){const d=devicePixelRatio||1;VW=cv.clientWidth;VH=cv.clientHeight;
+    cv.width=VW*d;cv.height=VH*d;cx.setTransform(d,0,0,d,0,0);}
+  function proj(la,lo){
+    const s=Math.min(VW/((bb.e-bb.w)*kx),VH/(bb.n-bb.s))*0.92*zoom;
+    return [VW/2+(lo-(bb.e+bb.w)/2)*kx*s+panX, VH/2-(la-(bb.n+bb.s)/2)*s+panY];}
+  function ramp(t){t=Math.max(0,Math.min(1,t));
+    const dark=matchMedia("(prefers-color-scheme:dark)").matches;
+    const a=dark?[217,162,39]:[143,98,0], b=dark?[79,179,180]:[15,110,112];
+    return `rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*t)).join(",")})`;}
+  function stats(k){const v=S[k].filter(x=>x!=null);
+    return {lo:Math.min(...v),hi:Math.max(...v),n:v.length};}
+  function draw(){
+    cx.clearRect(0,0,VW,VH); cx.fillStyle=C("--surface"); cx.fillRect(0,0,VW,VH);
+    const r=Math.max(1.1,1.8*Math.sqrt(zoom));
+    let st=null;
+    if(colorBy!=="run"&&colorBy!=="missing")st=stats(colorBy);
+    for(let i=0;i<S.lat.length;i++){
+      const [x,y]=proj(S.lat[i],S.lon[i]);
+      if(x<-6||x>VW+6||y<-6||y>VH+6)continue;
+      let col;
+      if(colorBy==="run"){col=CO()[S.run[i]%4];cx.globalAlpha=.7;}
+      else if(colorBy==="missing"){
+        col=S.rsrp[i]==null?C("--c2"):C("--c1");cx.globalAlpha=.6;}
+      else{const v=S[colorBy][i];
+        if(v==null){col=C("--rule2");cx.globalAlpha=.22;}
+        else{col=ramp((v-st.lo)/((st.hi-st.lo)||1));cx.globalAlpha=.8;}}
+      cx.fillStyle=col;cx.beginPath();cx.arc(x,y,r,0,7);cx.fill();
+    }
+    cx.globalAlpha=1;
+    // legend + meta
+    if(colorBy==="run") legend("lg-map",E.runs.map((q,i)=>({c:CO()[i%4],t:"run "+q.run,dot:1})));
+    else if(colorBy==="missing") legend("lg-map",[{c:C("--c1"),t:"radio columns present",dot:1},
+      {c:C("--c2"),t:"blank (no serving cell)",dot:1}]);
+    else legend("lg-map",[{c:ramp(0),t:"low ("+num(st.lo)+")",dot:1},{c:ramp(.5),t:"mid",dot:1},
+      {c:ramp(1),t:"high ("+num(st.hi)+")",dot:1},{c:C("--rule2"),t:"null",dot:1}]);
+    document.getElementById("meta-map").textContent=
+      `${S.lat.length.toLocaleString()} positions · lat ${E.gps.lat_min} to ${E.gps.lat_max} · lon ${E.gps.lon_min} to ${E.gps.lon_max}`
+      + (st?` · ${st.n.toLocaleString()} non-null, range ${num(st.lo)} to ${num(st.hi)}`:"");
+  }
+  const seg=document.getElementById("mapSeg");
+  seg.innerHTML=OPTS.map(o=>`<button data-k="${o[0]}" aria-pressed="${o[0]===colorBy}">${o[1]}</button>`).join("");
+  seg.onclick=e=>{const b=e.target.closest("button");if(!b)return;
+    colorBy=b.dataset.k;[...seg.children].forEach(x=>x.setAttribute("aria-pressed",x===b));draw();};
+  cv.addEventListener("mousedown",e=>{drag={x:e.offsetX,y:e.offsetY,px:panX,py:panY};});
+  addEventListener("mousemove",e=>{if(!drag)return;const r=cv.getBoundingClientRect();
+    panX=drag.px+(e.clientX-r.left-drag.x);panY=drag.py+(e.clientY-r.top-drag.y);draw();});
+  addEventListener("mouseup",()=>drag=null);
+  cv.addEventListener("wheel",e=>{e.preventDefault();
+    zoom=Math.max(.7,Math.min(20,zoom*(e.deltaY<0?1.15:1/1.15)));draw();},{passive:false});
+  addEventListener("resize",()=>{fit();draw();});
+  fit();draw();
+})();
+
+/* ---------------- step / speed distributions ---------------- */
+function simpleHist(id,key,unit,clip){
+  const p=E.profiles[key]; if(!p)return;
+  const W=470,H=210,P={l:42,r:14,t:12,b:32};
+  const {svg,tip}=makeSvg(document.getElementById(id),W,H);
+  const h=p.hist99, ed=p.edges99, mx=Math.max(...h);
+  const xs=sc(ed[0],ed[ed.length-1],P.l,W-P.r), ys=sc(0,mx,H-P.b,P.t);
+  gridY(svg,W,P,ys,ticks(0,mx,4),v=>Math.round(v));
+  h.forEach((v,i)=>{const x0=xs(ed[i]),x1=xs(ed[i+1]);
+    svg.appendChild(mk("rect",{x:x0,y:ys(v),width:Math.max(1,x1-x0-1),height:(H-P.b)-ys(v),
+      fill:C("--c1"),rx:1}));});
+  const cl=mk("text",{x:W-P.r,y:P.t+21,"text-anchor":"end",fill:C("--c2"),"font-size":9,
+    "font-family":C("--f-mono")});
+  cl.textContent="p99 clipped · "+p.n_above_p99+" above, max "+num(p.max);svg.appendChild(cl);
+  axX(svg,H,P,xs,ticks(ed[0],ed[ed.length-1],5),v=>num(v));
+  [["p50",C("--c2")],["p95",C("--c4")]].forEach(([k,col])=>{
+    const v=p.pct[k]; if(v==null||v<ed[0]||v>ed[ed.length-1])return;
+    svg.appendChild(mk("line",{x1:xs(v),x2:xs(v),y1:P.t,y2:H-P.b,stroke:col,
+      "stroke-width":1.5,"stroke-dasharray":"3 3"}));
+    const t=mk("text",{x:xs(v)+3,y:P.t+9,fill:col,"font-size":9,"font-family":C("--f-mono")});
+    t.textContent=k+" "+num(v);svg.appendChild(t);});
+  const n=mk("text",{x:W-P.r,y:P.t+9,"text-anchor":"end",fill:C("--mute"),"font-size":9,
+    "font-family":C("--f-mono")});n.textContent=unit;svg.appendChild(n);
+}
+simpleHist("c-step","step_m","metres");
+simpleHist("c-speed","speed_mph","mph · "+E.gps.stationary_pct+"% under 1 mph");
+
+/* ---------------- 06 per-variable cards ---------------- */
+(function(){
+  const ORDER=["ping_ms","rsrp","sinr","rsrq","uplink","downlink","lat","lon","speed_mph","step_m"];
+  const UNIT={ping_ms:"ms",rsrp:"dBm",sinr:"dB",rsrq:"dB",uplink:"Mbps",downlink:"Mbps",
+              lat:"decimal degrees",lon:"decimal degrees",
+              speed_mph:"mph (derived from position and time)",
+              step_m:"m (derived from consecutive positions)"};
+  const host=document.getElementById("cards");
+  ORDER.forEach(k=>{
+    const p=E.profiles[k]; if(!p)return;
+    const d=document.createElement("div"); d.className="card wide";
+    d.innerHTML=`<div class="cardhead">
+        <h4>${k} <span style="font-weight:400;color:var(--mute);font-size:.8rem">${UNIT[k]}</span></h4>
+        <span class="meta">n=${p.n.toLocaleString()} · ${p.missing.toLocaleString()} missing ·
+          ${p.n_unique.toLocaleString()} distinct · ${p.integer_share}% integers ·
+          step ${p.min_step} · min ${num(p.min)} (×${p.at_min}) · max ${num(p.max)} (×${p.at_max})</span>
+      </div>
+      <div class="quad">
+        <div class="mini"><div class="t">distribution</div><div class="chart" id="h-${k}"></div></div>
+        <div class="mini"><div class="t">cumulative</div><div class="chart" id="e-${k}"></div></div>
+        <div class="mini"><div class="t">percentiles</div><div class="chart" id="p-${k}"></div></div>
+        <div class="mini"><div class="t">in collection order</div><div class="chart" id="s-${k}"></div></div>
+      </div>`;
+    host.appendChild(d);
+
+    // histogram
+    (function(){const W=300,H=170,P={l:34,r:10,t:10,b:26};
+      const {svg}=makeSvg(document.getElementById("h-"+k),W,H);
+      const useClip=p.n_above_p99>0 && (p.max>p.pct.p99*1.3);
+      const h=useClip?p.hist99:p.hist, ed=useClip?p.edges99:p.edges, mx=Math.max(...h);
+      const xs=sc(ed[0],ed[ed.length-1],P.l,W-P.r), ys=sc(0,mx,H-P.b,P.t);
+      gridY(svg,W,P,ys,ticks(0,mx,3),v=>Math.round(v));
+      h.forEach((v,i)=>{const x0=xs(ed[i]),x1=xs(ed[i+1]);
+        svg.appendChild(mk("rect",{x:x0,y:ys(v),width:Math.max(.8,x1-x0-.8),
+          height:(H-P.b)-ys(v),fill:C("--c1")}));});
+      axX(svg,H,P,xs,ticks(ed[0],ed[ed.length-1],4),v=>num(v));
+      if(useClip){const t=mk("text",{x:W-P.r,y:P.t+8,"text-anchor":"end",fill:C("--c2"),
+        "font-size":8.5,"font-family":C("--f-mono")});
+        t.textContent="+"+p.n_above_p99+" beyond p99 (max "+num(p.max)+")";svg.appendChild(t);}})();
+
+    // ecdf with percentile markers
+    (function(){const W=300,H=170,P={l:34,r:10,t:10,b:26};
+      const {svg,tip}=makeSvg(document.getElementById("e-"+k),W,H);
+      const xs=sc(p.min,p.max,P.l,W-P.r), ys=sc(0,1,H-P.b,P.t);
+      gridY(svg,W,P,ys,[0,.25,.5,.75,1],v=>(v*100).toFixed(0)+"%");
+      svg.appendChild(mk("path",{d:pathOf(p.ecdf_x.map((x,i)=>[xs(x),ys(p.ecdf_y[i])])),
+        fill:"none",stroke:C("--c1"),"stroke-width":2}));
+      [["p5",.05],["p50",.5],["p95",.95]].forEach(([nm,q])=>{
+        const v=p.pct[nm];
+        svg.appendChild(mk("circle",{cx:xs(v),cy:ys(q),r:3.5,fill:C("--c2"),
+          stroke:C("--panel"),"stroke-width":1.5}));
+        const t=mk("text",{x:xs(v)+5,y:ys(q)-4,fill:C("--c2"),"font-size":8.5,
+          "font-family":C("--f-mono")});t.textContent=nm;svg.appendChild(t);});
+      axX(svg,H,P,xs,ticks(p.min,p.max,4),v=>num(v));})();
+
+    // percentile ladder
+    (function(){const W=300,H=170,P={l:34,r:34,t:10,b:26};
+      const {svg}=makeSvg(document.getElementById("p-"+k),W,H);
+      const keys=["p1","p5","p10","p25","p50","p75","p90","p95","p99"];
+      const vals=keys.map(q=>p.pct[q]);
+      const lo=Math.min(...vals),hi=Math.max(...vals);
+      const xs=sc(lo,hi,P.l,W-P.r), rowH=(H-P.t-P.b)/keys.length;
+      keys.forEach((q,i)=>{
+        const y=P.t+i*rowH+rowH/2, v=p.pct[q];
+        svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:C("--grid"),"stroke-width":1}));
+        svg.appendChild(mk("circle",{cx:xs(v),cy:y,r:3.6,
+          fill:q==="p50"?C("--c2"):C("--c1")}));
+        const t=mk("text",{x:P.l-5,y:y+3,"text-anchor":"end",fill:C("--mute"),
+          "font-size":8.5,"font-family":C("--f-mono")});t.textContent=q;svg.appendChild(t);
+        const val=mk("text",{x:W-P.r+4,y:y+3,fill:q==="p50"?C("--c2"):C("--ink2"),
+          "font-size":8.5,"font-family":C("--f-mono"),"font-weight":q==="p50"?600:400});
+        val.textContent=num(v);svg.appendChild(val);});})();
+
+    // time series, every non-null value
+    (function(){const W=300,H=170,P={l:34,r:10,t:10,b:26};
+      const el2=document.getElementById("s-"+k);
+      const {svg,tip}=makeSvg(el2,W,H);
+      const S=E.series; if(!S[k]){el2.parentNode.innerHTML=
+        '<div class="t">in collection order</div><div style="font-family:var(--f-mono);'+
+        'font-size:.7rem;color:var(--mute);padding:1rem 0">not exported as a series</div>';return;}
+      const tmax=Math.max(...S.t);
+      const xs=sc(0,tmax,P.l,W-P.r), ys=sc(p.min,p.max,H-P.b,P.t);
+      gridY(svg,W,P,ys,ticks(p.min,p.max,3),v=>num(v));
+      const g=mk("g");
+      for(let i=0;i<S.t.length;i++){
+        const v=S[k][i]; if(v==null)continue;
+        g.appendChild(mk("rect",{x:xs(S.t[i])-.35,y:ys(v)-.35,width:.9,height:.9,
+          fill:CO()[S.run[i]%4],opacity:.55}));}
+      svg.appendChild(g);
+      E.runs.slice(1).forEach(r=>{const x=xs(r.t_start);
+        svg.appendChild(mk("line",{x1:x,x2:x,y1:P.t,y2:H-P.b,stroke:C("--rule2"),
+          "stroke-width":1,"stroke-dasharray":"2 3"}));});
+      axX(svg,H,P,xs,ticks(0,tmax,4),v=>(v/3600).toFixed(0)+"h");})();
+  });
+})();
+
+/* ---------------- 07 percentiles, all columns ---------------- */
+(function(){
+  const ORDER=["ping_ms","rsrp","sinr","rsrq","uplink","downlink","lat","lon","speed_mph","step_m"];
+  const keys=["p1","p5","p10","p25","p50","p75","p90","p95","p99"];
+  // A: each on its own scale
+  const W=980,rowH=44,P={l:92,r:60,t:14,b:14};
+  const H=P.t+ORDER.length*rowH+P.b;
+  const {svg,tip}=makeSvg(document.getElementById("c-pctall"),W,H);
+  ORDER.forEach((k,i)=>{
+    const p=E.profiles[k]; if(!p)return;
+    const y=P.t+i*rowH+rowH/2;
+    const lo=p.pct.p1, hi=p.pct.p99;
+    const xs=sc(lo,hi,P.l,W-P.r);
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:C("--surface2"),"stroke-width":9,
+      "stroke-linecap":"round"}));
+    svg.appendChild(mk("line",{x1:xs(p.pct.p25),x2:xs(p.pct.p75),y1:y,y2:y,stroke:C("--c1"),
+      "stroke-width":9,"stroke-linecap":"round",opacity:.55}));
+    keys.forEach(q=>{
+      const v=p.pct[q], isMed=q==="p50";
+      svg.appendChild(mk("circle",{cx:xs(v),cy:y,r:isMed?5:3.2,
+        fill:isMed?C("--c2"):C("--c1"),stroke:C("--panel"),"stroke-width":isMed?2:1.2}));
+      const t=mk("text",{x:xs(v),y:y-11,"text-anchor":"middle",
+        fill:isMed?C("--c2"):C("--mute"),"font-size":8,"font-family":C("--f-mono")});
+      t.textContent=q;svg.appendChild(t);
+      const val=mk("text",{x:xs(v),y:y+17,"text-anchor":"middle",
+        fill:isMed?C("--c2"):C("--mute"),"font-size":8.5,"font-family":C("--f-mono"),
+        "font-weight":isMed?600:400});
+      val.textContent=num(v);svg.appendChild(val);});
+    const l=mk("text",{x:P.l-10,y:y+4,"text-anchor":"end",fill:C("--ink"),"font-size":11,
+      "font-family":C("--f-mono"),"font-weight":600});l.textContent=k;svg.appendChild(l);
+  });
+
+  // B: normalised
+  const W2=980,H2=330,P2={l:44,r:120,t:16,b:34};
+  const {svg:s2,tip:t2}=makeSvg(document.getElementById("c-pctnorm"),W2,H2);
+  const xs2=sc(0,keys.length-1,P2.l,W2-P2.r), ys2=sc(0,1,H2-P2.b,P2.t);
+  gridY(s2,W2,P2,ys2,[0,.25,.5,.75,1],v=>v.toFixed(2));
+  keys.forEach((q,i)=>{const t=mk("text",{x:xs2(i),y:H2-P2.b+14,"text-anchor":"middle",
+    fill:C("--mute"),"font-size":9.5,"font-family":C("--f-mono")});t.textContent=q;s2.appendChild(t);});
+  const PAL=[C("--c1"),C("--c2"),C("--c3"),C("--c4"),C("--c1"),C("--c2"),
+             C("--c3"),C("--c4"),C("--c1"),C("--c2")];
+  const DASH=[null,null,null,null,"5 3","5 3","5 3","5 3","1 3","1 3"];
+  ORDER.forEach((k,i)=>{
+    const p=E.profiles[k]; if(!p)return;
+    const rng=(p.max-p.min)||1;
+    const pts=keys.map((q,j)=>[xs2(j),ys2((p.pct[q]-p.min)/rng)]);
+    const a={d:pathOf(pts),fill:"none",stroke:PAL[i],"stroke-width":2.2};
+    if(DASH[i])a["stroke-dasharray"]=DASH[i];
+    s2.appendChild(mk("path",a));
+    pts.forEach(pt=>s2.appendChild(mk("circle",{cx:pt[0],cy:pt[1],r:3,fill:PAL[i],
+      stroke:C("--panel"),"stroke-width":1.2})));
+    const lb=mk("text",{x:W2-P2.r+8,y:pts[pts.length-1][1]+3.5,fill:PAL[i],"font-size":9.5,
+      "font-family":C("--f-mono"),"font-weight":600});lb.textContent=k;s2.appendChild(lb);
+  });
+  legend("lg-pctnorm",[{c:C("--mute"),t:"a flat line means the column barely varies · a steep one means a long tail"}]);
+
+  // table
+  document.getElementById("tbl-pct").innerHTML=ORDER.map(k=>{
+    const p=E.profiles[k]; if(!p)return"";
+    return `<tr><td class="mono">${k}</td><td class="n">${p.n.toLocaleString()}</td>
+      <td class="n">${num(p.min)}</td>`+
+      keys.map(q=>`<td class="n${q==="p50"?" w":""}">${num(p.pct[q])}</td>`).join("")+
+      `<td class="n">${num(p.max)}</td></tr>`;}).join("");
+})();
+
+/* ---------------- 08 discrete value counts ---------------- */
+(function(){
+  const host=document.getElementById("discrete");
+  ["rsrp","sinr","rsrq"].forEach(k=>{
+    const p=E.profiles[k]; if(!p||!p.values)return;
+    const d=document.createElement("div"); d.className="card";
+    d.innerHTML=`<div class="cardhead"><h4>${k}</h4>
+      <span class="meta">${p.values.length} distinct integers · ${p.n.toLocaleString()} rows</span></div>
+      <div class="chart" id="d-${k}"></div>`;
+    host.appendChild(d);
+    const W=470,H=230,P={l:44,r:14,t:14,b:32};
+    const {svg,tip}=makeSvg(document.getElementById("d-"+k),W,H);
+    const vs=p.values, mx=Math.max(...vs.map(v=>v.n));
+    const lo=vs[0].v, hi=vs[vs.length-1].v;
+    const xs=sc(lo,hi,P.l,W-P.r), ys=sc(0,mx,H-P.b,P.t);
+    gridY(svg,W,P,ys,ticks(0,mx,4),v=>v>=1000?(v/1000).toFixed(1)+"k":Math.round(v));
+    const bw=Math.max(1.5,(W-P.l-P.r)/((hi-lo)||1)-1);
+    vs.forEach(v=>{
+      svg.appendChild(mk("rect",{x:xs(v.v)-bw/2,y:ys(v.n),width:bw,height:(H-P.b)-ys(v.n),
+        fill:C("--c1"),rx:1}));});
+    axX(svg,H,P,xs,ticks(lo,hi,5),v=>Math.round(v));
+    // annotate the dominant value
+    const top=vs.reduce((a,b)=>b.n>a.n?b:a);
+    const t=mk("text",{x:xs(top.v),y:ys(top.n)-6,"text-anchor":"middle",fill:C("--c2"),
+      "font-size":10,"font-weight":600,"font-family":C("--f-mono")});
+    t.textContent=top.v+" ×"+top.n.toLocaleString();svg.appendChild(t);
+    const share=mk("text",{x:W-P.r,y:P.t+9,"text-anchor":"end",fill:C("--mute"),
+      "font-size":9,"font-family":C("--f-mono")});
+    const two=vs.slice().sort((a,b)=>b.n-a.n).slice(0,2).reduce((s,v)=>s+v.n,0);
+    share.textContent="top 2 values = "+(100*two/p.n).toFixed(0)+"% of rows";svg.appendChild(share);
+  });
+})();
+
+/* ---------------- 09 categoricals ---------------- */
+(function(){
+  const host=document.getElementById("cats");
+  Object.entries(E.categorical).forEach(([k,vals])=>{
+    const d=document.createElement("div"); d.className="card";
+    const mx=Math.max(...vals.map(v=>v.n));
+    d.innerHTML=`<div class="cardhead"><h4>${k}</h4>
+      <span class="meta">${vals.length} distinct value${vals.length>1?"s":""} incl. blank</span></div>
+      <div>`+vals.map(v=>`
+        <div style="display:flex;align-items:center;gap:.5rem;margin:.28rem 0;font-family:var(--f-mono);font-size:.72rem">
+          <span style="width:88px;color:${v.value==="(blank)"?"var(--mute)":"var(--ink)"};
+            ${v.value==="(blank)"?"font-style:italic":""}">${v.value}</span>
+          <span style="flex:1;background:var(--surface2);height:12px;border-radius:2px;overflow:hidden">
+            <span style="display:block;height:100%;width:${(100*v.n/mx).toFixed(1)}%;
+              background:${v.value==="(blank)"?"var(--c2)":"var(--c1)"}"></span></span>
+          <span style="width:74px;text-align:right;color:var(--ink2)">${v.n.toLocaleString()} · ${v.pct}%</span>
+        </div>`).join("")+`</div>`;
+    host.appendChild(d);
+  });
+})();
+
+/* ---------------- serving cell over time ---------------- */
+(function(){
+  const S=E.series, W=980,H=170,P={l:88,r:16,t:12,b:28};
+  const {svg}=makeSvg(document.getElementById("c-cell"),W,H);
+  const cells=[...new Set(S.cell)].filter(c=>c!=="").sort();
+  const lanes=[...cells,""];
+  const tmax=Math.max(...S.t), xs=sc(0,tmax,P.l,W-P.r);
+  const laneH=(H-P.t-P.b)/lanes.length;
+  const PAL=[C("--c1"),C("--c2"),C("--c3"),C("--c4"),C("--c1"),C("--c2"),C("--mute")];
+  lanes.forEach((c,i)=>{
+    const y=P.t+i*laneH+laneH/2;
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-6,y:y+3.5,"text-anchor":"end",
+      fill:c===""?C("--mute"):C("--ink2"),"font-size":9,"font-family":C("--f-mono"),
+      "font-style":c===""?"italic":"normal"});
+    t.textContent=c===""?"(blank)":c;svg.appendChild(t);
+    const g=mk("g");
+    for(let j=0;j<S.t.length;j++){ if(S.cell[j]!==c)continue;
+      g.appendChild(mk("rect",{x:xs(S.t[j])-.4,y:y-laneH*0.3,width:1.1,height:laneH*0.6,
+        fill:c===""?C("--mute"):PAL[i%6],opacity:c===""?.35:.8}));}
+    svg.appendChild(g);
+  });
+  ticks(0,tmax,6).forEach(v=>{const t=mk("text",{x:xs(v),y:H-P.b+13,"text-anchor":"middle",
+    fill:C("--mute"),"font-size":9,"font-family":C("--f-mono")});
+    t.textContent=(v/3600).toFixed(0)+"h";svg.appendChild(t);});
+  legend("lg-cell",[{c:C("--c1"),t:"a serving cell id was reported"},
+                    {c:C("--mute"),t:"cellid blank",dot:1}]);
+})();
+
+/* ---------------- 10 correlation ---------------- */
+(function(){
+  const M=E.correlation, L=M.labels, n=L.length;
+  const W=470,H=430,P={l:82,r:14,t:78,b:14};
+  const {svg,tip}=makeSvg(document.getElementById("c-corr"),W,H);
+  const cw=(W-P.l-P.r)/n, ch=(H-P.t-P.b)/n;
+  L.forEach((l,i)=>{
+    const t=mk("text",{x:P.l+cw*i+cw/2,y:P.t-8,fill:C("--mute"),"font-size":9,
+      "font-family":C("--f-mono"),"text-anchor":"start",
+      transform:`rotate(-48 ${P.l+cw*i+cw/2} ${P.t-8})`});t.textContent=l;svg.appendChild(t);
+    const t2=mk("text",{x:P.l-6,y:P.t+ch*i+ch/2+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":9,"font-family":C("--f-mono")});t2.textContent=l;svg.appendChild(t2);});
+  const dark=matchMedia("(prefers-color-scheme:dark)").matches;
+  const pos=dark?[79,179,180]:[15,110,112], neg=dark?[217,162,39]:[143,98,0];
+  M.matrix.forEach((row,i)=>row.forEach((v,j)=>{
+    const x=P.l+cw*j, y=P.t+ch*i;
+    if(v==null){svg.appendChild(mk("rect",{x:x+1,y:y+1,width:cw-2,height:ch-2,
+      fill:C("--surface2")}));return;}
+    const c=v>=0?pos:neg, a=Math.min(1,Math.abs(v));
+    svg.appendChild(mk("rect",{x:x+1,y:y+1,width:cw-2,height:ch-2,
+      fill:`rgb(${c.join(",")})`,opacity:0.06+0.92*a,rx:2}));
+    const t=mk("text",{x:x+cw/2,y:y+ch/2+3.5,"text-anchor":"middle",
+      fill:a>.55?C("--ground"):C("--ink"),"font-size":9,"font-family":C("--f-mono")});
+    t.textContent=(i===j)?"1":v.toFixed(2).replace("0.",".");svg.appendChild(t);
+  }));
+})();
+
+/* ---------------- uplink vs downlink ---------------- */
+(function(){
+  const T=E.throughput, W=470,H=430,P={l:48,r:14,t:16,b:38};
+  const {svg,tip}=makeSvg(document.getElementById("c-ud"),W,H);
+  const xs=sc(0,230,P.l,W-P.r), ys=sc(0,330,H-P.b,P.t);
+  gridY(svg,W,P,ys,[0,100,200,300],v=>v);
+  axX(svg,H,P,xs,[0,50,100,150,200],v=>v);
+  const g=mk("g",{opacity:.42});
+  T.scatter.forEach(p=>g.appendChild(mk("circle",{cx:xs(p[0]),cy:ys(p[1]),r:1.7,fill:C("--c1")})));
+  svg.appendChild(g);
+  svg.appendChild(mk("line",{x1:xs(0),y1:ys(0),x2:xs(230),y2:ys(230),stroke:C("--mute"),
+    "stroke-width":1,"stroke-dasharray":"4 4"}));
+  const t=mk("text",{x:xs(215),y:ys(215)-6,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9,"font-family":C("--f-mono")});t.textContent="equal up/down";svg.appendChild(t);
+  const xl=mk("text",{x:(P.l+W-P.r)/2,y:H-6,"text-anchor":"middle",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")});xl.textContent="uplink Mbps";svg.appendChild(xl);
+  const yl=mk("text",{x:P.l-6,y:P.t-4,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")});yl.textContent="downlink Mbps";svg.appendChild(yl);
+  document.getElementById("meta-ud").textContent=
+    `${T.n_pairs.toLocaleString()} paired tests · Spearman ${T.spearman} · median ratio ${T.ratio_pct.p50}×`;
+})();
+
+/* ---------------- 11 oddities ---------------- */
+(function(){
+  const O=E.oddities;
+  const rows=[
+    ["Rows carrying GPS and timestamp only",O.position_only_rows,"every other column blank"],
+    ["Rows where <code>cellid</code> is blank",E.categorical.cellid.find(v=>v.value==="(blank)").n,"band, arfcn, rsrp, sinr, rsrq blank with it"],
+    ["<code>cellid</code> = <code>FFFFFFFFF</code>",O.cellid_sentinel,"paired with <code>arfcn</code> = −1 on every one of them"],
+    ["<code>arfcn</code> = −1",O.arfcn_negative,"never appears with a real cell id"],
+    ["Literal <code>-</code> in sinr and rsrq",O.dash_tokens_sinr_rsrq,"a dash character, not a number or a blank"],
+    ["Throughput present with no <code>cellid</code>",O.throughput_without_cellid,"a rate was recorded with no serving cell alongside"],
+    ["Ping present with no <code>cellid</code>",O.ping_without_cellid,"same, for latency"],
+    ["<code>rsrp</code> exactly at −140",O.rsrp_at_floor_140,"the lowest value the column ever takes"],
+    ["Uplink and downlink always arrive together",O.uplink_downlink_always_paired?"always":"not always","never one without the other"],
+    ["Repeated (lat, lon) pairs",O.duplicate_positions,"identical position on separate rows"],
+    ["Implied speed over 80 mph",O.speed_over_80mph,"from consecutive positions and timestamps"],
+    ["Duplicate rows",O.duplicate_rows,"none"],
+    ["Duplicate timestamps",O.duplicate_timestamps,"none — every row has a unique time"],
+  ];
+  document.getElementById("tbl-odd").innerHTML=rows.map(r=>
+    `<tr><td>${r[0]}</td><td class="n w">${typeof r[1]==="number"?r[1].toLocaleString():r[1]}</td>
+     <td style="color:var(--mute)">${r[2]}</td></tr>`).join("");
+})();
+
+matchMedia("(prefers-color-scheme:dark)").addEventListener("change",()=>location.reload());
+</script>

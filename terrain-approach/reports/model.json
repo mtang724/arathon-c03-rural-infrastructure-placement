@@ -1,0 +1,123 @@
+{
+  "pathloss": {
+    "intercept_dbm": -4.24723677515891,
+    "slope_per_decade_db": -24.010941068134493,
+    "path_loss_exponent_n": 2.4010941068134493,
+    "azimuth_coef": [
+      -6.19379741938218,
+      7.717047469427985,
+      0.13382211513278985,
+      4.5693338013795515
+    ],
+    "residual_sd_db": 9.209037671739365,
+    "r2": 0.6906354020205998,
+    "n_samples": 3838,
+    "naive_exponent_n_no_azimuth": 1.6797190629299734,
+    "naive_r2": 0.6215626736166051
+  },
+  "validation": {
+    "uplink": {
+      "target": "uplink",
+      "n": 3128,
+      "random_split": {
+        "mae": 12.913251939506017,
+        "r2": 0.6877871325247333
+      },
+      "spatial_block": {
+        "mae": 20.99463442025385,
+        "r2": -0.14628650862185338
+      },
+      "spatial_per_fold": [
+        {
+          "mae": 21.008657814328984,
+          "r2": -0.018560277208892417
+        },
+        {
+          "mae": 21.654544127946604,
+          "r2": 0.002304833717689192
+        },
+        {
+          "mae": 25.94304756878522,
+          "r2": -0.312260207272528
+        },
+        {
+          "mae": 21.563024498270515,
+          "r2": -0.15268630346904
+        },
+        {
+          "mae": 14.803898091937905,
+          "r2": -0.25023058887649574
+        }
+      ],
+      "mean_train_rows_dropped_by_buffer": 0.012435991916735856,
+      "baselines": {
+        "global_mean_mae": 28.759370511404303,
+        "nearest_neighbour_mae": 28.75286498449348,
+        "distance_only_mae": 30.780412841562754,
+        "physics_chain_mae": 19.86381591568554,
+        "isotonic_given_measured_rsrp_mae": 14.245479108948123
+      }
+    },
+    "outage": {
+      "target": "outage",
+      "n": 7144,
+      "random_split": {
+        "auc": 0.965241425856133
+      },
+      "spatial_block": {
+        "auc": 0.6500924808234406
+      },
+      "spatial_per_fold": [
+        {
+          "auc": 0.6354842169618055
+        },
+        {
+          "auc": 0.6384263435016228
+        },
+        {
+          "auc": 0.569010405748736
+        },
+        {
+          "auc": 0.6811625952287278
+        },
+        {
+          "auc": 0.7263788426763109
+        }
+      ],
+      "mean_train_rows_dropped_by_buffer": 0.012213254683280161,
+      "baselines": {}
+    }
+  },
+  "surface_agreement": {
+    "physics_vs_observed_mae": 16.41360279903653,
+    "ml_vs_observed_mae_IN_SAMPLE": 5.571330703675258,
+    "note": "The ML figure is in-sample -- it trained on these cells. The honest out-of-geography comparison is in validation.uplink.baselines, where the physics chain wins.",
+    "outage_surface_brier_physics": 0.17077788028964322,
+    "outage_surface_brier_ml_IN_SAMPLE": 0.013546542467237004,
+    "outage_calibration": [
+      {
+        "predicted": 0.04,
+        "observed": 0.437,
+        "n": 25
+      },
+      {
+        "predicted": 0.393,
+        "observed": 0.477,
+        "n": 192
+      },
+      {
+        "predicted": 0.605,
+        "observed": 0.642,
+        "n": 544
+      },
+      {
+        "predicted": 0.876,
+        "observed": 0.806,
+        "n": 34
+      }
+    ],
+    "n_cells_with_observation": 365
+  },
+  "n_grid_cells": 931,
+  "service_edge_dbm": -108.0
+}
