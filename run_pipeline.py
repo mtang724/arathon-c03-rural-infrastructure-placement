@@ -109,6 +109,17 @@ def main():
         p = OUT / f"bundle_{s.info.name}.json"
         bundle_mod.build(s, df, mlat, mlon, out=p, draws=a.draws)
         paths.append(p)
+
+    # Pick up any bundle that is committed but whose simulator did not load on
+    # this machine. Without this the planner silently loses a model: step 2
+    # skips pinn-approach when torch is absent, so its bundle is never rebuilt
+    # and never reaches build_planner, and the page comes out with one fewer
+    # dropdown entry and no error to explain it.
+    for extra in sorted(OUT.glob("bundle_*.json")):
+        if extra not in paths:
+            print(f"      carrying pre-built {extra.name} (simulator not loaded here)")
+            paths.append(extra)
+
     build_planner.build(paths, dem_path=str(ROOT / "terrain-approach" / "data" / "dem10.npz"),
                         out=str(ROOT / "planner.html"))
     print("=" * 70)
