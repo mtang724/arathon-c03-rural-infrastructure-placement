@@ -95,7 +95,7 @@ def arrow(s, x, y, w, h, fill=RULE):
 
 def header(s, num, eyebrow, title, sub=None, accent=TEAL):
     rect(s, Inches(0), Inches(0), W, Inches(0.055), fill=accent)
-    txt(s, Inches(0.55), Inches(0.34), Inches(0.6), Inches(0.3),
+    txt(s, Inches(0.55), Inches(0.34), Inches(0.42), Inches(0.3),
         f"{num:02d}", 12, accent, True, FM)
     txt(s, Inches(1.05), Inches(0.36), Inches(8), Inches(0.3),
         eyebrow, 9.5, MUTE, False, FM, caps=True, space=1.6)
@@ -106,12 +106,15 @@ def header(s, num, eyebrow, title, sub=None, accent=TEAL):
             sub, 12.5, INK2, False, FD)
 
 
-def kpi(s, x, y, w, label, value, note, vcolor=INK, h=Inches(1.02)):
+def kpi(s, x, y, w, label, value, note, vcolor=INK, h=Inches(1.02), vsize=25):
+    """`vsize` drops for values that are long strings rather than short numbers.
+    A latitude/longitude pair at 25pt wraps out of its box and draws over the
+    note beneath it -- python-pptx never reflows, so it overlaps silently."""
     rect(s, x, y, w, h, fill=SURF, line=RULE)
     txt(s, x + Inches(0.14), y + Inches(0.10), w - Inches(0.28), Inches(0.16),
         label, 8, MUTE, False, FM, caps=True, space=1.2)
     txt(s, x + Inches(0.14), y + Inches(0.28), w - Inches(0.28), Inches(0.42),
-        value, 25, vcolor, True, FD)
+        value, vsize, vcolor, True, FD)
     txt(s, x + Inches(0.14), y + Inches(0.72), w - Inches(0.28), Inches(0.24),
         note, 8.5, MUTE, False, FM)
 

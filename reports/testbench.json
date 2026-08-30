@@ -91,5 +91,51 @@
       "r2": 0.395612058334726,
       "n_folds": 4
     }
+  },
+  "terrain-fno": {
+    "in_sample": {
+      "mae": 5.465946822701928,
+      "rmse": 7.263817668934281,
+      "bias": -0.0012157104496658237,
+      "r2": 0.8075260392433568,
+      "n": 3838
+    },
+    "fitted": true,
+    "random_split": {
+      "mae": 5.704916570512997,
+      "rmse": 7.521715378576745,
+      "bias": 0.06895178616266492,
+      "r2": 0.792300397967957,
+      "n_folds": 5
+    },
+    "kmeans_on_position": {
+      "mae": 11.310484323567483,
+      "rmse": 14.044001656741596,
+      "bias": 2.555789506015131,
+      "r2": -1.0112313411436782,
+      "n_folds": 5
+    },
+    "angular_wedges": {
+      "mae": 9.692680933560794,
+      "rmse": 11.466618013126253,
+      "bias": 1.2626034463191873,
+      "r2": -0.492314083841479,
+      "n_folds": 4
+    },
+    "coverage": {
+      "cells_compared": 501,
+      "rsrp_threshold_dbm": -94.74999999998971,
+      "cellwise_agreement_pct": 65.06986027944112,
+      "base_rate_pct": 63.87225548902195,
+      "brier": 0.13842882608757115,
+      "observed_avail_pct": 67.8528451091628,
+      "predicted_avail_pct": 59.77857797981019
+    },
+    "info": {
+      "label": "FNO on the terrain profile",
+      "approach": "terrain-approach",
+      "sigma_db": 7.263817567200457
+    },
+    "note": "60 training epochs rather than 200, to land inside the submission window. Indicative: the held-out ordering is the finding, the third decimal is not."
   }
 }

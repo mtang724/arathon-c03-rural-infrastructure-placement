@@ -1,0 +1,151 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e5]: click to place anywhere · drag to pan · scroll to zoom
+    - generic [ref=e6]: 2 km · 200 m cells
+  - generic [ref=e9]:
+    - heading "Rural Coverage Planner" [level=1] [ref=e10]
+    - generic [ref=e11]: ARA COTS · any simulator, any objective
+    - heading "Simulator" [level=2] [ref=e12]
+    - combobox [ref=e13]:
+      - option "Fitted physics (two-slope + P.526)" [selected]
+      - option "Ray tracing + P.526 profile diffraction"
+    - generic [ref=e14]: Two-slope path loss with an azimuth harmonic, ITU-R P.526 knife-edge diffraction and first-Fresnel clearance, both orthogonalised against log-distance.
+    - heading "Map" [level=2] [ref=e15]
+    - generic [ref=e16]:
+      - button "Heatmap" [ref=e17] [cursor=pointer]
+      - button "Coverage" [ref=e18] [cursor=pointer]
+      - button "Gain" [ref=e19] [cursor=pointer]
+    - generic [ref=e23]:
+      - generic [ref=e24]: 0%
+      - generic [ref=e25]: Availability
+      - generic [ref=e26]: 86%
+    - generic [ref=e27]: Availability after placement, 2nd-98th percentile of the baseline field. The tick marks the current target.
+    - heading "What counts as served" [level=2] [ref=e28]
+    - combobox [ref=e29]:
+      - option "Availability (fraction)" [selected]
+      - option "Received power (dBm)"
+      - option "Link quality (SINR) (dB)"
+      - option "Link quality (RSRQ) (dB)"
+      - option "Uplink (typical attempt) (Mbps)"
+      - option "Uplink (nine attempts in ten) (Mbps)"
+      - option "Downlink (typical attempt) (Mbps)"
+      - option "Downlink (nine attempts in ten) (Mbps)"
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - text: Target
+        - generic [ref=e32]: 50%
+      - slider [ref=e33]: "0.5"
+    - generic [ref=e34]: the cell has a serving cell at all, this fraction of the time
+    - generic [ref=e35]: "Service test: RSRP ≥ -90.1 dBm"
+    - heading "What we are optimising" [level=2] [ref=e36]
+    - generic [ref=e37]:
+      - generic [ref=e38]:
+        - text: Route-km weight
+        - generic [ref=e39]: "0.70"
+      - slider [ref=e40]: "70"
+    - generic [ref=e41]: Area weight is the remainder. Route demand measures the survey, not the population; area demand does not.
+    - heading "Asset" [level=2] [ref=e42]
+    - generic [ref=e43]:
+      - button "Donor-fed" [ref=e44] [cursor=pointer]
+      - button "Backhauled" [ref=e45] [cursor=pointer]
+      - button "Macro-class" [ref=e46] [cursor=pointer]
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - text: Mast height
+        - generic [ref=e49]: 37 m
+      - slider [ref=e50]: "37"
+    - generic [ref=e51]:
+      - generic [ref=e52]:
+        - text: Power vs the tower
+        - generic [ref=e53]: −0 dB
+      - slider [ref=e54]: "0"
+    - heading "Before → after" [level=2] [ref=e55]
+    - generic [ref=e56]:
+      - generic [ref=e57]:
+        - generic [ref=e58]: Route-km
+        - generic [ref=e59]: 52.5 / 117
+        - generic [ref=e60]: +0.0 km (45.0%)
+      - generic [ref=e61]:
+        - generic [ref=e62]: Area km²
+        - generic [ref=e63]: "70.3"
+        - generic [ref=e64]: +0.0 km² (37.2%)
+      - generic [ref=e65]:
+        - generic [ref=e66]: Score
+        - generic [ref=e67]: "0.426"
+        - generic [ref=e68]: "+0.000"
+      - generic [ref=e69]:
+        - generic [ref=e70]: Cells fixed
+        - generic [ref=e71]: "0"
+        - generic [ref=e72]: of 2973 unserved
+    - heading "Optimised siting" [level=2] [ref=e73]
+    - button "Find the best site" [ref=e74] [cursor=pointer]
+    - table
+    - button "Use the top site" [ref=e75] [cursor=pointer]
+    - button "Clear placement" [ref=e76] [cursor=pointer]
+    - heading "Does the answer depend on the objective?" [level=2] [ref=e77]
+    - button "Sweep every criterion" [ref=e78] [cursor=pointer]
+    - button "Sweep the route/area weight" [ref=e79] [cursor=pointer]
+    - button "Compare every simulator" [ref=e80] [cursor=pointer]
+    - table
+    - heading "Placed site" [level=2] [ref=e81]
+    - table
+    - heading "Model" [level=2] [ref=e82]
+    - table [ref=e83]:
+      - rowgroup [ref=e84]:
+        - row [ref=e85]:
+          - cell "simulator" [ref=e86]
+          - cell "Fitted physics (two-slope + P.526)" [ref=e87]
+        - row [ref=e88]:
+          - cell "approach" [ref=e89]
+          - cell "terrain-approach" [ref=e90]
+        - row [ref=e91]:
+          - cell "mode" [ref=e92]
+          - cell "analytic · two_slope_terrain/1" [ref=e93]
+        - row [ref=e94]:
+          - cell "fitted on" [ref=e95]
+          - cell "3,838 rows" [ref=e96]
+        - row [ref=e97]:
+          - cell "residual σ" [ref=e98]
+          - cell "7.35 dB" [ref=e99]
+        - row [ref=e100]:
+          - cell "b0" [ref=e101]
+          - cell "-21.7134" [ref=e102]
+        - row [ref=e103]:
+          - cell "slope" [ref=e104]
+          - cell "-18.0000" [ref=e105]
+        - row [ref=e106]:
+          - cell "b_dual" [ref=e107]
+          - cell "-15.5411" [ref=e108]
+        - row [ref=e109]:
+          - cell "break_m" [ref=e110]
+          - cell "3000.0000" [ref=e111]
+        - row [ref=e112]:
+          - cell "az" [ref=e113]
+          - cell "-4.889, 2.516" [ref=e114]
+        - row [ref=e115]:
+          - cell "b_diff" [ref=e116]
+          - cell "-0.7337" [ref=e117]
+        - row [ref=e118]:
+          - cell "b_fres" [ref=e119]
+          - cell "7.2938" [ref=e120]
+        - row [ref=e121]:
+          - cell "orth_diff" [ref=e122]
+          - cell "-3.112, 1.420" [ref=e123]
+        - row [ref=e124]:
+          - cell "orth_fres" [ref=e125]
+          - cell "5.221, -1.248" [ref=e126]
+        - row [ref=e127]:
+          - cell "lambda_m" [ref=e128]
+          - cell "0.0866" [ref=e129]
+        - row [ref=e130]:
+          - cell "tx_agl_m" [ref=e131]
+          - cell "36.5760" [ref=e132]
+        - row [ref=e133]:
+          - cell "rx_agl_m" [ref=e134]
+          - cell "1.8000" [ref=e135]
+        - row [ref=e136]:
+          - cell "k_earth" [ref=e137]
+          - cell "1.3333" [ref=e138]
+        - row [ref=e139]:
+          - cell "sigma_db" [ref=e140]
+          - cell "7.3486" [ref=e141]
