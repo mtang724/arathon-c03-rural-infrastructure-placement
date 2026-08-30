@@ -34,3 +34,8 @@ sionna-approach/scene/mitsuba/meshes/Terrain3DEP_s3_*.ply
 sionna-approach/scene/iowa_ms.zip
 # regenerate with build_ms_buildings.py <height>
 sionna-approach/scene/mitsuba/meshes/ms_buildings_h*.ply
+
+# ~30 MB of cached simulation output: path-gain matrices, service surfaces, per-run
+# dumps. Derived from the measurement dataset, so excluded on licence grounds as well
+# as size. sionna-approach/simcache/README.md documents how to regenerate every file.
+sionna-approach/simcache/
