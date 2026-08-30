@@ -10,6 +10,23 @@ challenge is to move from *describing* weak service to *recommending* a limited,
 intervention: predict performance where nothing was measured, then choose where one
 additional asset does the most good.
 
+## The shared platform
+
+[`common/`](common/) is what makes the approaches comparable rather than merely
+adjacent: one simulator contract, one backtest testbench, one planner.
+
+| | |
+|---|---|
+| [`common/README.md`](common/README.md) | the contract — two methods, and your model works with every tool here |
+| [`common/BACKTEST.md`](common/BACKTEST.md) | the testbench — identical splits, buffer, seed and metrics for every model |
+| [`common/PLANNER.md`](common/PLANNER.md) | the planner — every simulator, every service definition, every weighting, re-solved live |
+
+`common/` never imports an approach; approaches import `common` and expose their
+models through it. Adding a new approach therefore touches no existing one.
+[`terrain-approach/src/adapter.py`](terrain-approach/src/adapter.py) is the
+reference implementation, with one analytic model and one tabulated model that
+share nothing except the interface.
+
 ## Approaches
 
 Each approach lives in its own folder and can be read and run independently.
@@ -19,7 +36,8 @@ Each approach lives in its own folder and can be read and run independently.
 | [`sionna-approach/`](sionna-approach/) | Physics-based ray tracing (Sionna RT) over real terrain and OSM building geometry | Twin validated at 8.58 dB RMSE on held-out blocks — [report](sionna-approach/REPORT.md). Siting optimisation not started |
 | [`terrain-approach/`](terrain-approach/) | Two-slope path-loss law fitted to the measurements, plus ITU-R P.526 terrain diffraction; greedy coverage siting | Propagation validated at **7.35 dB RMSE in sample, 9.66 dB held out by geography (R² +0.15)**. Siting solved, scenario planner shipped. Availability step remains weak — see [README](terrain-approach/README.md) |
 
-Other approaches are being explored in parallel — add a sibling folder and a row here.
+Other approaches are being explored in parallel — add a sibling folder, a row here, and an
+adapter implementing [the shared contract](common/README.md#1-the-contract).
 
 ## The terrain approach
 
@@ -52,11 +70,19 @@ state it does not. Read the ratios, not the absolute percentages —
 [`terrain-approach/MODEL.md`](terrain-approach/MODEL.md) §4 is the full account, including
 two bugs the backtest caught.
 
-**Deliverables** — [`planner.html`](terrain-approach/planner.html) is a self-contained
-scenario planner with no server or install: click anywhere and it re-solves the whole
-surface in the browser, with tabs for explicit service thresholds, live shadow-fading
-robustness, per-intervention gains and constraint sensitivity. Alongside it, three map views
-and a six-slide deck built from native PowerPoint objects.
+**Deliverables** — [`planner.html`](planner.html) at the repository root is the
+parameterised planner: pick the simulator, the service definition (availability, RSRP, SINR,
+RSRQ, or uplink/downlink throughput percentiles), the target, and the route-versus-area
+weighting, and it re-solves the siting live. Three buttons sweep each of those axes and
+report how far the recommended site moves. Alongside it, three map views and a six-slide
+deck built from native PowerPoint objects.
+
+> [`terrain-approach/planner.html`](terrain-approach/planner.html) is the older
+> single-model page. Its four analysis tabs have not been ported yet, but its numbers are
+> **superseded**: its JavaScript evaluates an incomplete form of the fitted model — missing
+> the dual slope, the Fresnel term and the orthogonalisation offsets — which makes it
+> optimistic for a new node by a mean of 5.95 dB, RMS 8.37 dB. See
+> [`common/PLANNER.md`](common/PLANNER.md).
 
 ## Shared context
 

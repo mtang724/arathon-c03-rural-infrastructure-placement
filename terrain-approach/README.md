@@ -93,6 +93,7 @@ The dataset is **not in this repository**. Point at it the same way
 ```bash
 export COTS_DATA=/path/to/COTS_Dataset      # or drop it in terrain-approach/data/
 pip install pandas numpy scikit-learn scipy pyyaml rasterio python-pptx
+pip install torch neuraloperator          # only for the neural-operator comparison
 ```
 
 Terrain: two USGS 3DEP 1/3 arc-second tiles, `USGS_13_n42w094.tif` and
@@ -106,6 +107,17 @@ python run_all.py                        # features → model → optimise → p
 python src/propagation.py                # mosaic + clip the 3DEP tiles
 python src/backtest.py                   # the honesty check above
 python src/make_deck.py                  # six-slide deck
+```
+
+The neural-operator comparison is deliberately **not** in `run_all.py` — it
+trains 48 networks and takes about an hour and a half on CPU:
+
+```bash
+python src/profiles.py                   # cache one terrain profile per link
+python src/operators.py                  # check the db4 basis, size the four models
+python src/fno_compare.py                # the comparison in NEURAL_OPERATOR.md
+python src/fno_compare.py --capacity     # the same, with a much larger network
+python src/fno_compare.py --architectures  # FNO vs TFNO vs UNO vs WNO
 ```
 
 Then open `planner.html`.
@@ -139,6 +151,10 @@ src/
   propagation.py       3DEP mosaic, Fresnel zone, ITU-R P.526 diffraction
   model.py             path-loss and isotonic service curves
   coverage_terrain.py  terrain-aware siting, the main solver
+  profiles.py          per-link terrain profiles on a unit-length axis
+  operators.py         FNO / TFNO / UNO / WNO at matched width and depth
+                       (the wavelet transform is built and checked here)
+  fno_compare.py       neural operators vs the diffraction physics
   robustness.py        path-specific shadow fading, four correlation models
   backtest.py          the zero-intervention check
   build_coverage_planner.py + planner_tpl.py   the tool
@@ -152,6 +168,7 @@ web/
 reports/               fitted constants and model summaries
 data/                  regenerated locally, never committed
 MODEL.md               the maths, in full
+NEURAL_OPERATOR.md     the deep-learning comparison, and why most of it cannot work
 
 planner.html           the scenario planner — open it directly
 coverage_view.html     terrain + coverage, no dependencies
@@ -170,9 +187,10 @@ reports — fitted constants, siting results, robustness, backtest.
 and coordinates, which the root `.gitignore` keeps out until ARA publishes, and
 the two USGS tiles are 450 MB and 416 MB besides.
 
-**Present but not committed yet**: the four HTML tools and the deck. Each embeds
-all 7,144 measurement positions, so they fall under the same policy even though
-they are the deliverables. The repo is private, so this is a judgement call — the
-`.gitignore` marks the block to delete if you want them in.
+**Committed as a documented exception**: the four HTML tools and the deck. Each
+embeds all 7,144 measurement positions, so they fall under the same policy even
+though they are the deliverables. The repository is private and they are the
+things a reader actually needs, so they are in — the `.gitignore` marks the block
+to restore if that judgement changes.
 
 Everything in either excluded category is rebuilt by the commands above.

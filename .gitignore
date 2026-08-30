@@ -40,3 +40,8 @@ terrain-approach/reports/percentiles.json
 # The rendered tools and the deck ARE committed. They embed the 7,144 measurement
 # positions, so this is a deliberate exception to the dataset policy above, taken
 # because the repo is private and these are the deliverables.
+
+# --- shared platform ------------------------------------------------------
+# Coverage bundles carry the demand grid and candidate coordinates, so they fall
+# under the dataset policy above. They are regenerable: common/bundle.py.
+bundles/
