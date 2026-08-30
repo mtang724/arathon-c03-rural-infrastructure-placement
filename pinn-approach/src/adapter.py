@@ -264,3 +264,15 @@ class ReVealMTSimulator:
                                 self._device)
         return new.fit(t.lat.to_numpy(), t.lon.to_numpy(), t.rsrp.to_numpy(),
                        out.lat.to_numpy(), out.lon.to_numpy())
+
+
+def from_rows(rows, epochs: int = EPOCHS, seed: int = 20260830):
+    """Fitted simulator from a testbench frame, matching the other adapters.
+
+    `common/backtest.py` filters `rows` to measured RSRP, so the censored term
+    has nothing to consume here; it is exercised only when the full frame is
+    passed to `fit` directly.
+    """
+    r = rows[rows.rsrp.notna()]
+    return ReVealMTSimulator(epochs=epochs, seed=seed).fit(
+        r.lat.to_numpy(), r.lon.to_numpy(), r.rsrp.to_numpy())
