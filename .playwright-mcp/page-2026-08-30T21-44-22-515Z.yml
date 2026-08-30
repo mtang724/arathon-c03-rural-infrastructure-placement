@@ -1,0 +1,225 @@
+- generic [ref=f2e2]:
+  - generic [ref=f2e3]:
+    - generic [ref=f2e5]: click to place anywhere · drag to pan · scroll to zoom
+    - generic [ref=f2e6]:
+      - generic [ref=f2e7]: map scale
+      - generic [ref=f2e9]: 2 km
+      - generic [ref=f2e11]: one 200 m demand cell
+  - generic [ref=f2e13]:
+    - heading "Rural Coverage Planner" [level=1] [ref=f2e14]
+    - generic [ref=f2e15]: ARA COTS · any simulator, any objective
+    - generic [ref=f2e16]:
+      - generic [ref=f2e17]:
+        - generic [ref=f2e18]: "1"
+        - text: pick a simulator
+      - generic [ref=f2e19]:
+        - generic [ref=f2e20]: "2"
+        - text: pick what counts as served
+      - generic [ref=f2e21]:
+        - generic [ref=f2e22]: "3"
+        - text: press Find the best site
+    - generic [ref=f2e23]:
+      - generic [ref=f2e24]: measured, had service
+      - generic [ref=f2e26]: measured, NO service
+      - generic [ref=f2e28]: predicted field
+      - generic [ref=f2e30]: existing tower
+      - generic [ref=f2e32] [cursor=pointer]: hide the 7,144 samples
+    - heading "Simulator" [level=2] [ref=f2e33]
+    - combobox [ref=f2e34]:
+      - option "Fitted physics (two-slope + P.526)" [selected]
+      - option "Ray tracing + P.526 profile diffraction"
+      - option "ReVeal-MT PINN"
+      - option "FNO on the terrain profile"
+    - generic [ref=f2e35]: Two-slope path loss with an azimuth harmonic, ITU-R P.526 knife-edge diffraction and first-Fresnel clearance, both orthogonalised against log-distance.
+    - heading "Map" [level=2] [ref=f2e36]
+    - generic [ref=f2e37]:
+      - button "Heatmap" [ref=f2e38] [cursor=pointer]
+      - button "Coverage" [ref=f2e39] [cursor=pointer]
+      - button "Gain" [ref=f2e40] [cursor=pointer]
+    - generic [ref=f2e44]:
+      - generic [ref=f2e45]: 0%
+      - generic [ref=f2e46]: Availability
+      - generic [ref=f2e47]: 90%
+    - generic [ref=f2e48]: Availability after placement, 2nd-98th percentile of the baseline field. The tick marks the current target.
+    - heading "What counts as served" [level=2] [ref=f2e49]
+    - combobox [ref=f2e50]:
+      - option "Availability (fraction)" [selected]
+      - option "Received power (dBm)"
+      - option "Link quality (SINR) (dB)"
+      - option "Link quality (RSRQ) (dB)"
+      - option "Uplink (typical attempt) (Mbps)"
+      - option "Uplink (nine attempts in ten) (Mbps)"
+      - option "Downlink (typical attempt) (Mbps)"
+      - option "Downlink (nine attempts in ten) (Mbps)"
+    - generic [ref=f2e51]:
+      - generic [ref=f2e52]:
+        - text: Target
+        - generic [ref=f2e53]: 50%
+      - slider [ref=f2e54]: "0.5"
+    - generic [ref=f2e55]: the cell has a serving cell at all, this fraction of the time
+    - generic [ref=f2e56]: "Service test: RSRP ≥ -90.0 dBm"
+    - heading "What we are optimising" [level=2] [ref=f2e57]
+    - generic [ref=f2e58]:
+      - generic [ref=f2e59]:
+        - text: Route-km weight
+        - generic [ref=f2e60]: "0.70"
+      - slider [ref=f2e61]: "70"
+    - generic [ref=f2e62]: Area weight is the remainder. Route demand measures the survey, not the population; area demand does not.
+    - heading "Asset" [level=2] [ref=f2e63]
+    - generic [ref=f2e64]:
+      - button "Donor-fed" [ref=f2e65] [cursor=pointer]
+      - button "Backhauled" [ref=f2e66] [cursor=pointer]
+      - button "Macro-class" [ref=f2e67] [cursor=pointer]
+    - generic [ref=f2e68]:
+      - generic [ref=f2e69]:
+        - text: Mast height
+        - generic [ref=f2e70]: 37 m
+      - slider [ref=f2e71]: "37"
+    - generic [ref=f2e72]:
+      - generic [ref=f2e73]:
+        - text: Power vs the tower
+        - generic [ref=f2e74]: −0 dB
+      - slider [ref=f2e75]: "0"
+    - heading "Before → after" [level=2] [ref=f2e76]
+    - generic [ref=f2e77]:
+      - generic [ref=f2e78]:
+        - generic [ref=f2e79]: Route-km
+        - generic [ref=f2e80]: 51.9 / 117
+        - generic [ref=f2e81]: +0.0 km (44.4%)
+      - generic [ref=f2e82]:
+        - generic [ref=f2e83]: Area km²
+        - generic [ref=f2e84]: "69.6"
+        - generic [ref=f2e85]: +0.0 km² (36.8%)
+      - generic [ref=f2e86]:
+        - generic [ref=f2e87]: Score
+        - generic [ref=f2e88]: "0.421"
+        - generic [ref=f2e89]: "+0.000"
+      - generic [ref=f2e90]:
+        - generic [ref=f2e91]: Cells fixed
+        - generic [ref=f2e92]: "0"
+        - generic [ref=f2e93]: of 2992 unserved
+    - heading "Placement constraints open-data proxy" [level=2] [ref=f2e94]
+    - generic [ref=f2e95]: The measurement data says where service is poor, not where an asset may be built. These five layers come from OpenStreetMap and building footprints, not from utility or land records — they are evidence, not permission.
+    - generic [ref=f2e96]:
+      - generic [ref=f2e97]:
+        - generic [ref=f2e98]:
+          - generic [ref=f2e99] [cursor=pointer]:
+            - checkbox "Grid power" [checked] [ref=f2e100]
+            - text: Grid power
+          - generic [ref=f2e101]: within 2000 m
+        - slider [ref=f2e102]: "2000"
+        - generic [ref=f2e103]: OpenStreetMap maps transmission towers well and rural distribution poorly, so this reads pessimistically. Real utility data would replace it. 1,057 features mapped.
+      - generic [ref=f2e104]:
+        - generic [ref=f2e105]:
+          - generic [ref=f2e106] [cursor=pointer]:
+            - checkbox "Land access" [checked] [ref=f2e107]
+            - text: Land access
+          - generic [ref=f2e108]: within 250 m
+        - slider [ref=f2e109]: "250"
+        - generic [ref=f2e110]: Any mapped highway. Stands in for legal access and construction access. 81,471 features mapped.
+      - generic [ref=f2e111]:
+        - generic [ref=f2e112]:
+          - generic [ref=f2e113] [cursor=pointer]:
+            - checkbox "Existing structure" [checked] [ref=f2e114]
+            - text: Existing structure
+          - generic [ref=f2e115]: within 500 m
+        - slider [ref=f2e116]: "500"
+        - generic [ref=f2e117]: A building, silo, mast or tower to mount on instead of raising new steel. 109,018 features mapped.
+      - generic [ref=f2e118]:
+        - generic [ref=f2e119]:
+          - generic [ref=f2e120] [cursor=pointer]:
+            - checkbox "Backhaul" [checked] [ref=f2e121]
+            - text: Backhaul
+          - generic [ref=f2e122]: within 8000 m
+        - slider [ref=f2e123]: "8000"
+        - generic [ref=f2e124]: Distance to an existing base station, as a proxy for fibre or a donor link. 4 features mapped.
+      - generic [ref=f2e125]:
+        - generic [ref=f2e126]:
+          - generic [ref=f2e127] [cursor=pointer]:
+            - checkbox "Water (exclusion)" [checked] [ref=f2e128]
+            - text: Water (exclusion)
+          - generic [ref=f2e129]: at least 50 m
+        - slider [ref=f2e130]: "50"
+        - generic [ref=f2e131]: "A hard exclusion: minimum distance from mapped water. 4,834 features mapped."
+    - generic [ref=f2e132]:
+      - generic [ref=f2e133]:
+        - generic [ref=f2e134]: Feasible sites
+        - generic [ref=f2e135]: "221"
+        - generic [ref=f2e136]: of 627 candidates (35%)
+      - generic [ref=f2e137]:
+        - generic [ref=f2e138]: Cost of constraints
+        - generic [ref=f2e139]: —
+        - generic [ref=f2e140]: score given up
+    - heading "Optimised siting" [level=2] [ref=f2e141]
+    - button "Find the best site" [ref=f2e142] [cursor=pointer]
+    - button "Best feasible site, and what it costs" [ref=f2e143] [cursor=pointer]
+    - table
+    - button "Use the top site" [ref=f2e144] [cursor=pointer]
+    - button "Clear placement" [ref=f2e145] [cursor=pointer]
+    - heading "Does the answer depend on the objective?" [level=2] [ref=f2e146]
+    - button "Sweep every criterion" [ref=f2e147] [cursor=pointer]
+    - button "Sweep the route/area weight" [ref=f2e148] [cursor=pointer]
+    - button "Compare every simulator" [ref=f2e149] [cursor=pointer]
+    - table
+    - heading "Placed site" [level=2] [ref=f2e150]
+    - table
+    - heading "Model" [level=2] [ref=f2e151]
+    - table [ref=f2e152]:
+      - rowgroup [ref=f2e153]:
+        - row [ref=f2e154]:
+          - cell "simulator" [ref=f2e155]
+          - cell "Fitted physics (two-slope + P.526)" [ref=f2e156]
+        - row [ref=f2e157]:
+          - cell "approach" [ref=f2e158]
+          - cell "terrain-approach" [ref=f2e159]
+        - row [ref=f2e160]:
+          - cell "mode" [ref=f2e161]
+          - cell "analytic · two_slope_terrain/1" [ref=f2e162]
+        - row [ref=f2e163]:
+          - cell "fitted on" [ref=f2e164]
+          - cell "3,838 rows" [ref=f2e165]
+        - row [ref=f2e166]:
+          - cell "residual σ" [ref=f2e167]
+          - cell "7.35 dB" [ref=f2e168]
+        - row [ref=f2e169]:
+          - cell "b0" [ref=f2e170]
+          - cell "-21.7122" [ref=f2e171]
+        - row [ref=f2e172]:
+          - cell "slope" [ref=f2e173]
+          - cell "-18.0000" [ref=f2e174]
+        - row [ref=f2e175]:
+          - cell "b_dual" [ref=f2e176]
+          - cell "-15.5284" [ref=f2e177]
+        - row [ref=f2e178]:
+          - cell "break_m" [ref=f2e179]
+          - cell "3000.0000" [ref=f2e180]
+        - row [ref=f2e181]:
+          - cell "az" [ref=f2e182]
+          - cell "-4.878, 2.511" [ref=f2e183]
+        - row [ref=f2e184]:
+          - cell "b_diff" [ref=f2e185]
+          - cell "-0.7325" [ref=f2e186]
+        - row [ref=f2e187]:
+          - cell "b_fres" [ref=f2e188]
+          - cell "7.3271" [ref=f2e189]
+        - row [ref=f2e190]:
+          - cell "orth_diff" [ref=f2e191]
+          - cell "-3.093, 1.411" [ref=f2e192]
+        - row [ref=f2e193]:
+          - cell "orth_fres" [ref=f2e194]
+          - cell "5.219, -1.246" [ref=f2e195]
+        - row [ref=f2e196]:
+          - cell "lambda_m" [ref=f2e197]
+          - cell "0.0866" [ref=f2e198]
+        - row [ref=f2e199]:
+          - cell "tx_agl_m" [ref=f2e200]
+          - cell "36.5760" [ref=f2e201]
+        - row [ref=f2e202]:
+          - cell "rx_agl_m" [ref=f2e203]
+          - cell "1.8000" [ref=f2e204]
+        - row [ref=f2e205]:
+          - cell "k_earth" [ref=f2e206]
+          - cell "1.3333" [ref=f2e207]
+        - row [ref=f2e208]:
+          - cell "sigma_db" [ref=f2e209]
+          - cell "7.3464" [ref=f2e210]

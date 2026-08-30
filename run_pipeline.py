@@ -115,13 +115,38 @@ def main():
     # skips pinn-approach when torch is absent, so its bundle is never rebuilt
     # and never reaches build_planner, and the page comes out with one fewer
     # dropdown entry and no error to explain it.
-    for extra in sorted(OUT.glob("bundle_*.json")):
-        if extra not in paths:
-            print(f"      carrying pre-built {extra.name} (simulator not loaded here)")
-            paths.append(extra)
+    # Two naming conventions are in use -- reports/bundle_<name>.json from
+    # bundle_mod.build, and bundles/<name>.json committed by hand -- so scan both.
+    # Globbing only the first silently dropped terrain-fno from the planner.
+    # Dedupe on the simulator's own name, not the filename, because the same model
+    # can appear under both conventions.
+    import json as _json
+    seen = set()
+    for q in paths:
+        try:
+            seen.add(_json.loads(q.read_text())["simulator"]["name"])
+        except Exception:
+            pass
+    for extra in sorted(OUT.glob("bundle_*.json")) + sorted((ROOT / "bundles").glob("*.json")):
+        if extra in paths:
+            continue
+        try:
+            nm = _json.loads(extra.read_text())["simulator"]["name"]
+        except Exception as e:
+            print(f"      skipping {extra.name}: unreadable ({type(e).__name__})")
+            continue
+        if nm in seen:
+            continue
+        seen.add(nm)
+        print(f"      carrying pre-built {extra.name} -> {nm} (simulator not loaded here)")
+        paths.append(extra)
 
+    # Pass the drive test through. Without `measurements` the page renders with
+    # `pts: []` and loses the one layer that shows a viewer which parts of the
+    # surface are measured and which are inferred -- on a survey covering ~7% of
+    # the area, that is the distinction the whole planner exists to make.
     build_planner.build(paths, dem_path=str(ROOT / "terrain-approach" / "data" / "dem10.npz"),
-                        out=str(ROOT / "planner.html"))
+                        measurements=str(csv), out=str(ROOT / "planner.html"))
     print("=" * 70)
     print(f"done in {time.time()-t0:.0f}s -> {ROOT/'planner.html'}")
 
