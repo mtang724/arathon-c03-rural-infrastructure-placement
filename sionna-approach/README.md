@@ -33,15 +33,20 @@ asserted at 30 m because it is **not identifiable** from the data (see `HANDOFF.
 
 ```bash
 pip install sionna-rt
-export DRJIT_LIBLLVM_PATH=/path/to/libLLVM.dylib   # Sionna will not import without this
-
 cd scene
+
+# CUDA GPU: no extra setup, and raise the chunk size / refine the grid
+RT_CHUNK=8000 python predict_surface.py mitsuba/ames.xml 30 pred.npz 100
+
+# CPU: Sionna will not import without this
+export DRJIT_LIBLLVM_PATH=/path/to/libLLVM.dylib
 python predict_surface.py mitsuba/ames.xml 30 pred.npz 200
+
 python make_figure.py pred.npz out.png
 ```
 
 The 30 m Mitsuba scene is committed, so this runs on a fresh clone with no Blender and no
-data downloads. [`bundle/README.md`](bundle/README.md) is the full guide, including the coordinate
+data downloads. [`RUNNING.md`](RUNNING.md) is the full guide, including the coordinate
 conventions and the dead ends already ruled out.
 
 ## Rebuilding the scene from scratch
@@ -79,9 +84,10 @@ at 3.46 GHz even in a bare-field March. That is the leading remaining suspect.
 ## Layout
 
 ```
-scene/        scene-building + simulation scripts and the 30 m Mitsuba scene
-bundle/       self-contained copy for running simulations with no Blender
-HANDOFF.md    full engineering log: verified facts, gotchas, open problems
+scene/           scripts, the 30 m Mitsuba scene, and the 10 m DEM for hillshading
+RUNNING.md       full guide: setup, coordinates, radio config, what is ruled out
+HANDOFF.md       engineering log: verified facts, gotchas, open problems
+make_bundle.sh   assemble a standalone zip (includes data — Arathon-internal)
 ```
 
 All scripts resolve paths relative to their own location, so the tree can be cloned or

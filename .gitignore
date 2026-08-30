@@ -14,8 +14,6 @@ sionna-approach/bundle/data/
 sionna-approach/scene/iowa-latest.osm.pbf
 # 51 MB, regenerate with clip_osm.py
 sionna-approach/scene/ames.osm
-# 17 MB, one curl (see sionna_handoff/README.md)
-sionna-approach/scene/dem_3dep.tif
 # 148 MB, regenerate with build_terrain_3dep.py
 sionna-approach/scene/mitsuba/meshes/Terrain3DEP.ply
 # skadi tiles, auto-cached on first import

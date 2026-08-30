@@ -84,10 +84,11 @@ for cid, az in SECTORS.items():
     scene.add(Transmitter(name=cid, position=[site["x"], site["y"], site["ground"] + H],
                           orientation=[math.radians(90.0 - az), 0.0, 0.0]))
 
-# PathSolver degrades badly past a couple of thousand receivers -- a single 15.7k-receiver
-# solve ran 30 min without finishing, while 800 took 15 s. Chunking keeps each solve in
-# the regime where cost is linear in receiver count.
-CHUNK = 800
+# PathSolver degrades badly past a couple of thousand receivers: a single 15.7k-receiver
+# solve ran 30 min without finishing, while 800 took 15 s. Chunking keeps each solve in the
+# regime where cost is linear in receiver count. 800 suits a CPU/LLVM backend; on a CUDA
+# GPU raise it until VRAM complains -- RT_CHUNK=8000 is a reasonable starting point.
+CHUNK = int(os.environ.get("RT_CHUNK", 800))
 solver = PathSolver()
 pg_parts = []
 import time
