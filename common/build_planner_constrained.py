@@ -37,15 +37,21 @@ NOTE = {
 html = SRC.read_text(encoding="utf-8", errors="replace")
 m = re.search(r"const D\s*=\s*(\{.*?\});\s*\n", html, re.S)
 D = json.loads(m.group(1))
-cands = D["bundles"][0]["prediction"]["candidates"]
-clat = np.array([c["lat"] for c in cands]); clon = np.array([c["lon"] for c in cands])
-print(f"{len(cands)} candidates")
-
+# EVERY bundle, not just the first. cxFeasible() reads the d_* fields off each
+# candidate object, and a candidate without them falls out as infeasible for every
+# layer except water -- so constraining a page with a second simulator would have
+# reported "nothing feasible" for it. Each simulator carries its own candidate
+# lattice, so each needs its own distances.
 layers = C.extract(verbose=True)
-dist = C.distances(clat, clon, layers)
-for k, v in dist.items():
-    for c, x in zip(cands, v):
-        c[f"d_{k}"] = None if not np.isfinite(x) else round(float(x))
+for _b in D["bundles"]:
+    cands = _b["prediction"]["candidates"]
+    clat = np.array([c["lat"] for c in cands])
+    clon = np.array([c["lon"] for c in cands])
+    print(f'{_b["simulator"]["name"]}: {len(cands)} candidates')
+    dist = C.distances(clat, clon, layers)
+    for k, v in dist.items():
+        for c, x in zip(cands, v):
+            c[f"d_{k}"] = None if not np.isfinite(x) else round(float(x))
 D["constraints"] = {
     "defaults": DEFAULTS, "caps": CAPS,
     "labels": {k: C.LAYERS[k]["label"] for k in C.LAYERS},
