@@ -30,6 +30,13 @@ sionna-approach/**/*.blend1
 # instruction to push everything GitHub will accept -- it is machine-specific and
 # regenerated on every run, so expect churn in diffs.
 
+# One exception to that, added deliberately. .DS_Store is macOS Finder state --
+# icon positions and window geometry for a directory. Unlike bytecode it is not
+# derived from the project at all, it is rewritten whenever anyone opens the
+# folder in Finder, and it does not exist on Linux, so it produces diffs no
+# reviewer can account for. It was committed by accident in dec7b42.
+.DS_Store
+
 # The one addition to the policy above, on the instruction to "forget scene copy":
 # it is a byte-for-byte working copy of scene/ made to hand over the building meshes,
 # not a distinct artifact. Its .blend and Terrain3DEP files are already covered above.
