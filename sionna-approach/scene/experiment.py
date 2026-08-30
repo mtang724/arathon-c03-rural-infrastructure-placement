@@ -55,6 +55,7 @@ P.add_argument("--refraction", action="store_true")
 P.add_argument("--n-rx", type=int, default=800)
 P.add_argument("--seed", type=int, default=0)
 P.add_argument("--block-m", type=float, default=2000.0, help="spatial block size for the split")
+P.add_argument("--dump", default="", help="also write per-receiver arrays to this .npz, so runs\n                    can be rescored on a common linked subset and joined to terrain features")
 a = P.parse_args()
 
 t_start = time.time()
@@ -160,6 +161,14 @@ rec = dict(
         all_rmse_db=round(float(np.sqrt(np.mean(res_all ** 2))), 3),
     ),
 )
+if a.dump:
+    np.savez_compressed(
+        a.dump, meas_x=df.x.values, meas_y=df.y.values, meas_z=gz + RX_AGL_M,
+        meas_lat=df.lat.values, meas_lon=df.lon.values, meas_rsrp=df.rsrp.values,
+        meas_cell=df.cellid.values, meas_pg=pg, tx_order=np.array(tx_order),
+        h_ant=a.h_ant, site_x=site["x"], site_y=site["y"], site_ground=site["ground"],
+        tag=a.tag, block_m=a.block_m)
+
 with open(f"{BASE}/experiments.jsonl", "a") as f:
     f.write(json.dumps(rec) + "\n")
 r = rec["results"]

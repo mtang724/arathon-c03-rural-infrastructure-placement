@@ -19,15 +19,18 @@ facility-location problem.
 |---|---|
 | Scene construction (terrain + OSM buildings, georeferenced) | **done** |
 | Mitsuba export, Sionna RT loading, ITU materials | **done** |
-| Propagation model calibrated against measured RSRP | **9 dB RMSE — usable, not yet good** |
+| Propagation model calibrated against measured RSRP | **8.08 dB held-out, r 0.85, 100% of measured points** |
 | Predicted service surface over the unmeasured area | **done** |
-| Facility-location optimisation | **not started** |
+| Measurement error floor measured | **done** — 3.4 ± 0.5 dB, so ~5 dB of headroom was real |
+| Facility-location optimisation | **not started** — planned in [`PLAN.md`](PLAN.md) |
 
 Full write-up: **[REPORT.md](REPORT.md)**.
 
-Honest headline: on spatially disjoint held-out blocks the twin reaches **RMSE 8.58 dB,
-r = 0.83, bias +1.8 dB** (n = 1,762). 57% of grid cells get a modelled path; the rest are
-a known gap, not an absence of coverage. Antenna height, tilt and EIRP are not in the
+Honest headline: on spatially disjoint held-out blocks the twin reaches **RMSE 8.08 dB,
+r = 0.85** on **100%** of measured points, up from 8.58 dB on the 82% the ray tracer alone
+could link. The gain comes from adding ITU-R P.526 profile diffraction where the tracer
+finds no path — three fitted parameters, not a learned correction. Against a measured
+error floor of **3.4 ± 0.5 dB** (`analysis/error_floor.py`), roughly 4.7 dB remains. Antenna height, tilt and EIRP are not in the
 dataset — EIRP and gain are absorbed into one fitted constant, and height is currently
 asserted at 30 m because it is **not identifiable** from the data (see `HANDOFF.md`).
 
@@ -76,9 +79,16 @@ log. Reproduce with `scene/run_experiments.sh`.
 
 - **A finer DEM does not help.** USGS 3DEP 1/3 arc-second (10 m posts, 8.2M triangles)
   scores 9.14 dB against the 30 m mesh's 8.99 dB.
-- **Diffraction makes the fit worse** (11.7 dB on 30 m terrain, 10.6 dB on 10 m). A
-  tessellated DEM offers every triangle boundary as a spurious diffracting edge; it hurts
-  less on the finer mesh, which is the signature of an artifact rather than physics.
+- ~~**Diffraction makes the fit worse**~~ — **retracted, then confirmed neutral.** Rescored
+  at full sample on a common linked subset: 8.64 dB on vs 8.61 dB off. The apparent 1.7 dB
+  of damage was 23 extra links graded as numeric predictions with no sensitivity floor.
+  Adding diffraction as *profile physics* is the single biggest gain found so far.
+- **`max_depth` 5 and diffuse scattering do nothing** — both identical to baseline.
+- **Antenna pattern corrections do not transfer.** A free-form empirical gain table
+  anti-transfers across blocks; a parametric 3GPP elevation pattern is worse at every
+  beamwidth; per-sector offsets span 1.6 dB and do not help. `analysis/fit_pattern.py`.
+- **Gradient boosting loses to three parameters of physics** — blocked-CV 8.43 dB vs 7.48,
+  rejected before touching the test set. `analysis/fit_ml.py`.
 - **`PathSolver` needs chunking.** 800 receivers solve in 15 s; a single 15,742-receiver
   call ran 30 minutes without finishing.
 
@@ -107,9 +117,13 @@ REPORT.md        technical report: method, results, what was ruled out, next ste
 PARAMETERS.md    every model parameter with provenance: measured / inferred /
                  assumed / fitted / ruled out
 RESULTS.md       experiment log, auto-generated from scene/experiments.jsonl
+analysis/        error floor, link budget, terrain features, model fitting, rescoring
 scene/           scripts, the 30 m Mitsuba scene, and the 10 m DEM for hillshading
 RUNNING.md       full guide: setup, coordinates, radio config, what is ruled out
 HANDOFF.md       engineering log: verified facts, gotchas, open problems
+ACCURACY.md      plan for closing the propagation-model gap (current focus)
+DEPLOYMENT.md    published ARA/vendor specs and what the fitted constant decomposes into
+PLAN.md          simulation plan for the siting stage, phase by phase
 make_bundle.sh   assemble a standalone zip (includes data — Arathon-internal)
 ```
 

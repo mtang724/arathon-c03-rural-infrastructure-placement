@@ -9,22 +9,27 @@ record per run containing the complete parameter set plus results. Regenerate th
 table with `python scene/summarize_experiments.py`.
 
 Provenance keys — **M** measured in the dataset · **I** inferred from the data ·
-**A** assumed · **F** fitted · **X** tested and found not to matter.
+**A** assumed · **F** fitted · **X** tested and found not to matter ·
+**P** published by ARA or the vendor (see [`DEPLOYMENT.md`](DEPLOYMENT.md)).
 
 ## Radio
 
 | Parameter | Value | Prov. | Source / evidence |
 |---|---|---|---|
-| Carrier frequency | 3.4608 GHz | **M** | NR-ARFCN 630720, single-valued across all 7,144 rows |
+| Carrier frequency | 3.4608 GHz | **M** | NR-ARFCN 630720, single-valued across all 7,144 rows. This is the **SSB** position, not the carrier centre — see [`DEPLOYMENT.md`](DEPLOYMENT.md) |
+| Channel bandwidth | 100 MHz (273 PRB, 3,276 subcarriers) | **P** | ARA n77 allocation 3.45–3.55 GHz, arXiv:2408.00913 Table 1 |
+| Radio unit | Ericsson AIR 6419, 64T64R, 192 elements/sector | **P** | arXiv:2408.00913 §3.1 |
 | Wavelength | 8.67 cm | **M** | derived |
 | Band | mid-band, single layer | **M** | `band` column is single-valued |
 | Serving site | Agronomy Farm | **M** | serves 3,838 of 4,121 served rows |
 | Sector azimuths | 0° / 115° / 240° compass | **I** | cell-ID suffix `00B`/`015`/`01F`; each wins a clean contiguous bearing arc, handover boundaries at the predicted bisectors |
 | Sector mapping | `00019C00B`→0°, `00019C015`→115°, `00019C01F`→240° | **I** | as above |
 | EIRP + antenna gain | ~25–26 dB (absorbed constant) | **F** | fitted per run as `offset`; never fitted on test blocks |
-| Antenna height AGL | 30 m | **A** | **not identifiable** — flat from 15 to 60 m in every configuration |
-| Mechanical downtilt | 0° | **X** | 0–10° sweep: monotonically *worse*, 9.77 → 10.3 dB |
-| TX pattern | `tr38901` | **A** | Sionna built-in; real sector panel unknown |
+| Per-RE EIRP at boresight | 34.0 dBm (= `offset` + 8.0 dB) | **F/P** | decomposition of the fitted constant; **corroborated** — implies a carrier-total SSB EIRP of 69.2 dBm, 9.8 dB below the AIR 6419's rated 79 dBm peak beam. See [`DEPLOYMENT.md`](DEPLOYMENT.md) |
+| Configured TX power | ~128 W per sector | **P?** | ARA new-user training session, unverified. Implies an 18.1 dBi SSB beam gain, ~6 dB below the array's ~24 dBi peak |
+| Antenna height AGL | 30 m | **I** | **now identifiable.** Scored on a common receiver set with profile diffraction modelled, RMSE minimises at 30 m (8.10 dB; 15/45/60/90 m give 8.47/8.20/8.50/9.12) and the de-clustered column agrees. Without diffraction the optimum shifts to 45 m — raising the antenna is how the model sheds missing diffraction loss. Not published by ARA. Agronomy and Curtiss are **poles**, Wilson Hall and Research Park **rooftops**, so one height for all four sites is still wrong |
+| Mechanical downtilt | 0° | **X** | 0–10° sweep: monotonically *worse*, 9.77 → 10.3 dB. **Now explained**: a 192-element 64T64R sweeps a *set* of SSB beams over elevation, so there is no single boresight to tilt — the model shape is wrong, not the angle. See [`DEPLOYMENT.md`](DEPLOYMENT.md) |
+| TX pattern | `tr38901` | **A** | Sionna built-in, 8.0 dB boresight gain (measured by integrating over the sphere). The real unit is a 192-element array, so the SSB *beam set* is the right object to model |
 | RX pattern | isotropic | **A** | UE antenna unknown |
 | Polarization | V | **A** | not reported by the UE |
 | UE height AGL | 1.5 m | **A** | vehicle-mounted |
@@ -63,14 +68,16 @@ using it for trees would be badly wrong.
 
 | Parameter | Value | Prov. | Source / evidence |
 |---|---|---|---|
-| `max_depth` | 3 | **A** | untested against 2 or 5 |
+| `max_depth` | 3 | **X** | **tested:** depth 5 is identical to depth 3 (8.61 dB both, full sample). Deeper bounces find nothing |
 | LOS | on | **A** | |
 | Specular reflection | on | **A** | |
-| Diffraction | **off** | **X** | on: 11.7 dB (30 m mesh), 10.6 dB (10 m mesh) vs 9.0 dB off. Tessellated DEM offers every triangle boundary as a spurious diffracting edge; hurts less on finer mesh, which is the artifact signature |
-| Diffuse reflection | off | **A** | untested |
+| Sionna UTD diffraction | off | **X** | **neutral, not harmful — earlier finding retracted.** Full sample on GPU, scored on the common linked subset: 8.64 dB on vs 8.61 dB off. The recorded 1.7 dB of damage was 23 extra links being graded as numeric predictions with no sensitivity floor. Left off only because it costs time and buys nothing; the profile method below is what actually pays |
+| Diffuse reflection | off | **X** | **tested:** identical to baseline (8.61 dB). No effect |
 | Refraction | off | **A** | untested |
 | `synthetic_array` | true | **A** | single-element arrays |
-| Receiver chunk size | 800 (`RT_CHUNK`) | **A** | CPU-tuned; raise on GPU |
+| Receiver chunk size | 800 (`RT_CHUNK`) | **A** | CPU-tuned; 8000 works on an A6000 (29,893 rx in 184 s) |
+| **Profile diffraction** | ITU-R P.526 knife-edge, Deygout, 4/3 earth | **F** | **the one correction that transferred.** Held-out 9.09 → 8.08 dB *and* coverage 82% → 100% of measured points, r 0.70 → 0.85. Fitted alpha 0.33–0.86 on the Deygout loss (P.526 de-rates Deygout for multiple edges, so alpha < 1 is expected). `analysis/terrain_features.py`, `analysis/fit_residual.py` |
+| Measurement error floor | 3.4 ± 0.5 dB | **M** | two independent estimators, `analysis/error_floor.py`. ~3 dB of it is positioning, not the receiver (stationary re-samples give 0.97 dB) |
 
 ## Evaluation protocol
 
@@ -92,7 +99,9 @@ Six hypotheses for the ~9 dB residual, tested and rejected. Full run log in
 [`RESULTS.md`](RESULTS.md) and `scene/experiments.jsonl`.
 
 1. **Terrain resolution** — 10 m DEM: no gain (9.14 vs 8.99 dB).
-2. **Diffraction** — actively harmful on tessellated terrain.
+2. ~~**Diffraction** — actively harmful~~ **RETRACTED.** Neutral (8.64 vs 8.61 dB) once
+   scored on a common linked subset. The apparent harm was a scoring defect, and adding
+   diffraction *as profile physics* is the single biggest improvement found so far.
 3. **Soil moisture / ground permittivity** — 0.13 dB across the full range
    (very_dry 9.68 / medium_dry 9.77 / wet 9.81).
 4. **Mechanical downtilt** — monotonically harmful, 9.77 dB at 0° to 10.23 dB at 10°.
@@ -116,11 +125,21 @@ Not in any of the above. **Six independent geometric and material hypotheses eac
 error by ≲0.15 dB**, which is itself the most informative result in this table. Remaining
 candidates, untested:
 
-- **The antenna** — real sector pattern, electrical tilt and EIRP are all unknown and
-  currently absorbed into one scalar. `tr38901` may simply be the wrong pattern.
+- ~~**The antenna**~~ — **tested and rejected three ways.** A free-form empirical gain
+  table over elevation/azimuth *anti-transfers* across blocks (held-out 8.61 → 9.41 dB,
+  and the fitted correction correlates **negatively** with the residual it should remove,
+  at every resolution from 2 to 20 bins). A parametric 3GPP elevation pattern is worse at
+  every beamwidth tried (8.28 → 9.8–10.8 dB). Per-sector offsets span only 1.6 dB and do
+  not transfer. See `analysis/fit_pattern.py`.
+- **Gradient boosting over all per-path features** also loses to 3 parameters of physics:
+  blocked-CV RMSE 8.43 dB vs 7.48 dB for physics alone, rejected before touching the test
+  set. It reaches 5.3 dB on training data and carries none of it across a block boundary.
+  See `analysis/fit_ml.py`.
 - **Irreducible shadow fading.** Log-normal shadowing in rural environments is typically
-  6–10 dB, and the residual is ~8–9 dB. A deterministic ray tracer over 30 m terrain and
-  default building heights may already be near the floor of what this geometry can explain.
+  6–10 dB, and the residual is ~8–9 dB. **But the measurement floor has now been measured
+  and it is only 3.4 ± 0.5 dB** (`analysis/error_floor.py`, [`ACCURACY.md`](ACCURACY.md)
+  §A1), leaving ~7.9 dB model-attributable. Shadow fading is spatially structured physics,
+  not measurement noise, so "near the floor" is not supported.
   If so, the productive move is to model the *distribution* (predict a mean plus an
   uncertainty band) rather than chase the mean — which is also what Challenge 3 asks for,
   since it wants placement robust to model uncertainty.

@@ -142,7 +142,17 @@ posts. It finds slightly more links (605 vs 580) because the horizon geometry is
 but the error is unchanged. The obvious upgrade does not pay, so **use the 30 m scene** —
 it is 18x lighter and no worse. Do not spend more time on DEM resolution.
 
-**Finding 2 — diffraction hurts, but less on finer terrain.** Enabling
+**Finding 2 — SUPERSEDED 2026-08-30. See [`ACCURACY.md`](ACCURACY.md) §0.** Re-run on
+GPU with identical geometry both ways: on links that exist in *both* configurations,
+diffraction changes path gain by **−0.06 dB (std 0.44)**. The entire RMSE degradation came
+from 70 newly-added links sitting **72.6 dB below free space** — median predicted RSRP
+−164.7 dBm, 50 of 70 below the 3GPP RSRP floor — scored as numeric predictions against real
+measurements. The defect is that `calibrate.py` has **no receiver sensitivity floor**, not
+that diffraction is harmful. Note also that these two rows differ in *both* diffraction and
+height (15 vs 60 m), so they were never a controlled comparison. Original reasoning kept
+below for the record:
+
+**Finding 2 (original) — diffraction hurts, but less on finer terrain.** Enabling
 `diffraction=True, edge_diffraction=True` degrades the fit on both meshes, and degrades it
 *less* on the 10 m mesh (10.55 vs 11.71 dB). That is the signature of a tessellation
 artifact: a faceted DEM presents every triangle boundary as a candidate diffracting edge
@@ -156,7 +166,8 @@ antenna links more receivers, and the extra ones are marginal far-out points tha
 badly, so lower heights score better partly by being scored on an easier subset. Compare on
 a common linked subset before drawing any conclusion about height.
 
-**Where the residual is not:** terrain resolution (ruled out), and not diffraction. Still
+**Where the residual is not:** terrain resolution (ruled out). Diffraction is **no longer
+ruled out** — see Finding 2 above. Still
 open: vegetation (shelterbelts are excluded from the scene entirely), the ITU material
 choice, the tr38901 pattern vs the real sector antenna, and EIRP/tilt which are absorbed
 into the fitted `offset` constant rather than modelled.
