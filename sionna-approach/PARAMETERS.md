@@ -41,8 +41,8 @@ Provenance keys — **M** measured in the dataset · **I** inferred from the dat
 | Terrain source | AWS skadi 1 arc-second (~30 m) | **A** | Blosm default |
 | Terrain resolution | 30 m posts | **X** | 10 m 3DEP scores 9.14 vs 8.99 dB — **no gain for 18× the geometry** |
 | Earth curvature | **not modelled** | **X** | 4/3-earth correction (8.5 m at 12 km): 10.02 vs 9.95 dB — marginally *worse*. Physically right (link rate 0.88→0.87 as distant receivers drop below the horizon) but swamped by 94 m of terrain relief |
-| Buildings | 10,079 from OSM | **M** | OSM extract |
-| Building heights | Blosm defaults | **A** | only 665 of 10,079 carry `building:levels`, 443 carry `height` |
+| Buildings | 10,357 from Microsoft ML footprints | **M** | OSM has only 6 within 2 km of the site; see below |
+| Building height | 4 m uniform | **F** | Microsoft footprints carry no height; 4-6 m fits, 10 m is clearly too tall |
 | Vegetation | **excluded** | **X** | real but small — see below |
 | Water bodies | excluded | **A** | 172 `natural=water` available, untested |
 | Silos / grain bins | excluded | **A** | 29 `man_made=silo` tagged; metal, untested |
@@ -82,9 +82,138 @@ using it for trees would be badly wrong.
 | Seed | 0 | — | same subsample across runs so comparisons are paired |
 | Metrics | RMSE, r, bias, MAE on test blocks | — | RMSE is the headline |
 
+### What the RMSE actually measures
+
+**RSRP in dBm, serving cell only.** `10*log10(sum |a|^2) + offset` against the `rsrp`
+column. Not throughput, not SINR, not latency. Because one `offset` is fitted per run
+(absorbing EIRP + antenna gain), it measures the *shape* of the path-gain surface, not
+absolute power. RSRP is quantised to 1 dB in the data.
+
+Chaining to the decision-relevant quantity degrades sharply (`scene/uplink_error.py`):
+
+| stage | error | r |
+|---|---|---|
+| RSRP (what every RMSE here reports) | **8.27 dB** | 0.832 |
+| -> uplink Mbps | **29.7 Mbps**, 35% median relative | **0.332** |
+| ceiling: *measured* RSRP -> uplink | 25.5 Mbps | 0.565 |
+
+The ceiling row matters: even with perfect RSRP the mapping only reaches r = 0.565, so the
+RSRP->uplink relationship is a bigger limitation than our propagation error. Improving RSRP
+alone cannot fix uplink prediction.
+
+### The validation set excludes the underserved
+
+| | rows |
+|---|---|
+| whole dataset | 7,144 |
+| **no serving cell — the genuinely underserved** | **3,023 (42%), excluded** |
+| reaching the uplink evaluation | 1,225 |
+| of those, uplink < 10 Mbps | 20 (1.6%) |
+
+Rows with no serving cell carry no RSRP, so they are dropped before validation runs. Every
+RMSE in this repository is therefore measured **where the network already works**. Scored on
+the actual decision — "is this location underserved?" — recall is **0.00** at both the 5 and
+10 Mbps thresholds.
+
+This does not invalidate the 8.27 dB, but it bounds what that number licenses: the model is
+validated on the easy half of the problem and effectively unvalidated on the half Challenge 3
+exists to solve. Any placement claim needs a validation path that includes the no-service
+rows — for example scoring *coverage classification* (does a location have any serving cell)
+rather than RSRP regression.
+
 **Do not compare RMSE across antenna heights.** A taller antenna links more receivers, and
 the extra ones are marginal far-out points that predict badly, so lower heights score better
 partly by being graded on an easier subset. Compare on a common linked subset.
+
+## Scene validation against aerial imagery
+
+`scene/verify_orientation.py` runs five independent checks designed to fail loudly on a
+flip, mirror or axis swap rather than degrade quietly. All pass:
+
+| check | result |
+|---|---|
+| Coordinate handedness | east → +x (8272 m per 0.1°), north → +y (11132 m). **PASS** |
+| Base-station relative geometry | all six pairwise distances within **0.11%** of great-circle truth |
+| Terrain vs an independent DEM read | mean error **+0.04 m**, std 1.16 m, r = 0.9973. N–S flipped would give r = 0.38, E–W flipped r = −0.42 |
+| Measured sector bearings (data only) | `015` at 116.6° (assumed 115), `01F` at 233.9° (assumed 240) |
+| **Predicted best server vs measured serving cell** | **97.1% agreement** over 3,156 points against 33% chance |
+
+The last is the strongest: it couples geometry, projection and antenna azimuth in one
+number, and any mirror or rotation would drive it toward chance.
+
+Two caveats it surfaced:
+
+- **A 0.11% scale inflation.** Blosm's projection uses the WGS84 semi-major axis
+  (6,378,137 m) as a spherical radius, while true distances use the mean radius
+  (6,371,000 m). Every scene distance is therefore 0.112% long — 13 m over 12 km.
+  Negligible for RF, but it is a systematic bias, not noise.
+- **Sector `00019C00B`'s azimuth is uncertain.** Its measured bearings have a circular mean
+  of 317°, not the assumed 0°. With only 170 samples, one-sided coverage of the arc cannot
+  be distinguished from a genuinely different azimuth. The model still agrees with the
+  network on 86.5% of those points, versus 100% and 96.7% for the other two sectors.
+
+## OSM building coverage is the weak input, not the terrain
+
+Verified against USGS NAIP imagery (`scene/verify_vs_aerial.py`, figure
+`scene_validation.png`):
+
+- **6 OSM buildings exist in the 2×2 km box around Agronomy Farm.** The imagery shows
+  dozens of large agricultural sheds, grain bins and the ISU research complex.
+- **365 of 10,063 buildings (3.6%) sit in the rural western half** of the extract; 96.4%
+  are in Ames and on the ISU campus to the east — where almost no measurements were taken.
+- Whether those six land on real roofs **cannot be determined** — six polygons, 93% of the
+  masked pixels belonging to one dark-roofed school, give no alignment signal either way.
+  An earlier claim here that they "land squarely on real roofs" was eyeballed and is
+  withdrawn.
+
+Buildings are therefore close to absent along the measured rural route.
+
+### Fixed with Microsoft ML footprints — and it is the only thing that has helped
+
+Microsoft's US Building Footprints are extracted from imagery rather than contributed by
+volunteers, so rural coverage does not depend on mapper attention.
+
+| source | 2x2 km box | rural half | whole extract |
+|---|---|---|---|
+| OpenStreetMap | 6 | 365 | 10,063 |
+| **Microsoft ML** | **37** | **2,167** | 10,357 |
+
+Held out on the full sample, this is the **largest single improvement measured so far** —
+roughly twice any other change tried:
+
+| buildings | RMSE | r | link rate |
+|---|---|---|---|
+| OSM (baseline) | 8.58 dB | 0.826 | 0.82 |
+| **Microsoft, 4 m** | **8.29 dB** | **0.832** | 0.80 |
+| Microsoft, 6 m | 8.32 dB | 0.831 | 0.79 |
+| Microsoft, 10 m | 9.32 dB | 0.787 | 0.77 |
+
+**Alignment measured, not eyeballed** (`scene/check_alignment.py`). Cross-correlating the
+footprints against imagery contrast over a shift grid gives a sharp peak for the Microsoft
+set at **+2 m East, 0 m North**:
+
+| E-W shift (m) | -10 | -6 | -2 | 0 | +2 | +6 | +10 |
+|---|---|---|---|---|---|---|---|
+| contrast (grey levels) | 1.3 | 2.5 | 5.5 | 8.1 | **10.2** | 5.9 | 3.8 |
+
+Collapsing to background by +/-10 m means this is a genuine peak, not a plateau. A 2 m
+residual is an order of magnitude below the terrain post spacing (23-31 m), smaller than the
+uncertainty on the fitted building height, and shifts shadowing geometry by under 0.1 deg at
+1-12 km. **It does not hurt.**
+
+This also re-validates the pipeline more strongly than the earlier eyeball did: the
+Microsoft footprints pass through the identical projection and mesh-export chain, so a 2 m
+alignment is independent confirmation that projection and export are correct.
+
+The same test on OpenStreetMap gives a flat profile (2.3-2.9 across +/-10 m) with no peak,
+but with six polygons dominated by one low-contrast building that is an inconclusive sample,
+not evidence of error.
+
+Two caveats. **Link rate falls** from 0.82 to 0.80 as extra buildings occlude more paths, so
+the test sets differ slightly (1,762 vs 1,718 points) and the comparison is not perfectly
+paired. And **height is a free parameter** — the footprints carry none. 4-6 m fits best,
+which is plausible for single-storey rural buildings, but 10 m is clearly too tall, so this
+is fitted rather than known. Regenerate with `build_ms_buildings.py <height>`.
 
 ## What has been ruled out
 

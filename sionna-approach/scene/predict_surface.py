@@ -121,4 +121,9 @@ np.savez_compressed(
     tx_order=np.array(tx_order), h_ant=H, xml=XML, grid_m=GRID, block_m=BLOCK,
     gx=gx, gy=gy, gok=gok,
     site_x=site["x"], site_y=site["y"], site_ground=site["ground"])
+# the per-chunk saves exist only to survive a crash mid-run; drop them once the
+# consolidated file is safely written
+import glob, os
+for f in glob.glob(f"{OUT}.part*.npy"):
+    os.remove(f)
 print("wrote", OUT, flush=True)
