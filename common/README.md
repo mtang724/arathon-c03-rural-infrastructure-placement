@@ -217,9 +217,12 @@ demand.py          demand grid, candidates, scorer, greedy solver
 criteria.py        RSRP -> availability / SINR / RSRQ / throughput curves
 bundle.py          build(): one simulator in, one bundle out
 backtest.py        the testbench                    -> BACKTEST.md
+selftest.py        reproduce published reference numbers, or fail loudly
 build_planner.py   assemble the page from bundles   -> PLANNER.md
 planner_tpl.py     the page itself
 test_js.py         run a generated page under QuickJS before shipping it
+deckkit.py         native-PowerPoint drawing kit (no images, all vector)
+make_deck.py       the project deck; one slide per simulator, reserved until built
 ```
 
 ## 6. Running

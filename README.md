@@ -74,8 +74,10 @@ two bugs the backtest caught.
 parameterised planner: pick the simulator, the service definition (availability, RSRP, SINR,
 RSRQ, or uplink/downlink throughput percentiles), the target, and the route-versus-area
 weighting, and it re-solves the siting live. Three buttons sweep each of those axes and
-report how far the recommended site moves. Alongside it, three map views and a six-slide
-deck built from native PowerPoint objects.
+report how far the recommended site moves. Alongside it, three map views and
+[`ARA_Challenge3.pptx`](ARA_Challenge3.pptx) — a fourteen-slide deck built entirely from
+native PowerPoint objects, with one slide reserved per simulator so it can be presented
+before all four have landed.
 
 > The older single-model page has been **deleted**. Its JavaScript evaluated an
 > incomplete form of the fitted model — missing the dual slope, the Fresnel term and the
