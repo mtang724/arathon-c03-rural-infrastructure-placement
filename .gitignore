@@ -26,8 +26,6 @@ sionna-approach/**/Terrain3DEP.ply
 sionna-approach/**/*.blend
 sionna-approach/**/*.blend1
 
-# Compiled bytecode: machine-specific, regenerated on every run, and pure churn
-# in a diff. The one exclusion here that is a judgement rather than a hard limit.
-__pycache__/
-*.pyc
-.DS_Store
+# Nothing else is excluded. Compiled bytecode is committed too, on the explicit
+# instruction to push everything GitHub will accept -- it is machine-specific and
+# regenerated on every run, so expect churn in diffs.
