@@ -122,8 +122,10 @@ Verified against USGS NAIP imagery (`scene/verify_vs_aerial.py`, figure
   dozens of large agricultural sheds, grain bins and the ISU research complex.
 - **365 of 10,063 buildings (3.6%) sit in the rural western half** of the extract; 96.4%
   are in Ames and on the ISU campus to the east — where almost no measurements were taken.
-- The six that do exist land accurately on real roofs, so this is a **completeness** problem
-  in OpenStreetMap, not a georeferencing problem in our pipeline.
+- Whether those six land on real roofs **cannot be determined** — six polygons, 93% of the
+  masked pixels belonging to one dark-roofed school, give no alignment signal either way.
+  An earlier claim here that they "land squarely on real roofs" was eyeballed and is
+  withdrawn.
 
 Buildings are therefore close to absent along the measured rural route.
 
@@ -146,6 +148,27 @@ roughly twice any other change tried:
 | **Microsoft, 4 m** | **8.29 dB** | **0.832** | 0.80 |
 | Microsoft, 6 m | 8.32 dB | 0.831 | 0.79 |
 | Microsoft, 10 m | 9.32 dB | 0.787 | 0.77 |
+
+**Alignment measured, not eyeballed** (`scene/check_alignment.py`). Cross-correlating the
+footprints against imagery contrast over a shift grid gives a sharp peak for the Microsoft
+set at **+2 m East, 0 m North**:
+
+| E-W shift (m) | -10 | -6 | -2 | 0 | +2 | +6 | +10 |
+|---|---|---|---|---|---|---|---|
+| contrast (grey levels) | 1.3 | 2.5 | 5.5 | 8.1 | **10.2** | 5.9 | 3.8 |
+
+Collapsing to background by +/-10 m means this is a genuine peak, not a plateau. A 2 m
+residual is an order of magnitude below the terrain post spacing (23-31 m), smaller than the
+uncertainty on the fitted building height, and shifts shadowing geometry by under 0.1 deg at
+1-12 km. **It does not hurt.**
+
+This also re-validates the pipeline more strongly than the earlier eyeball did: the
+Microsoft footprints pass through the identical projection and mesh-export chain, so a 2 m
+alignment is independent confirmation that projection and export are correct.
+
+The same test on OpenStreetMap gives a flat profile (2.3-2.9 across +/-10 m) with no peak,
+but with six polygons dominated by one low-contrast building that is an inconclusive sample,
+not evidence of error.
 
 Two caveats. **Link rate falls** from 0.82 to 0.80 as extra buildings occlude more paths, so
 the test sets differ slightly (1,762 vs 1,718 points) and the comparison is not perfectly

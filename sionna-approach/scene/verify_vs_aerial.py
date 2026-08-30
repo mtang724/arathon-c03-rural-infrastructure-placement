@@ -22,6 +22,7 @@ AP.add_argument("--out", default="scene_validation.png")
 AP.add_argument("--source", default="OpenStreetMap")
 AP.add_argument("--nbox", type=int, default=6, help="buildings in the 2x2 km box")
 AP.add_argument("--nrural", default="365", help="buildings in the rural half")
+AP.add_argument("--note-c", default="6 footprints in this 2x2 km box — too few,\nand too dominated by one dark-roofed school,\nto test alignment")
 A = AP.parse_args()
 
 BASE = Path(__file__).resolve().parent
@@ -100,7 +101,7 @@ ax[1, 0].imshow(naip_zoom, extent=[ZOOM[0], ZOOM[2], ZOOM[1], ZOOM[3]], origin="
 pp, n = poly_patches(ZOOM)
 ax[1, 0].add_collection(PolyCollection(pp, facecolors="none", edgecolors="#ffcc00", lw=0.7))
 ax[1, 0].set_title("c  Alignment test — mesh reprojected onto imagery", loc="left", weight="bold")
-ax[1, 0].text(0.015, 0.03, f"{A.nbox} {A.source} buildings in this 2x2 km box,\nreprojected onto the imagery",
+ax[1, 0].text(0.015, 0.03, A.note_c,
               transform=ax[1, 0].transAxes, fontsize=8, va="bottom",
               bbox=dict(fc="white", ec="#ccc", alpha=0.92, pad=3))
 ax[1, 0].plot(site[1], site[0], "^", ms=12, mfc="#ff3b30", mec="white", mew=1.4)

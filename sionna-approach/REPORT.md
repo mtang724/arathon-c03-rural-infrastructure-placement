@@ -98,12 +98,10 @@ geometry and antenna azimuth, and any mirror or rotation would collapse it. Terr
 an independent DEM read to +0.04 m mean error (r = 0.9973), where a north–south flip would
 give r = 0.38.
 
-Validation against USGS NAIP aerial imagery (`scene_validation.png`) confirms the
-georeferencing but exposes a different problem: **only 6 OSM buildings exist in the 2×2 km
-box around the serving site**, and just 3.6% of the extract's 10,063 buildings lie in the
-rural half where the measurements are. The ones present land on real roofs, so this is
-OpenStreetMap incompleteness rather than a pipeline error — but it means buildings are
-effectively unmodelled along the measured route.
+Validation against USGS NAIP aerial imagery (`scene_validation.png`) exposes a separate
+problem: **only 6 OSM buildings exist in the 2×2 km box around the serving site**, and just
+3.6% of the extract's 10,063 buildings lie in the rural half where the measurements are —
+so buildings were effectively unmodelled along the measured route. §2.2 replaces them.
 
 ### 2.2 Replacing the building source is the one change that helped
 
@@ -116,6 +114,13 @@ serving site from **6 to 37**, and across the rural half from **365 to 2,167**.
 | OpenStreetMap | 8.58 dB | 0.826 | 0.82 |
 | **Microsoft ML, 4 m** | **8.29 dB** | **0.832** | 0.80 |
 | Microsoft ML, 10 m | 9.32 dB | 0.787 | 0.77 |
+
+Footprint alignment was measured rather than assumed: cross-correlating against imagery
+contrast gives a sharp peak at **+2 m East**, collapsing to background by +/-10 m
+(`scene/check_alignment.py`). That residual is an order of magnitude below the terrain post
+spacing and shifts shadowing by under 0.1 deg at these ranges, so it does not hurt. It is
+also independent confirmation of the projection chain, since these footprints pass through
+the same export path as everything else.
 
 **+0.29 dB, roughly twice any other single change tested** — and the only one to improve
 correlation as well. Compare `scene_validation.png` with `scene_validation_ms.png`.
