@@ -1,0 +1,36 @@
+base_stations:
+  - name: "Curtiss Farm"
+    location:
+      latitude: "42.00345729383988"
+      longitude: "-93.66091628902467"
+    cell_ids:
+      - "00019400B"
+      - "000194015"
+      - "00019401F"
+
+  - name: "Agronomy Farm"
+    location:
+      latitude: "42.021016348205585"
+      longitude: "-93.77358107943655"
+    cell_ids:
+      - "00019C00B"
+      - "00019C015"
+      - "00019C01F"
+
+  - name: "Research Park"
+    location:
+      latitude: "41.991051378648365"
+      longitude: "-93.63638030677834"
+    cell_ids:
+      - "00019800B"
+      - "000198015"
+      - "00019801F"
+
+  - name: "Wilson Hall"
+    location:
+      latitude: "42.0135968572502"
+      longitude: "-93.65091684111805"
+    cell_ids:
+      - "0001A000B"
+      - "0001A0015"
+      - "0001A001F"

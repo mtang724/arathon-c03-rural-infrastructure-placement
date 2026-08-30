@@ -218,6 +218,10 @@ html = html.replace("</script>", JS + """
 try{ cxBuildUI(); cxRefresh();
      $("cxbtn").onclick = cxCompare;
      const _o=$("opt").onclick; $("opt").onclick=()=>{cxRefresh(); _o&&_o();};
+     /* Each simulator carries its own candidate lattice -- terrain-fno is thinned to 57
+        against the others' 627 -- so the feasible count is meaningless until it is
+        recomputed for the newly selected bundle. */
+     $("sim").addEventListener("change", ()=>setTimeout(cxRefresh, 0));
 }catch(e){ console.error("constraint panel failed:", e); }
 </script>""", 1); n_edits += 1
 
