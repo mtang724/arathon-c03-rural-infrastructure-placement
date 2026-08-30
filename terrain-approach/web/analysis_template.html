@@ -1,0 +1,1430 @@
+<title>Anatomy of a Rural Uplink</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#FBFCFA; --surface:#F1F4EF; --surface2:#E8EDE6;
+  --ink:#16211C; --ink2:#3A4842; --mute:#65726B;
+  --rule:#DCE2DA; --rule2:#C3CCBF;
+  --c1:#0F6E70;      /* teal   - downlink / structural */
+  --c2:#8F6200;      /* ochre  - uplink / deficit */
+  --c3:#5B3A9B;      /* violet - third series */
+  --bad:#8C1D40;
+  --grid:#E4E9E1;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Source Serif 4",Georgia,serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --measure:68ch;
+  --pad:clamp(1.1rem,4vw,2.75rem);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --ground:#0E1512; --surface:#161F1B; --surface2:#1E2823;
+  --ink:#E5EBE7; --ink2:#BFCAC4; --mute:#8A968F;
+  --rule:#26332D; --rule2:#38473F;
+  --c1:#4FB3B4; --c2:#D9A227; --c3:#A98BE0; --bad:#E86A93;
+  --grid:#212D27;
+}}
+:root[data-theme="dark"]{
+  --ground:#0E1512; --surface:#161F1B; --surface2:#1E2823;
+  --ink:#E5EBE7; --ink2:#BFCAC4; --mute:#8A968F;
+  --rule:#26332D; --rule2:#38473F;
+  --c1:#4FB3B4; --c2:#D9A227; --c3:#A98BE0; --bad:#E86A93;
+  --grid:#212D27;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--f-body);
+     font-size:17px;line-height:1.62;margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 var(--pad) 6rem}
+header.mast{border-bottom:1px solid var(--rule2);padding:clamp(2.5rem,7vw,4.5rem) 0 2rem;
+            display:flex;flex-direction:column;gap:1.4rem}
+.eyebrow{font-family:var(--f-mono);font-size:.7rem;font-weight:500;letter-spacing:.14em;
+         text-transform:uppercase;color:var(--c1)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(2.3rem,6vw,3.9rem);
+   line-height:1.02;letter-spacing:-.028em;margin:0;text-wrap:balance}
+.deck{font-size:clamp(1.05rem,2vw,1.28rem);color:var(--ink2);max-width:58ch;margin:0;text-wrap:pretty}
+.deck b{font-weight:600;color:var(--ink)}
+section{padding-top:3.4rem}
+h2{font-family:var(--f-display);font-weight:600;font-size:clamp(1.45rem,3vw,1.95rem);
+   letter-spacing:-.02em;line-height:1.15;margin:.3rem 0 .9rem;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:1.04rem;margin:2rem 0 .5rem}
+p{margin:0 0 1rem;max-width:var(--measure)}
+ul,ol{max-width:var(--measure);padding-left:1.15rem;margin:0 0 1rem}
+li{margin-bottom:.4rem} li::marker{color:var(--mute)}
+code{font-family:var(--f-mono);font-size:.85em;background:var(--surface2);padding:.08em .34em;border-radius:2px}
+.lede{font-size:1.09rem;color:var(--ink2)}
+
+/* tiles */
+.tiles{display:grid;gap:1px;background:var(--rule2);border:1px solid var(--rule2);
+       grid-template-columns:repeat(auto-fit,minmax(196px,1fr));margin:1.4rem 0}
+.tile{background:var(--surface);padding:1.05rem 1.1rem;display:flex;flex-direction:column;gap:.25rem}
+.tile .k{font-family:var(--f-display);font-weight:700;font-size:clamp(1.6rem,3.6vw,2.15rem);
+         line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.tile .k.w{color:var(--c2)} .tile .k.g{color:var(--c1)}
+.tile .l{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.tile .d{font-size:.87rem;color:var(--ink2);line-height:1.42}
+
+/* figures */
+figure{margin:1.6rem 0;background:var(--surface);border:1px solid var(--rule2);padding:1.1rem 1.1rem .9rem}
+figure.wide{margin-left:0;margin-right:0}
+figcaption{font-size:.87rem;color:var(--ink2);margin-top:.75rem;line-height:1.5;max-width:74ch}
+figcaption b{color:var(--ink);font-weight:600}
+.figtitle{font-family:var(--f-display);font-weight:600;font-size:.98rem;margin:0 0 .15rem}
+.figsub{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;
+        color:var(--mute);margin-bottom:.7rem}
+.chart{width:100%;position:relative}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-family:var(--f-mono);font-size:.72rem;
+        color:var(--ink2);margin-bottom:.55rem}
+.legend span{display:inline-flex;align-items:center;gap:.4rem}
+.legend i{width:14px;height:3px;border-radius:1.5px;display:inline-block}
+.legend i.dot{width:9px;height:9px;border-radius:50%}
+.tip{position:absolute;pointer-events:none;background:var(--ground);border:1px solid var(--rule2);
+     font-family:var(--f-mono);font-size:.7rem;padding:.4rem .55rem;line-height:1.45;
+     white-space:nowrap;opacity:0;transition:opacity .1s;z-index:5;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:1.2rem}
+.grid2 figure{margin:0}
+.spine{margin:1.5rem 0;border-top:1px solid var(--rule2)}
+.phase{display:grid;grid-template-columns:6.5rem 1fr;gap:0 1.6rem;
+       border-bottom:1px solid var(--rule2);padding:1.5rem 0}
+.phase .num{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.05em;color:var(--mute);padding-top:.3rem}
+.phase .num b{display:block;font-family:var(--f-display);font-size:1.6rem;font-weight:700;
+              color:var(--c1);letter-spacing:-.02em;line-height:1;margin-bottom:.25rem}
+.phase h3{margin:0 0 .5rem;font-size:1.14rem}
+.out{margin-top:.75rem;font-family:var(--f-mono);font-size:.76rem;color:var(--mute);line-height:1.6;max-width:64ch}
+.out b{color:var(--ink2);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:.68rem}
+@media(max-width:640px){.phase{grid-template-columns:1fr;gap:.5rem}
+  .phase .num{display:flex;align-items:baseline;gap:.6rem;padding-top:0}
+  .phase .num b{display:inline;margin:0}}
+
+/* tables */
+.tscroll{overflow-x:auto;margin:1.2rem 0;border:1px solid var(--rule2)}
+table{border-collapse:collapse;width:100%;font-size:.87rem;min-width:480px;background:var(--surface)}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.09em;text-transform:uppercase;
+         color:var(--mute);font-weight:500;background:var(--surface2);
+         border-bottom:1px solid var(--rule2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.w{color:var(--c2);font-weight:600} td.g{color:var(--c1);font-weight:600}
+tr.hi td{background:var(--surface2)}
+
+.callout{border-left:3px solid var(--c2);background:var(--surface);padding:.95rem 1.15rem;
+         margin:1.4rem 0;max-width:var(--measure)}
+.callout .tag{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.11em;text-transform:uppercase;
+              color:var(--c2);display:block;margin-bottom:.3rem;font-weight:600}
+.callout p:last-child{margin-bottom:0}
+.callout.t{border-left-color:var(--c1)} .callout.t .tag{color:var(--c1)}
+#mapcv{width:100%;height:520px;display:block}
+footer{margin-top:4rem;padding-top:1.4rem;border-top:1px solid var(--rule2);
+       font-family:var(--f-mono);font-size:.73rem;color:var(--mute);line-height:1.7;max-width:var(--measure)}
+:focus-visible{outline:2px solid var(--c1);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">Arathon Challenge 03 &middot; Full analysis</div>
+  <h1>Anatomy of a Rural Uplink</h1>
+  <p class="deck">7,144 UE samples around one Iowa base station, taken apart. The network is <b>not coverage-limited</b> in the way its downlink map suggests, the question has <b>no single answer until you fix the service definition</b>, and what actually fails is availability rather than speed.</p>
+</header>
+
+<section>
+  <div class="eyebrow">01 &mdash; The dataset</div>
+  <h2>What is actually in the file</h2>
+  <div class="tiles" id="tiles"></div>
+  <p class="lede">Two collection days, four drive runs, one serving site. Agronomy Farm carries 3,838 samples; Curtiss (177) and Wilson Hall (106) appear sporadically and fit with R&sup2; &asymp; 0, and Research Park never serves at all. This is a single-site study, and everything below treats it as one.</p>
+  <div class="callout">
+    <span class="tag">The 42% that most pipelines delete</span>
+    <p>3,023 rows report no serving cell &mdash; either a null <code>cellid</code> or the sentinel <code>FFFFFFFFF</code> with <code>arfcn&nbsp;&minus;1</code>. A reflex <code>dropna()</code> removes them, and with them every coverage hole in the survey. They are not missing measurements. They are <b>measured absences of service</b>, and they are the demand the challenge asks us to serve.</p>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">02 &mdash; Finding one</div>
+  <h2>Downlink holds. Uplink collapses.</h2>
+  <p>This is the whole argument, and it is visible in a single chart. Both directions are measured in Mbps on the same link, so they belong on one axis &mdash; but their absolute levels differ by 5&times;, which hides the shape. Plotting each as a percentage of its own near-tower value exposes what is really happening.</p>
+
+  <figure class="wide">
+    <div class="figtitle">Throughput retained with distance, relative to the 0&ndash;500 m band</div>
+    <div class="figsub">Median of each distance bin &middot; 100% = value beside the tower</div>
+    <div class="legend" id="lg-decay"></div>
+    <div class="chart" id="c-decay"></div>
+    <figcaption>Over the full five-mile campaign downlink gives up <b>20%</b> of its near-tower rate. Uplink gives up <b>83%</b>. The physical reason is not subtle: the tower is a floodlight and the handset is a penlight, so on a shared TDD channel the uplink budget runs out first. Any asset scored on downlink or on RSRP is being scored on the axis that is not failing.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <div class="figtitle">Share of tests at or above a rate</div>
+      <div class="figsub">All measured samples &middot; complementary CDF</div>
+      <div class="legend" id="lg-exc"></div>
+      <div class="chart" id="c-exc"></div>
+      <figcaption><b>34.8%</b> of uplink tests fall below 25 Mbps against <b>2.8%</b> of downlink tests &mdash; a 12&times; difference in failure rate on the same link, at the same moment.</figcaption>
+    </figure>
+    <figure>
+      <div class="figtitle">Probability of no serving cell</div>
+      <div class="figsub">Fraction of samples reporting no cell, by distance</div>
+      <div class="chart" id="c-out"></div>
+      <figcaption>Zero inside 500 m, <b>65%</b> beyond 8 km. The outage is not scattered noise: 997 of 1,887 100 m cells are entirely dead and 558 entirely live, with only 217 mixed, and the pattern repeats across both days (&rho;&nbsp;=&nbsp;0.49).</figcaption>
+    </figure>
+  </div>
+
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Distance</th><th>Samples</th><th>RSRP</th><th>SINR</th><th>Downlink</th><th>Uplink</th><th>Ping</th><th>No cell</th></tr></thead>
+    <tbody id="tbl-dist"></tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">03 &mdash; The model</div>
+  <h2>Why physics, and not a gradient booster</h2>
+  <p>A model trained on <code>(lat, lon) &rarr; uplink</code> can interpolate along a road it has seen. It cannot answer <em>what if we put a transmitter over there</em>, because it has no mechanism &mdash; it never saw a transmitter there. So the counterfactual runs through a fitted propagation law instead, where a node radiating X dB below the macro simply sits X dB lower on the curve at every distance.</p>
+
+  <figure class="wide">
+    <div class="figtitle">Path loss, and the antenna term that rescues it</div>
+    <div class="figsub">RSRP against log distance &middot; 1,400 sampled measurements</div>
+    <div class="legend" id="lg-pl"></div>
+    <div class="chart" id="c-pl"></div>
+    <figcaption>Fitting RSRP on log-distance alone returns an exponent of <b>1.68</b> &mdash; propagation <em>better</em> than free space, which is impossible. The van drove along and across the sector's boresight, so the beam pattern was being absorbed into the distance term. Adding two azimuth harmonics frees the exponent to a physically sane <b>2.40</b> and lifts R&sup2; from 0.622 to 0.691. Residual scatter is &sigma;&nbsp;=&nbsp;9.2&nbsp;dB, which becomes the uncertainty band everywhere downstream.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <div class="figtitle">Uplink against received power</div>
+      <div class="figsub">Isotonic fit &middot; monotone by construction</div>
+      <div class="chart" id="c-iso"></div>
+      <figcaption>Fitted isotonically because the physics guarantees monotonicity &mdash; more received power cannot mean less throughput &mdash; so enforcing it stops the curve inventing a dip in a sparse region.</figcaption>
+    </figure>
+    <figure>
+      <div class="figtitle">Outage against received power</div>
+      <div class="figsub">Isotonic fit &middot; on 200 m cell aggregates</div>
+      <div class="chart" id="c-oc"></div>
+      <figcaption>Assuming outage was a Gaussian threshold crossing predicted <b>4%</b> where <b>44%</b> was observed. It is fitted, not assumed &mdash; and fitted on cells rather than rows, because the van logged 543 samples in the one cell beside the tower.</figcaption>
+    </figure>
+  </div>
+
+  <figure class="wide">
+    <div class="figtitle">The quantity the optimiser actually maximises</div>
+    <div class="figsub">Expected uplink = (1 &minus; P(outage)) &times; uplink</div>
+    <div class="legend" id="lg-exp"></div>
+    <div class="chart" id="c-exp"></div>
+    <figcaption>A cell that is out 60% of the time does not deliver its connected rate. Multiplying the two curves is what stops the optimiser recommending an asset for somewhere that is already fine, and it is why the service edge falls off far faster than the throughput curve alone suggests.</figcaption>
+  </figure>
+
+  <div class="callout t">
+    <span class="tag">Why a downlink measurement can predict uplink</span>
+    <p>ARFCN 630720 is band n78, which is <b>TDD</b>: uplink and downlink share one frequency, so path loss is reciprocal. That is what licenses the whole chain. On an FDD band this step would be invalid and there would be no counterfactual at all.</p>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">04 &mdash; Validation</div>
+  <h2>The number a naive pipeline reports is fiction</h2>
+  <p>Samples are 2.63 s apart &mdash; metres apart at driving speed. A random train/test split therefore tests the model on places it already trained on. We hold out whole KMeans blocks <em>and</em> drop every training row within 200 m of a test row.</p>
+
+  <figure class="wide">
+    <div class="figtitle">Same model, two splits</div>
+    <div class="figsub">Gradient boosting on coordinates</div>
+    <div class="legend" id="lg-leak"></div>
+    <div class="chart" id="c-leak"></div>
+    <figcaption>Uplink R&sup2; falls from <b>0.688</b> to <b>&minus;0.146</b>; outage AUC from <b>0.965</b> to <b>0.650</b>. A negative R&sup2; means that on genuinely unseen geography the model is worse than predicting the average. The left-hand bars are what a pipeline without a spatial split would put on a slide.</figcaption>
+  </figure>
+
+  <figure class="wide">
+    <div class="figtitle">Uplink prediction error, all methods on identical folds</div>
+    <div class="figsub">Mean absolute error in Mbps &middot; buffered spatial blocks &middot; lower is better</div>
+    <div class="chart" id="c-mae"></div>
+    <figcaption>The result that decided the architecture. The <b>physics chain beats gradient boosting on unseen geography</b> &mdash; 19.9 against 21.0 Mbps &mdash; while also being the only one of the two that can answer a counterfactual. Choosing it was not a stylistic preference; the validation picked it. Note also that a distance-only linear fit is the <em>worst</em> method on the board, which is what the azimuth term was for.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <div class="figtitle">Where the remaining error lives</div>
+      <div class="figsub">MAE decomposition, Mbps</div>
+      <div class="chart" id="c-dec"></div>
+      <figcaption>Given RSRP exactly, error is <b>14.2</b>; predicting RSRP from geometry raises it to <b>19.9</b>. Only <b>5.7 Mbps</b> is attributable to propagation modelling &mdash; the rest is inherent scatter in the power-to-throughput relationship. That figure is the entire headroom any better propagation model, ray-tracing included, could ever recover.</figcaption>
+    </figure>
+    <figure>
+      <div class="figtitle">Outage surface calibration</div>
+      <div class="figsub">Predicted vs observed by bin &middot; Brier 0.171</div>
+      <div class="chart" id="c-cal"></div>
+      <figcaption>Points on the dashed line are perfectly calibrated. The bulk bins (n = 192 and 544) sit close to it; the model is mildly conservative at the low end, on 25 cells.</figcaption>
+    </figure>
+  </div>
+
+  <figure class="wide">
+    <div class="figtitle">How fast the unexplained residual decorrelates</div>
+    <div class="figsub">Mean absolute difference in path-loss residual, by separation</div>
+    <div class="chart" id="c-vg"></div>
+    <figcaption>The structure a ray-tracer would model dies at roughly <b>150 m</b> &mdash; past that, two points differ as much as two picked at random. That is <em>finer than the 200 m demand grid</em> and finer than the 200 m validation buffer, so the detail could neither be represented nor rewarded. Combined with the 5.7 Mbps headroom above, this is the quantitative case against building a scene-based simulation for this dataset.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="eyebrow">05 &mdash; The decision</div>
+  <h2>Where the asset goes, and how much it buys</h2>
+  <p>931 demand cells at 200 m, weighted by <em>passes</em> rather than samples &mdash; a contiguous visit counts once, so the van parked beside the tower for 24 minutes does not outweigh 543 cells it drove through. 622 candidate sites, thinned from the driven route at 250 m spacing because rural siting follows roads, right-of-way and existing poles.</p>
+
+  <figure class="wide">
+    <div class="figtitle">Predicted expected uplink across the surveyed corridor</div>
+    <div class="figsub">Click the legend chips to switch layer &middot; drag to pan, scroll to zoom</div>
+    <div class="legend" id="lg-map"></div>
+    <div class="chart"><canvas id="mapcv"></canvas></div>
+    <figcaption>The southern and western reaches fall away hardest. <b>The relay is pulled inward to 4.2 km and the small cell pushes out to 7.1 km</b> &mdash; the reason is in the next chart.</figcaption>
+  </figure>
+
+  <div class="callout">
+    <span class="tag">The finding that was not designed in</span>
+    <p>A donor-fed relay has to stay close enough to still hear the tower, so the feasibility filter drags it <b>inward, to 4.2 km &mdash; where service is already mostly adequate</b>. A backhauled small cell has no such leash and goes <b>out to 7.1 km, where the need actually is</b>. The cheap asset lands in the wrong place. This fell out of a donor-RSRP constraint; nobody asserted it.</p>
+  </div>
+
+  <figure class="wide">
+    <div class="figtitle">Route demand meeting the uplink target</div>
+    <div class="figsub">Before, after the optimiser's relay, and after the worst-measured-point baseline</div>
+    <div class="legend" id="lg-cov"></div>
+    <div class="chart" id="c-cov"></div>
+    <figcaption>At the 10 Mbps target, <b>51.4%</b> of route demand is already met and 48.6% is not. The optimiser's site adds <b>1.67 points</b> against the baseline's 1.30 &mdash; the brief's hypothesis holds, but modestly, because the worst measured point happens to sit near a genuinely good site. For a small cell the same comparison is 1.23 against 0.43, a <b>2.8&times;</b> advantage.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <div class="figtitle">Diminishing returns</div>
+      <div class="figsub">Marginal gain of each successive site, relay</div>
+      <div class="chart" id="c-greedy"></div>
+      <figcaption>Five relays cumulatively reach <b>6.3 points</b> of a 48.6-point deficit. This is the clearest statement of the honest conclusion: <b>no small number of assets fixes this corridor.</b></figcaption>
+    </figure>
+    <figure>
+      <div class="figtitle">Does the recommendation survive its own error bars?</div>
+      <div class="figsub">200 re-solves against shadow-fading draws</div>
+      <div class="legend" id="lg-rob"></div>
+      <div class="chart" id="c-rob"></div>
+      <figcaption>The exact pole wins only <b>4%</b> of draws &mdash; but with 251 candidates 250 m apart, that is the wrong question. Within 2 km the answer is <b>60%</b>, against a random-pick baseline of 0.4%. The <em>neighbourhood</em> is defensible; the specific pole is not, and we say so.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">06 &mdash; Sensitivity</div>
+  <h2>What you deploy matters more than where you put it</h2>
+
+  <figure class="wide">
+    <div class="figtitle">Benefit against assumed asset transmit power</div>
+    <div class="figsub">Relay, 10 Mbps target &middot; labels give the resulting service radius</div>
+    <div class="chart" id="c-eirp"></div>
+    <figcaption>EIRP deficit is the most arbitrary number in the project &mdash; the macro's absolute power is never observed, so it is an assumption, not a measurement. Across the plausible range the benefit swings <b>9&times;</b> and the optimal site moves <b>2 km</b>. Any recommendation that does not state its assumed transmit power is not a recommendation, which is why this is a result and not a footnote.</figcaption>
+  </figure>
+
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Assumption swept</th><th>Range tested</th><th>Effect on the answer</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>Asset EIRP below macro</td><td class="n">10 &ndash; 32 dB</td><td>Gain 5.72 &rarr; 0.65 pts; site moves 2.2 km</td><td class="w">dominates</td></tr>
+      <tr><td>Uplink service target</td><td class="n">5 / 10 / 25 Mbps</td><td>Coverage 91.1% / 51.4% / 19.7%</td><td class="w">dominates</td></tr>
+      <tr><td>Demand weighting</td><td class="n">passes vs uniform</td><td>Relay site moves 1.3 km; <b>small cell site unchanged</b></td><td>material for relay only</td></tr>
+      <tr><td>Shadow fading draw</td><td class="n">&sigma; = 9.2 dB, 200 draws</td><td>Exact site 4%, within 2 km 60%</td><td>area robust, pole not</td></tr>
+      <tr><td>Path-loss slope</td><td class="n">&plusmn;5%</td><td>folded into the draws above</td><td>minor</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <figure class="wide">
+    <div class="figtitle">The network delivers basic uplink nearly everywhere and useful uplink almost nowhere</div>
+    <div class="figsub">Share of route demand meeting each target, before any intervention</div>
+    <div class="chart" id="c-thr"></div>
+    <figcaption><b>91.1%</b> of route demand clears 5 Mbps. <b>51.4%</b> clears 10. Only <b>19.7%</b> clears 25. The steepness between 5 and 25 is the single most policy-relevant shape in the dataset: the answer to "is this network adequate" depends almost entirely on a threshold nobody has agreed.</figcaption>
+  </figure>
+</section>
+
+
+<section>
+  <div class="eyebrow">06b &mdash; Which statistic?</div>
+  <h2>The answer depends on whether you measure the average or the bad days</h2>
+  <p>Everything above scores a cell on <em>expected</em> uplink. That is a defensible planning number, but it is not what a user experiences, and two things were hiding inside it. <code>IsotonicRegression</code> minimises squared error, so the fitted curve is a conditional <b>mean</b> &mdash; and throughput is right-skewed. More importantly, service is normally specified as a percentile: "10 Mbps at the 90th percentile of attempts", not "10 Mbps on average". Once outage is in the mixture those are wildly different tests.</p>
+
+  <figure class="wide">
+    <div class="figtitle">Route demand meeting 10 Mbps uplink, under five service definitions</div>
+    <div class="figsub">Identical network, identical model &middot; only the statistic changes</div>
+    <div class="chart" id="c-crit"></div>
+    <figcaption>The same corridor is <b>94.8%</b> served or <b>9.1%</b> served depending purely on which statistic you write into the requirement. Our headline figure of 51.4% sits on the mean; a typical attempt (p50) sees <b>29.6%</b>; a 90%-reliability target sees <b>9.1%</b>. Nothing about the radio changed between these bars.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <div class="figtitle">Uplink spread at a fixed received power</div>
+      <div class="figsub">Conditional p10 / p50 / p90 against RSRP</div>
+      <div class="legend" id="lg-fan"></div>
+      <div class="chart" id="c-fan"></div>
+      <figcaption>At &minus;90 dBm the tenth percentile is <b>10.5 Mbps</b> and the ninetieth is <b>57.6</b> &mdash; a 5.5&times; spread at identical signal strength, driven by scheduling, load and modem state. The mean tracks well above the median through the mid-range.</figcaption>
+    </figure>
+    <figure>
+      <div class="figtitle">Where the relay goes, by criterion</div>
+      <div class="figsub">Distance from the macro of the optimal site</div>
+      <div class="chart" id="c-sites"></div>
+      <figcaption>The recommendation <b>moves up to 2.6 km</b>. A reliability target pulls the asset <em>inward</em> to 1.9 km; an average-case target pushes it out to 4.2 km; a best-case target to 6.0 km. Mean and median agree within 530 m &mdash; it is the tails that disagree.</figcaption>
+    </figure>
+  </div>
+
+  <div class="callout">
+    <span class="tag">The finding that reframes the whole problem</span>
+    <p>A cell that is unavailable more than 10% of the time has a p10 throughput of <b>exactly zero</b>, however fast it is when connected. <b>877 of 931 cells &mdash; 90.3% of route passes &mdash; are in that state.</b> Under a reliability-based service definition, throughput is irrelevant for nine tenths of this corridor. <b>It is an availability problem wearing a throughput problem's clothes</b>, and no relay sized like ours changes that: one adds 0.72 points to a 9.1% baseline.</p>
+  </div>
+
+  <figure class="wide">
+    <div class="figtitle">Are these real outages, or handover blips?</div>
+    <div class="figsub">Share of total outage time carried by episodes longer than each cutoff</div>
+    <div class="chart" id="c-eps"></div>
+    <figcaption>A percentile taken over instantaneous samples is the harshest possible test &mdash; it counts a five-second gap the same as a ten-minute hole, and a 60-second upload survives the first and dies on the second. So the duration distribution decides whether p10 is fair. It is: across 232 episodes the median is <b>23 s</b>, and episodes longer than a minute are only 23.7% of events but carry <b>81.3% of all outage time</b>. Episodes over five minutes carry <b>52.4%</b>. These are sustained service failures, not blips, so the strict reading stands.</figcaption>
+  </figure>
+
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Service definition</th><th>Demand met</th><th>Optimal site</th><th>Gain</th><th>What it means</th></tr></thead>
+    <tbody id="tbl-crit"></tbody>
+  </table>
+  </div>
+
+  <h3>Latency has the same problem, worse</h3>
+  <p>Median ping is 25.4 ms and p90 is 75.7 &mdash; both fine. p99 is <b>554 ms</b>, a 22&times; jump off the median, and the maximum is 982 ms. Reporting median latency for this link would be actively misleading for anything interactive.</p>
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Statistic</th><th>p50</th><th>p90</th><th>p95</th><th>p99</th><th>max</th></tr></thead>
+    <tbody id="tbl-ping"></tbody>
+  </table>
+  </div>
+
+  <div class="callout t">
+    <span class="tag">What we would now put in the recommendation</span>
+    <p>State the criterion before stating the site. On an <b>average-throughput</b> target the answer is a relay at 4.2 km, worth +1.67 points. On a <b>90%-reliability</b> target there is no useful relay answer at all &mdash; the corridor needs macro-level coverage, because availability, not throughput, is what fails. Presenting the first number without the second would be the most misleading thing in this project.</p>
+  </div>
+</section>
+
+
+<section>
+  <div class="eyebrow">08 &mdash; What the finding changed</div>
+  <h2>Three things the percentile result forced us to rebuild</h2>
+  <p class="lede">A number that swings tenfold on a choice nobody wrote down is not a result, it is a hidden assumption. Finding that the coverage figure and the recommended site both moved with the choice of statistic meant the system was answering a question it had never been asked to state. Three changes followed.</p>
+
+  <div class="spine">
+    <div class="phase">
+      <div class="num"><b>1</b>service.py</div>
+      <div>
+        <h3>The service definition became a parameter</h3>
+        <p>It had been buried inside a helper as <code>(1&nbsp;&minus;&nbsp;P(outage))&nbsp;&times;&nbsp;mean&nbsp;uplink</code>. There is now one module that owns "what does a cell deliver?", exposing mean, p05, p10, p50, p90 and availability behind a common interface, and <code>config.py</code> names the headline choice explicitly.</p>
+        <p>The headline default moved from <b>mean to p50</b>. <code>IsotonicRegression</code> minimises squared error, so the fitted curve is a conditional mean, and on a right-skewed throughput distribution reporting it flatters the network. p10 was not chosen either &mdash; with 90% of passes outage-limited it is nearly degenerate as an objective. p50 is the honest middle, and every criterion is now solved on every run regardless.</p>
+        <div class="out"><b>Effect</b> &mdash; headline coverage restated from 51.4% to <b>29.6%</b>, and its reported gain fell from 1.67 to 1.59 points, with the site itself moving 530 m.</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="num"><b>2</b>optimize.py</div>
+      <div>
+        <h3>Availability became its own objective</h3>
+        <p>If nine tenths of route passes are unavailable more than 10% of the time, optimising their <em>throughput</em> is optimising the wrong quantity &mdash; their reliable rate is zero whatever the radio does when it is up. So availability is now a first-class criterion with its own target, and the continuous version is reported in the unit a planner can act on: <b>vehicle-passes restored to having service at all</b>, rather than cells crossing a line.</p>
+        <p>The answer it gives is sobering, which is the point of measuring it. Optimised for the <em>thresholded</em> availability criterion the relay lands 3.7 km out; optimised for <em>passes restored</em> it lands 6.0 km out &mdash; two more distinct sites. And the best of them restores service to <b>10.6 of 1,380 passes, 0.8%</b>.</p>
+        <div class="out"><b>Effect</b> &mdash; the honest headline stops being "where to put a relay" and becomes "a relay of this class is not the intervention".</div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="num"><b>3</b>consensus</div>
+      <div>
+        <h3>A site that survives every definition &mdash; and the finding that none does</h3>
+        <p>We do not get to know which statistic an operator will write into their requirement. So each criterion's gains are normalised by its own best, giving a regret in [0,&nbsp;1], and the recommended site is the one whose <em>worst</em> regret across all definitions is smallest &mdash; minimax regret, the standard response to an unknown objective.</p>
+        <p>It helps, and it is not enough. The consensus relay reaches a worst-case regret of <b>0.77</b>, against <b>0.85&ndash;1.00</b> for the single-criterion picks. Better, but 0.77 means that under its least favourable definition even the consensus site captures under a quarter of the achievable gain.</p>
+        <div class="out"><b>Effect</b> &mdash; the deliverable stopped being a pin. The criteria place the relay at <b>4 distinct sites spanning 4.1 km</b> (6 sites and 8.4 km for a small cell), so the operational output is now: fix the criterion first, because until you do the question does not have an answer.</div>
+      </div>
+    </div>
+  </div>
+
+  <figure class="wide">
+    <div class="figtitle">The same optimiser, six service definitions</div>
+    <div class="figsub">Where it puts the relay, and how much demand each definition says is already met</div>
+    <div class="legend" id="lg-bycrit"></div>
+    <div class="chart" id="c-bycrit"></div>
+    <figcaption>Read the two encodings against each other. Bar length is <b>distance from the macro</b> of that definition's optimal site; the dot is the <b>share of demand already met</b> under it. They move in opposite directions: the stricter the definition, the less is currently served <em>and</em> the further in the asset gets pulled, because far-out cells become unreachable rather than merely slow.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <div class="figtitle">How far apart the definitions place the asset</div>
+      <div class="figsub">Pairwise distance between criterion-optimal sites, metres</div>
+      <div class="chart" id="c-dis"></div>
+      <figcaption>A dark cell means those two definitions disagree strongly about where the asset belongs. The widest disagreement is <b>4,069 m</b> for a relay and <b>8,397 m</b> for a small cell.</figcaption>
+    </figure>
+    <figure>
+      <div class="figtitle">Regret of the consensus site</div>
+      <div class="figsub">Share of achievable gain forgone under each definition</div>
+      <div class="chart" id="c-regret"></div>
+      <figcaption>Zero would mean the consensus site is optimal under that definition. Its worst case is <b>0.77</b>. That the best available compromise still forgoes three quarters of the gain somewhere is the quantitative statement of "these objectives are not reconcilable by siting".</figcaption>
+    </figure>
+  </div>
+
+  <div class="callout">
+    <span class="tag">What we would hand an operator now</span>
+    <p>Not a pin. A short question &mdash; <em>is your requirement an average, a typical session, or a reliability guarantee?</em> &mdash; and then one of three different answers, each with its own site, its own honest baseline, and in the reliability case the finding that <b>no relay of this class is worth deploying</b>, because availability rather than throughput is what fails and one asset restores 0.8% of it.</p>
+  </div>
+
+  <h3>Also changed, while we were in there</h3>
+  <ul>
+    <li><b>The planner exposes the criterion.</b> Switching between mean, p50, p10 and availability re-solves everything in the browser and moves the recommended pin, so the disagreement is something judges operate rather than read about. The consensus site is pinned alongside.</li>
+    <li><b>A palette collision was caught by the validator</b>, not by eye: the status red sat at OKLab &Delta;E 13.8 from the ochre series, below the 15 floor for normal vision. Both were in the map at once. Replaced, and the check now runs over both themes on every build.</li>
+    <li><b>Duplication removed.</b> The percentile machinery written for the one-off analysis became <code>service.py</code>, and the exploratory script now imports it rather than carrying its own copy of the lookup-table code.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="eyebrow">07 &mdash; Conclusions</div>
+  <h2>What the analysis supports, and what it does not</h2>
+
+  <h3>Supported</h3>
+  <ol>
+    <li><b>This link is uplink-limited.</b> 83% loss against downlink's 20%; 34.8% of uplink tests under 25 Mbps against 2.8% of downlink. The deficit is in the direction rural agriculture actually uses.</li>
+    <li><b>The outage is real geography, not logging error.</b> Spatially coherent, repeatable across days, monotone in distance.</li>
+    <li><b>A physical model outperforms ML here</b> on unseen geography (19.9 vs 21.0 MAE) while also being the only one that can evaluate an intervention.</li>
+    <li><b>Optimised placement beats the worst-measured-point rule</b> under every definition tested &mdash; 1.8&times; for a relay and 2.2&times; for a small cell on the p50 headline. The brief's hypothesis holds.</li>
+    <li><b>The donor constraint mis-sites cheap assets</b>, pulling relays into areas that are already served.</li>
+    <li><b>The corridor is availability-limited, not throughput-limited.</b> 90.3% of route passes are unavailable more than 10% of the time, which pins their reliable throughput to zero regardless of speed. Outage time is dominated by sustained episodes, not blips.</li>
+  </ol>
+
+  <h3>Not supported &mdash; and worth saying out loud</h3>
+  <ul>
+    <li><b>That one asset fixes this.</b> It does not. One closes 3.4% of the deficit, five close 13%. The corridor needs a programme, not a box.</li>
+    <li><b>That we know the right pole.</b> We know the right 2 km. The exact site is within the noise, and reporting 4% honestly is worth more than a confident wrong pin.</li>
+    <li><b>Any claim about congestion, interference, backhaul or scheduling.</b> UE-side data cannot separate them. Every conclusion here is coverage- and power-limited only.</li>
+    <li><b>That these numbers generalise.</b> One UE, one modem, one band, two days, four runs, one serving site.</li>
+    <li><b>That any single coverage figure is a fact about the network.</b> It is a fact about the network <em>and a choice of statistic</em>. The same corridor is 94.8% or 9.1% covered under equally reasonable definitions, and the asset lands in 4 different places across them.</li>
+    <li><b>That this is a siting problem at all.</b> Under a reliability requirement it is a coverage-build problem. The most useful thing the optimiser did was establish that its own answer is not worth deploying.</li>
+  </ul>
+
+  <div class="callout">
+    <span class="tag">A seasonal caveat that cuts one way</span>
+    <p>Collection ran <b>19&ndash;20 March</b>. Iowa row crops go in from late April and the deciduous tree lines were still bare, so this is a <b>best-case foliage condition</b>. The measured uplink deficit is a floor. Under full canopy at 3.46 GHz it gets worse, and the recommended site is therefore conservative.</p>
+  </div>
+</section>
+
+<footer>
+  Computed from COTS.csv (7,144 rows) and Base_Station_Information.yaml. Pipeline: features &rarr; model &rarr; optimize &rarr; planner, ~70 s end to end, reproducible from a clean directory.<br>
+  ARFCN 630720 &rarr; 3460.8 MHz, NR band n78, TDD. Chart palette validated for OKLab &Delta;E and dichromat separation in both themes before use.<br>
+  Dataset is Arathon-restricted and non-public; figures here describe method and results, not redistribution.
+</footer>
+</div>
+
+<script>
+const A = __DATA__;
+const NS="http://www.w3.org/2000/svg";
+const C = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const mk = (t,a={}) => { const e=document.createElementNS(NS,t);
+  for(const k in a) e.setAttribute(k,a[k]); return e; };
+const fmt = (v,d=1) => v==null?"—":(+v).toFixed(d);
+
+/* ---------- shared plotting core ---------- */
+function makeSvg(host,W,H){
+  host.innerHTML="";
+  const svg=mk("svg",{viewBox:`0 0 ${W} ${H}`,role:"img"});
+  host.appendChild(svg);
+  const tip=document.createElement("div"); tip.className="tip";
+  host.appendChild(tip);
+  return {svg,tip};
+}
+function scale(d0,d1,r0,r1,log){
+  if(log){const a=Math.log10(d0),b=Math.log10(d1);
+    return v=>r0+(Math.log10(v)-a)/(b-a)*(r1-r0);}
+  return v=>r0+(v-d0)/((d1-d0)||1)*(r1-r0);
+}
+function axes(svg,W,H,P,xt,yt,xs,ys,xlab,ylab){
+  const g=mk("g");
+  yt.forEach(t=>{
+    const y=ys(t);
+    g.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:C("--grid"),"stroke-width":1}));
+    const tx=mk("text",{x:P.l-8,y:y+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")}); tx.textContent=t.label??t;
+    g.appendChild(tx);
+  });
+  xt.forEach(t=>{
+    const v=t.v??t, x=xs(v);
+    g.appendChild(mk("line",{x1:x,x2:x,y1:H-P.b,y2:H-P.b+4,stroke:C("--rule2"),"stroke-width":1}));
+    const tx=mk("text",{x,y:H-P.b+16,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")}); tx.textContent=t.label??t;
+    g.appendChild(tx);
+  });
+  g.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:H-P.b,y2:H-P.b,stroke:C("--rule2"),"stroke-width":1}));
+  if(ylab){const t=mk("text",{x:P.l-8,y:P.t-9,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")}); t.textContent=ylab; g.appendChild(t);}
+  if(xlab){const t=mk("text",{x:W-P.r,y:H-P.b+30,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")}); t.textContent=xlab; g.appendChild(t);}
+  svg.appendChild(g);
+}
+function path(pts){return pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");}
+function legend(id,items){
+  const el=document.getElementById(id); if(!el)return;
+  el.innerHTML=items.map(i=>`<span><i class="${i.dot?'dot':''}" style="background:${i.c}"></i>${i.t}</span>`).join("");
+}
+/* nearest-point hover for line charts */
+function hover(host,svg,tip,W,H,P,pts,label){
+  const ov=mk("rect",{x:P.l,y:P.t,width:W-P.l-P.r,height:H-P.t-P.b,fill:"transparent"});
+  const cross=mk("line",{stroke:C("--mute"),"stroke-width":1,"stroke-dasharray":"3 3",opacity:0});
+  const dots=mk("g",{opacity:0});
+  svg.appendChild(cross); svg.appendChild(dots); svg.appendChild(ov);
+  ov.addEventListener("pointermove",e=>{
+    const r=svg.getBoundingClientRect(), sx=W/r.width;
+    const mx=(e.clientX-r.left)*sx;
+    let best=null,bd=1e9;
+    pts.forEach(p=>{const d=Math.abs(p.x-mx); if(d<bd){bd=d;best=p;}});
+    if(!best)return;
+    cross.setAttribute("x1",best.x); cross.setAttribute("x2",best.x);
+    cross.setAttribute("y1",P.t); cross.setAttribute("y2",H-P.b);
+    cross.setAttribute("opacity",1);
+    dots.innerHTML=""; best.marks.forEach(m=>dots.appendChild(
+      mk("circle",{cx:best.x,cy:m.y,r:4,fill:m.c,stroke:C("--surface"),"stroke-width":2})));
+    dots.setAttribute("opacity",1);
+    tip.innerHTML=label(best);
+    const hr=host.getBoundingClientRect();
+    tip.style.opacity=1;
+    tip.style.left=Math.min(hr.width-tip.offsetWidth-4,Math.max(0,(best.x/sx)-tip.offsetWidth/2))+"px";
+    tip.style.top="4px";
+  });
+  ov.addEventListener("pointerleave",()=>{tip.style.opacity=0;cross.setAttribute("opacity",0);dots.setAttribute("opacity",0);});
+}
+
+/* ---------- 1. headline tiles ---------- */
+(function(){
+  const h=A.headline;
+  const t=[
+    ["Rows analysed",h.rows.toLocaleString(),"",'7,144 samples over 4 drive runs, 19–20 March 2026'],
+    ["No serving cell",h.outage_pct.toFixed(1)+"%",'w',`${h.outage_rows.toLocaleString()} rows — kept as outage labels, not dropped`],
+    ["Uplink under 25 Mbps",h.ul_below_25_pct.toFixed(1)+"%",'w',`against ${h.dl_below_25_pct.toFixed(1)}% for downlink on the same link`],
+    ["Median uplink",h.ul_median.toFixed(1),'',`Mbps — downlink median is ${h.dl_median.toFixed(0)}`],
+    ["Demand cells",h.cells.toLocaleString(),'g',`200 m grid, ${h.passes.toLocaleString()} route passes`],
+    ["Meets 10 Mbps up",h.covered_before_pct.toFixed(1)+"%",'g',"of route demand, before any intervention"],
+  ];
+  document.getElementById("tiles").innerHTML=t.map(([l,k,c,d])=>
+    `<div class="tile"><span class="l">${l}</span><span class="k ${c}">${k}</span><span class="d">${d}</span></div>`).join("");
+})();
+
+/* ---------- distance table ---------- */
+(function(){
+  document.getElementById("tbl-dist").innerHTML=A.distance_bins.map(r=>{
+    const km=v=>v>=1000?(v/1000)+" km":v+" m";
+    return `<tr><td class="n">${km(r.lo)} – ${km(r.hi)}</td><td class="n">${r.n.toLocaleString()}</td>
+      <td class="n">${fmt(r.rsrp,0)} dBm</td><td class="n">${fmt(r.sinr,0)} dB</td>
+      <td class="n g">${fmt(r.dl,0)}</td><td class="n ${r.ul<25?'w':''}">${fmt(r.ul,1)}</td>
+      <td class="n">${fmt(r.ping,1)} ms</td><td class="n ${r.outage>.4?'w':''}">${(r.outage*100).toFixed(0)}%</td></tr>`;
+  }).join("");
+})();
+
+/* ---------- 2. decay ---------- */
+(function(){
+  const host=document.getElementById("c-decay"), W=880,H=330,P={l:52,r:20,t:16,b:42};
+  const {svg,tip}=makeSvg(host,W,H);
+  const d=A.decay, n=d.length;
+  const xs=i=>P.l+i/(n-1)*(W-P.l-P.r), ys=scale(0,120,H-P.b,P.t);
+  axes(svg,W,H,P,d.map((r,i)=>({v:i,label:r.hi>=1000?(r.hi/1000)+"k":r.hi})),
+       [0,25,50,75,100].map(v=>({v,label:v+"%"})).map(o=>Object.assign(o,{valueOf:()=>o.v})),
+       i=>xs(i), v=>ys(v.v??v), "metres from tower", "% of near-tower rate");
+  const S=[{k:"dl",c:C("--c1"),t:"Downlink"},{k:"ul",c:C("--c2"),t:"Uplink"}];
+  S.forEach(s=>{
+    svg.appendChild(mk("path",{d:path(d.map((r,i)=>[xs(i),ys(r[s.k])])),
+      fill:"none",stroke:s.c,"stroke-width":2.5,"stroke-linejoin":"round"}));
+    d.forEach((r,i)=>svg.appendChild(mk("circle",{cx:xs(i),cy:ys(r[s.k]),r:4,
+      fill:s.c,stroke:C("--surface"),"stroke-width":2})));
+    const last=d[d.length-1];
+    const t=mk("text",{x:xs(n-1)-6,y:ys(last[s.k])+(s.k==="ul"?18:-10),"text-anchor":"end",
+      fill:s.c,"font-size":12,"font-weight":600,"font-family":C("--f-display")});
+    t.textContent=s.t+" "+Math.round(last[s.k])+"%"; svg.appendChild(t);
+  });
+  legend("lg-decay",S.map(s=>({c:s.c,t:s.t})));
+  hover(host,svg,tip,W,H,P,d.map((r,i)=>({x:xs(i),r,
+    marks:S.map(s=>({y:ys(r[s.k]),c:s.c}))})),
+    b=>`${b.r.lo}–${b.r.hi} m<br>Downlink ${b.r.dl.toFixed(0)}%<br>Uplink ${b.r.ul.toFixed(0)}%`);
+})();
+
+/* ---------- exceedance ---------- */
+(function(){
+  const host=document.getElementById("c-exc"), W=520,H=300,P={l:46,r:16,t:14,b:40};
+  const {svg,tip}=makeSvg(host,W,H);
+  const E=A.exceedance, xs=scale(0,100,P.l,W-P.r), ys=scale(0,100,H-P.b,P.t);
+  axes(svg,W,H,P,[0,25,50,75,100],[0,25,50,75,100].map(v=>({v,label:v+"%",valueOf:()=>v})),
+       xs,v=>ys(v.v??v),"Mbps","share of tests");
+  [{k:"dl",c:C("--c1"),t:"Downlink"},{k:"ul",c:C("--c2"),t:"Uplink"}].forEach(s=>{
+    svg.appendChild(mk("path",{d:path(E.t.map((t,i)=>[xs(t),ys(E[s.k][i])])),
+      fill:"none",stroke:s.c,"stroke-width":2.5}));
+  });
+  svg.appendChild(mk("line",{x1:xs(25),x2:xs(25),y1:P.t,y2:H-P.b,stroke:C("--mute"),
+    "stroke-width":1,"stroke-dasharray":"3 3"}));
+  const lt=mk("text",{x:xs(25)+5,y:P.t+11,fill:C("--mute"),"font-size":10,"font-family":C("--f-mono")});
+  lt.textContent="25 Mbps"; svg.appendChild(lt);
+  legend("lg-exc",[{c:C("--c1"),t:"Downlink"},{c:C("--c2"),t:"Uplink"}]);
+  hover(host,svg,tip,W,H,P,E.t.map((t,i)=>({x:xs(t),t,i,
+    marks:[{y:ys(E.dl[i]),c:C("--c1")},{y:ys(E.ul[i]),c:C("--c2")}]})),
+    b=>`at or above ${b.t} Mbps<br>Downlink ${E.dl[b.i].toFixed(1)}%<br>Uplink ${E.ul[b.i].toFixed(1)}%`);
+})();
+
+/* ---------- outage vs distance ---------- */
+(function(){
+  const host=document.getElementById("c-out"), W=520,H=300,P={l:46,r:16,t:14,b:40};
+  const {svg,tip}=makeSvg(host,W,H);
+  const d=A.distance_bins,n=d.length;
+  const xs=i=>P.l+i/(n-1)*(W-P.l-P.r), ys=scale(0,0.7,H-P.b,P.t);
+  axes(svg,W,H,P,d.map((r,i)=>({v:i,label:r.hi>=1000?(r.hi/1000)+"k":r.hi})),
+       [0,.2,.4,.6].map(v=>({v,label:(v*100)+"%",valueOf:()=>v})),
+       i=>xs(i),v=>ys(v.v??v),"metres from tower","no serving cell");
+  const pts=d.map((r,i)=>[xs(i),ys(r.outage)]);
+  svg.appendChild(mk("path",{d:path(pts)+` L ${xs(n-1)} ${H-P.b} L ${xs(0)} ${H-P.b} Z`,
+    fill:C("--c2"),opacity:.13}));
+  svg.appendChild(mk("path",{d:path(pts),fill:"none",stroke:C("--c2"),"stroke-width":2.5}));
+  d.forEach((r,i)=>svg.appendChild(mk("circle",{cx:xs(i),cy:ys(r.outage),r:4,
+    fill:C("--c2"),stroke:C("--surface"),"stroke-width":2})));
+  hover(host,svg,tip,W,H,P,d.map((r,i)=>({x:xs(i),r,marks:[{y:ys(r.outage),c:C("--c2")}]})),
+    b=>`${b.r.lo}–${b.r.hi} m<br>${(b.r.outage*100).toFixed(0)}% no cell<br>${b.r.n} samples`);
+})();
+
+/* ---------- 3. path loss ---------- */
+(function(){
+  const host=document.getElementById("c-pl"), W=880,H=380,P={l:52,r:20,t:16,b:44};
+  const {svg,tip}=makeSvg(host,W,H);
+  const F=A.pathloss_fit, sc=A.pathloss_scatter;
+  const x0=Math.min(...F.x),x1=Math.max(...F.x);
+  const xs=scale(x0,x1,P.l,W-P.r), ys=scale(-145,-35,H-P.b,P.t);
+  const dt=[100,300,1000,3000,10000].filter(v=>Math.log10(v)>=x0&&Math.log10(v)<=x1)
+    .map(v=>({v:Math.log10(v),label:v>=1000?(v/1000)+" km":v+" m"}));
+  axes(svg,W,H,P,dt,[-140,-120,-100,-80,-60,-40].map(v=>({v,label:v,valueOf:()=>v})),
+       xs,v=>ys(v.v??v),"distance from tower (log)","RSRP dBm");
+  const g=mk("g",{opacity:.3});
+  sc.forEach(p=>g.appendChild(mk("circle",{cx:xs(p[0]),cy:ys(p[1]),r:1.9,fill:C("--mute")})));
+  svg.appendChild(g);
+  svg.appendChild(mk("path",{d:path(F.x.map((v,i)=>[xs(v),ys(F.naive[i])])),
+    fill:"none",stroke:C("--c3"),"stroke-width":2.5,"stroke-dasharray":"6 4"}));
+  svg.appendChild(mk("path",{d:path(F.x.map((v,i)=>[xs(v),ys(F.fitted[i])])),
+    fill:"none",stroke:C("--c1"),"stroke-width":3}));
+  const lab=(txt,col,yy)=>{const t=mk("text",{x:W-P.r-6,y:yy,"text-anchor":"end",fill:col,
+    "font-size":12,"font-weight":600,"font-family":C("--f-display")});t.textContent=txt;svg.appendChild(t);};
+  lab(`with antenna term · n = ${F.n.toFixed(2)}`,C("--c1"),ys(F.fitted[F.fitted.length-1])-12);
+  lab(`distance only · n = ${F.n_naive.toFixed(2)} (impossible)`,C("--c3"),ys(F.naive[F.naive.length-1])+20);
+  legend("lg-pl",[{c:C("--mute"),t:"measurements (1,400 sampled)",dot:1},
+    {c:C("--c1"),t:"fit with azimuth harmonics"},{c:C("--c3"),t:"distance-only fit"}]);
+})();
+
+/* ---------- isotonic curves ---------- */
+function curveChart(id,key,ylab,color,fmtv,ymax){
+  const host=document.getElementById(id), W=520,H=290,P={l:50,r:16,t:14,b:40};
+  const {svg,tip}=makeSvg(host,W,H);
+  const K=A.curves, xs=scale(-125,-50,P.l,W-P.r), ys=scale(0,ymax,H-P.b,P.t);
+  const yt=key==="outage"?[0,.25,.5,.75,1]:[0,20,40,60,80];
+  axes(svg,W,H,P,[-120,-100,-80,-60].map(v=>({v,label:v})),
+       yt.map(v=>({v,label:fmtv(v),valueOf:()=>v})),xs,v=>ys(v.v??v),"RSRP dBm",ylab);
+  svg.appendChild(mk("path",{d:path(K.x.map((v,i)=>[xs(v),ys(K[key][i])])),
+    fill:"none",stroke:color,"stroke-width":3}));
+  hover(host,svg,tip,W,H,P,K.x.map((v,i)=>({x:xs(v),v,i,marks:[{y:ys(K[key][i]),c:color}]})),
+    b=>`${b.v.toFixed(0)} dBm<br>${fmtv(K[key][b.i])}`);
+}
+curveChart("c-iso","uplink","Mbps",C("--c2"),v=>(+v).toFixed(0),85);
+curveChart("c-oc","outage","P(outage)",C("--c2"),v=>(+v).toFixed(2),1);
+
+/* ---------- expected uplink composition ---------- */
+(function(){
+  const host=document.getElementById("c-exp"), W=880,H=300,P={l:52,r:20,t:16,b:42};
+  const {svg,tip}=makeSvg(host,W,H);
+  const K=A.curves, xs=scale(-125,-50,P.l,W-P.r), ys=scale(0,85,H-P.b,P.t);
+  axes(svg,W,H,P,[-120,-110,-100,-90,-80,-70,-60,-50].map(v=>({v,label:v})),
+       [0,20,40,60,80].map(v=>({v,label:v,valueOf:()=>v})),xs,v=>ys(v.v??v),"RSRP dBm","Mbps");
+  svg.appendChild(mk("path",{d:path(K.x.map((v,i)=>[xs(v),ys(K.uplink[i])])),
+    fill:"none",stroke:C("--c2"),"stroke-width":2,"stroke-dasharray":"5 4"}));
+  const ep=K.x.map((v,i)=>[xs(v),ys(K.expected[i])]);
+  svg.appendChild(mk("path",{d:path(ep)+` L ${xs(-50)} ${H-P.b} L ${xs(-125)} ${H-P.b} Z`,
+    fill:C("--c1"),opacity:.12}));
+  svg.appendChild(mk("path",{d:path(ep),fill:"none",stroke:C("--c1"),"stroke-width":3}));
+  legend("lg-exp",[{c:C("--c2"),t:"uplink when connected"},
+                   {c:C("--c1"),t:"expected uplink = (1 − P(outage)) × uplink"}]);
+  hover(host,svg,tip,W,H,P,K.x.map((v,i)=>({x:xs(v),v,i,
+    marks:[{y:ys(K.uplink[i]),c:C("--c2")},{y:ys(K.expected[i]),c:C("--c1")}]})),
+    b=>`${b.v.toFixed(0)} dBm<br>connected ${K.uplink[b.i].toFixed(1)} Mbps<br>expected ${K.expected[b.i].toFixed(1)} Mbps<br>P(out) ${K.outage[b.i].toFixed(2)}`);
+})();
+
+/* ---------- 4. leakage grouped bars ---------- */
+(function(){
+  const host=document.getElementById("c-leak"), W=880,H=300,P={l:56,r:20,t:16,b:56};
+  const {svg}=makeSvg(host,W,H);
+  const L=A.validation.leakage;
+  const groups=[
+    {n:"Uplink R²",r:L.uplink_r2.random,s:L.uplink_r2.spatial,lo:-0.3,hi:1},
+    {n:"Outage AUC",r:L.outage_auc.random,s:L.outage_auc.spatial,lo:0,hi:1},
+    {n:"Uplink MAE (Mbps, ÷30)",r:L.uplink_mae.random/30,s:L.uplink_mae.spatial/30,lo:0,hi:1},
+  ];
+  const ys=scale(-0.3,1,H-P.b,P.t);
+  [-0.25,0,0.25,.5,.75,1].forEach(v=>{
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:ys(v),y2:ys(v),
+      stroke:v===0?C("--rule2"):C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-8,y:ys(v)+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=v.toFixed(2);svg.appendChild(t);
+  });
+  const gw=(W-P.l-P.r)/groups.length;
+  groups.forEach((g,i)=>{
+    const cx=P.l+gw*i+gw/2, bw=42;
+    [[g.r,C("--c3"),-1,"random"],[g.s,C("--c2"),1,"spatial"]].forEach(([v,c,side,nm])=>{
+      const x=cx+side*(bw/2+3)-bw/2, y0=ys(0), y=ys(v);
+      svg.appendChild(mk("rect",{x,y:Math.min(y,y0),width:bw,
+        height:Math.max(2,Math.abs(y-y0)),fill:c,rx:3}));
+      const t=mk("text",{x:x+bw/2,y:(v>=0?Math.min(y,y0)-6:Math.max(y,y0)+14),
+        "text-anchor":"middle",fill:C("--ink"),"font-size":11,"font-weight":600,
+        "font-family":C("--f-mono")});
+      t.textContent=(g.n.includes("MAE")?(v*30).toFixed(1):v.toFixed(3)); svg.appendChild(t);
+    });
+    const t=mk("text",{x:cx,y:H-P.b+18,"text-anchor":"middle",fill:C("--ink2"),
+      "font-size":11,"font-family":C("--f-display"),"font-weight":600});
+    t.textContent=g.n; svg.appendChild(t);
+  });
+  const nt=mk("text",{x:P.l,y:H-8,fill:C("--mute"),"font-size":10,"font-family":C("--f-mono")});
+  nt.textContent="higher is better for R² and AUC · lower is better for MAE"; svg.appendChild(nt);
+  legend("lg-leak",[{c:C("--c3"),t:"random split (leaky)"},{c:C("--c2"),t:"buffered spatial blocks (honest)"}]);
+})();
+
+/* ---------- MAE ladder ---------- */
+(function(){
+  const host=document.getElementById("c-mae"), L=A.validation.ladder;
+  const H=44*L.length+34, W=880, P={l:250,r:70,t:10,b:24};
+  const {svg}=makeSvg(host,W,H);
+  const xs=scale(0,34,P.l,W-P.r);
+  [0,10,20,30].forEach(v=>{
+    svg.appendChild(mk("line",{x1:xs(v),x2:xs(v),y1:P.t,y2:H-P.b,stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:xs(v),y:H-8,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=v;svg.appendChild(t);
+  });
+  L.forEach((r,i)=>{
+    const y=P.t+i*44+8, h=26;
+    const col=r.kind==="shipped"?C("--c1"):r.kind==="ceiling"?C("--c3"):
+              r.kind==="alt"?C("--c2"):C("--mute");
+    svg.appendChild(mk("rect",{x:xs(0),y,width:Math.max(2,xs(r.mae)-xs(0)),height:h,fill:col,rx:3,
+      opacity:r.kind==="base"?.45:1}));
+    const t=mk("text",{x:P.l-10,y:y+h/2+4,"text-anchor":"end",fill:C("--ink"),
+      "font-size":12,"font-family":C("--f-display"),"font-weight":r.kind==="shipped"?700:500});
+    t.textContent=r.name; svg.appendChild(t);
+    const v=mk("text",{x:xs(r.mae)+8,y:y+h/2+4,fill:C("--ink"),"font-size":12,
+      "font-weight":600,"font-family":C("--f-mono")});
+    v.textContent=r.mae.toFixed(1); svg.appendChild(v);
+  });
+})();
+
+/* ---------- error decomposition ---------- */
+(function(){
+  const host=document.getElementById("c-dec"), W=520,H=230,P={l:20,r:20,t:40,b:60};
+  const {svg}=makeSvg(host,W,H);
+  const D=A.validation.decomposition, xs=scale(0,D.total,P.l,W-P.r);
+  const y=P.t+20,h=44;
+  svg.appendChild(mk("rect",{x:xs(0),y,width:xs(D.irreducible)-xs(0),height:h,fill:C("--mute"),rx:3,opacity:.55}));
+  svg.appendChild(mk("rect",{x:xs(D.irreducible)+2,y,width:xs(D.total)-xs(D.irreducible)-2,height:h,fill:C("--c2"),rx:3}));
+  const put=(x,t,c,yy,anc)=>{const e=mk("text",{x,y:yy,"text-anchor":anc||"middle",fill:c,
+    "font-size":11,"font-family":C("--f-mono")});e.textContent=t;svg.appendChild(e);};
+  put((xs(0)+xs(D.irreducible))/2,"irreducible "+D.irreducible.toFixed(1),C("--ink"),y+27);
+  put((xs(D.irreducible)+xs(D.total))/2,D.propagation.toFixed(1),C("--ink"),y+27);
+  put((xs(0)+xs(D.irreducible))/2,"RSRP → uplink scatter",C("--mute"),y-10);
+  put((xs(D.irreducible)+xs(D.total))/2,"propagation",C("--c2"),y-10);
+  put(W/2,`total ${D.total.toFixed(1)} Mbps MAE — only ${D.propagation.toFixed(1)} is addressable by better propagation modelling`,
+      C("--ink2"),H-24);
+})();
+
+/* ---------- calibration ---------- */
+(function(){
+  const host=document.getElementById("c-cal"), W=520,H=290,P={l:48,r:20,t:16,b:44};
+  const {svg,tip}=makeSvg(host,W,H);
+  const K=A.validation.calibration, xs=scale(0,1,P.l,W-P.r), ys=scale(0,1,H-P.b,P.t);
+  axes(svg,W,H,P,[0,.25,.5,.75,1].map(v=>({v,label:v})),
+       [0,.25,.5,.75,1].map(v=>({v,label:v,valueOf:()=>v})),xs,v=>ys(v.v??v),
+       "predicted P(outage)","observed");
+  svg.appendChild(mk("line",{x1:xs(0),y1:ys(0),x2:xs(1),y2:ys(1),stroke:C("--mute"),
+    "stroke-width":1.5,"stroke-dasharray":"5 4"}));
+  K.forEach(k=>{
+    const r=4+Math.sqrt(k.n)/3.4;
+    svg.appendChild(mk("circle",{cx:xs(k.predicted),cy:ys(k.observed),r,
+      fill:C("--c1"),opacity:.85,stroke:C("--surface"),"stroke-width":2}));
+    const t=mk("text",{x:xs(k.predicted),y:ys(k.observed)-r-6,"text-anchor":"middle",
+      fill:C("--mute"),"font-size":9.5,"font-family":C("--f-mono")});
+    t.textContent="n="+k.n; svg.appendChild(t);
+  });
+  const lt=mk("text",{x:W-P.r-4,y:P.t+12,"text-anchor":"end",fill:C("--mute"),
+    "font-size":10,"font-family":C("--f-mono")});
+  lt.textContent="dot area ∝ cells in bin"; svg.appendChild(lt);
+})();
+
+/* ---------- semivariogram ---------- */
+(function(){
+  const host=document.getElementById("c-vg"), W=880,H=290,P={l:52,r:20,t:16,b:46};
+  const {svg,tip}=makeSvg(host,W,H);
+  const V=A.semivariogram, b=V.bins, n=b.length;
+  const xs=i=>P.l+i/(n-1)*(W-P.l-P.r), ys=scale(0,14,H-P.b,P.t);
+  axes(svg,W,H,P,b.map((r,i)=>({v:i,label:r.hi>=1000?(r.hi/1000)+" km":r.hi+" m"})),
+       [0,4,8,12].map(v=>({v,label:v,valueOf:()=>v})),i=>xs(i),v=>ys(v.v??v),
+       "separation between two points","mean |Δ residual| dB");
+  svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:ys(V.random_pair),y2:ys(V.random_pair),
+    stroke:C("--c3"),"stroke-width":2,"stroke-dasharray":"6 4"}));
+  const rt=mk("text",{x:W-P.r,y:ys(V.random_pair)-8,"text-anchor":"end",fill:C("--c3"),
+    "font-size":11,"font-weight":600,"font-family":C("--f-display")});
+  rt.textContent=`two random points — ${V.random_pair.toFixed(1)} dB`; svg.appendChild(rt);
+  svg.appendChild(mk("path",{d:path(b.map((r,i)=>[xs(i),ys(r.v)])),fill:"none",
+    stroke:C("--c2"),"stroke-width":3}));
+  b.forEach((r,i)=>svg.appendChild(mk("circle",{cx:xs(i),cy:ys(r.v),r:4.5,fill:C("--c2"),
+    stroke:C("--surface"),"stroke-width":2})));
+  const a=mk("text",{x:xs(2),y:ys(b[2].v)-14,"text-anchor":"middle",fill:C("--ink"),
+    "font-size":11,"font-weight":600,"font-family":C("--f-display")});
+  a.textContent="already at the random level by 150–400 m"; svg.appendChild(a);
+  hover(host,svg,tip,W,H,P,b.map((r,i)=>({x:xs(i),r,marks:[{y:ys(r.v),c:C("--c2")}]})),
+    q=>`${q.r.lo}–${q.r.hi} m apart<br>mean |Δ| ${q.r.v.toFixed(2)} dB<br>${q.r.n.toLocaleString()} pairs`);
+})();
+
+/* ---------- 5. map ---------- */
+(function(){
+  const cv=document.getElementById("mapcv"), cx=cv.getContext("2d");
+  const M=A.map, cells=M.cells;
+  let layer="before", zoom=1, panX=0, panY=0, VW=0, VH=0, drag=null;
+  const lats=cells.map(c=>c[0]), lons=cells.map(c=>c[1]);
+  const bb={n:Math.max(...lats),s:Math.min(...lats),e:Math.max(...lons),w:Math.min(...lons)};
+  const kx=Math.cos(42*Math.PI/180);
+  function fit(){const dpr=devicePixelRatio||1;VW=cv.clientWidth;VH=cv.clientHeight;
+    cv.width=VW*dpr;cv.height=VH*dpr;cx.setTransform(dpr,0,0,dpr,0,0);}
+  function proj(la,lo){
+    const s=Math.min(VW/((bb.e-bb.w)*kx),VH/(bb.n-bb.s))*0.9*zoom;
+    return [VW/2+(lo-(bb.e+bb.w)/2)*kx*s+panX, VH/2-(la-(bb.n+bb.s)/2)*s+panY];
+  }
+  function ramp(t){t=Math.max(0,Math.min(1,t));
+    const a=[143,98,0],b2=[15,110,112];
+    const dark=matchMedia("(prefers-color-scheme:dark)").matches;
+    const A2=dark?[217,162,39]:a, B2=dark?[79,179,180]:b2;
+    return `rgb(${A2.map((v,i)=>Math.round(v+(B2[i]-v)*t)).join(",")})`;}
+  function draw(){
+    cx.clearRect(0,0,VW,VH); cx.fillStyle=C("--surface"); cx.fillRect(0,0,VW,VH);
+    const s=Math.max(3,4.4*zoom);
+    cells.forEach(c=>{
+      const [x,y]=proj(c[0],c[1]);
+      if(x<-15||x>VW+15||y<-15||y>VH+15)return;
+      let col;
+      if(layer==="delta"){
+        const g=c[4]-c[3];
+        if(g<0.25){cx.globalAlpha=.10;col=C("--mute");}
+        else{cx.globalAlpha=.95;col=C("--c3");}
+      } else {
+        cx.globalAlpha=.9;
+        col=ramp(Math.min(1,(layer==="after"?c[4]:c[3])/20));
+      }
+      cx.fillStyle=col; cx.fillRect(x-s/2,y-s/2,s,s);
+      if(layer==="delta"&&c[3]<10&&c[4]>=10){
+        cx.globalAlpha=1;cx.strokeStyle=C("--ink");cx.lineWidth=1.5;
+        cx.strokeRect(x-s/2-1.5,y-s/2-1.5,s+3,s+3);}
+    });
+    cx.globalAlpha=1;
+    const pin=(la,lo,col,label)=>{const[x,y]=proj(la,lo);
+      cx.strokeStyle=col;cx.fillStyle=C("--ground");cx.lineWidth=2.5;
+      cx.beginPath();cx.arc(x,y,6,0,7);cx.fill();cx.stroke();
+      cx.fillStyle=col;cx.font='600 11px '+C("--f-mono");cx.fillText(label,x+10,y+4);};
+    M.measurement.forEach((m,i)=>pin(m.lat,m.lon,C("--mute"),"M"+(i+1)));
+    pin(M.worst.lat,M.worst.lon,C("--bad"),"worst measured point");
+    pin(M.smallcell.lat,M.smallcell.lon,C("--c3"),"small cell 7.1 km");
+    pin(M.recommended.lat,M.recommended.lon,C("--c1"),"relay 4.2 km");
+    const[mx,my]=proj(M.macro.lat,M.macro.lon);
+    cx.fillStyle=C("--ink");cx.beginPath();
+    cx.moveTo(mx,my-10);cx.lineTo(mx+9,my+7);cx.lineTo(mx-9,my+7);cx.closePath();cx.fill();
+    cx.font='600 11px '+C("--f-mono");cx.fillText("AGRONOMY FARM",mx+13,my+5);
+  }
+  legend("lg-map",[{c:C("--c2"),t:"0 Mbps"},{c:ramp(.5),t:"10 Mbps"},{c:C("--c1"),t:"20+ Mbps"},
+                   {c:C("--c3"),t:"changed by the relay",dot:1},{c:C("--bad"),t:"worst measured point",dot:1}]);
+  const box=document.getElementById("lg-map");
+  const btn=document.createElement("span");
+  btn.innerHTML=` &nbsp;<a href="#" data-l="before" style="color:var(--c1)">before</a> ·
+    <a href="#" data-l="after" style="color:var(--mute)">after relay</a> ·
+    <a href="#" data-l="delta" style="color:var(--mute)">change only</a>`;
+  box.appendChild(btn);
+  box.addEventListener("click",e=>{
+    const a=e.target.closest("a"); if(!a)return; e.preventDefault();
+    layer=a.dataset.l;
+    box.querySelectorAll("a").forEach(x=>x.style.color=x===a?"var(--c1)":"var(--mute)");
+    draw();});
+  cv.addEventListener("mousedown",e=>{drag={x:e.offsetX,y:e.offsetY,px:panX,py:panY};});
+  addEventListener("mousemove",e=>{if(!drag)return;
+    const r=cv.getBoundingClientRect();
+    panX=drag.px+(e.clientX-r.left-drag.x);panY=drag.py+(e.clientY-r.top-drag.y);draw();});
+  addEventListener("mouseup",()=>drag=null);
+  cv.addEventListener("wheel",e=>{e.preventDefault();
+    zoom=Math.max(.7,Math.min(12,zoom*(e.deltaY<0?1.14:1/1.14)));draw();},{passive:false});
+  addEventListener("resize",()=>{fit();draw();});
+  fit();draw();
+})();
+
+/* ---------- coverage curve ---------- */
+(function(){
+  const host=document.getElementById("c-cov"), W=880,H=330,P={l:52,r:20,t:16,b:44};
+  const {svg,tip}=makeSvg(host,W,H);
+  const K=A.coverage_curve, xs=scale(1,40,P.l,W-P.r), ys=scale(0,100,H-P.b,P.t);
+  axes(svg,W,H,P,[5,10,15,20,25,30,35,40].map(v=>({v,label:v})),
+       [0,25,50,75,100].map(v=>({v,label:v+"%",valueOf:()=>v})),xs,v=>ys(v.v??v),
+       "uplink target, Mbps","route demand met");
+  const S=[{k:"before",c:C("--mute"),t:"before",d:null},
+           {k:"after_worstpoint",c:C("--c3"),t:"relay at worst measured point",d:"6 4"},
+           {k:"after_optimised",c:C("--c1"),t:"relay at optimised site",d:null}];
+  S.forEach(s=>{
+    const a={d:path(K.t.map((t,i)=>[xs(t),ys(K[s.k][i])])),fill:"none",
+      stroke:s.c,"stroke-width":s.k==="before"?2:2.8};
+    if(s.d)a["stroke-dasharray"]=s.d;
+    svg.appendChild(mk("path",a));
+  });
+  [5,10,25].forEach(t=>{
+    svg.appendChild(mk("line",{x1:xs(t),x2:xs(t),y1:P.t,y2:H-P.b,stroke:C("--rule2"),
+      "stroke-width":1,"stroke-dasharray":"2 4"}));
+    const i=K.t.indexOf(t);
+    const e=mk("text",{x:xs(t)+4,y:ys(K.before[i])-8,fill:C("--ink"),"font-size":11,
+      "font-weight":600,"font-family":C("--f-mono")});
+    e.textContent=K.before[i].toFixed(1)+"%"; svg.appendChild(e);
+  });
+  legend("lg-cov",S.map(s=>({c:s.c,t:s.t})));
+  hover(host,svg,tip,W,H,P,K.t.map((t,i)=>({x:xs(t),t,i,
+    marks:S.map(s=>({y:ys(K[s.k][i]),c:s.c}))})),
+    b=>`target ${b.t} Mbps<br>before ${K.before[b.i].toFixed(1)}%<br>optimised ${K.after_optimised[b.i].toFixed(1)}%<br>worst point ${K.after_worstpoint[b.i].toFixed(1)}%`);
+})();
+
+/* ---------- greedy marginal ---------- */
+(function(){
+  const host=document.getElementById("c-greedy"), W=520,H=290,P={l:46,r:20,t:20,b:48};
+  const {svg}=makeSvg(host,W,H);
+  const G=A.greedy.relay, m=G.marginal_pct, cum=G.cumulative_pct;
+  const ys=scale(0,2,H-P.b,P.t), bw=(W-P.l-P.r)/m.length;
+  [0,.5,1,1.5,2].forEach(v=>{
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:ys(v),y2:ys(v),stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-8,y:ys(v)+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=v.toFixed(1);svg.appendChild(t);});
+  m.forEach((v,i)=>{
+    const x=P.l+bw*i+bw*.2, w=bw*.6;
+    svg.appendChild(mk("rect",{x,y:ys(v),width:w,height:(H-P.b)-ys(v),fill:C("--c2"),rx:3}));
+    const t=mk("text",{x:x+w/2,y:ys(v)-6,"text-anchor":"middle",fill:C("--ink"),
+      "font-size":11,"font-weight":600,"font-family":C("--f-mono")});t.textContent="+"+v.toFixed(2);svg.appendChild(t);
+    const l=mk("text",{x:x+w/2,y:H-P.b+16,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});l.textContent="site "+(i+1);svg.appendChild(l);
+    const c=mk("text",{x:x+w/2,y:H-P.b+31,"text-anchor":"middle",fill:C("--ink2"),
+      "font-size":10,"font-family":C("--f-mono")});c.textContent="Σ"+cum[i].toFixed(1);svg.appendChild(c);
+  });
+  const yl=mk("text",{x:P.l-8,y:P.t-8,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")});yl.textContent="pts of demand";svg.appendChild(yl);
+  const nt=mk("text",{x:W-P.r,y:H-6,"text-anchor":"end",fill:C("--mute"),
+    "font-size":10,"font-family":C("--f-mono")});
+  nt.textContent="against a 48.6-point deficit";svg.appendChild(nt);
+})();
+
+/* ---------- robustness ---------- */
+(function(){
+  const host=document.getElementById("c-rob"), W=520,H=290,P={l:50,r:20,t:18,b:48};
+  const {svg}=makeSvg(host,W,H);
+  const R=A.robustness, n=R.radii.length;
+  const xs=i=>P.l+i/(n-1)*(W-P.l-P.r), ys=scale(0,.7,H-P.b,P.t);
+  [0,.2,.4,.6].forEach(v=>{
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:ys(v),y2:ys(v),stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-8,y:ys(v)+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=(v*100).toFixed(0)+"%";svg.appendChild(t);});
+  R.radii.forEach((r,i)=>{const t=mk("text",{x:xs(i),y:H-P.b+17,"text-anchor":"middle",
+    fill:C("--mute"),"font-size":10,"font-family":C("--f-mono")});
+    t.textContent=r===0?"exact":"≤"+(r>=1000?r/1000+" km":r+" m");svg.appendChild(t);});
+  [{k:R.cum,c:C("--c1"),t:"relay"},{k:R.smallcell.cum,c:C("--c2"),t:"small cell"}].forEach(s=>{
+    svg.appendChild(mk("path",{d:path(s.k.map((v,i)=>[xs(i),ys(v)])),fill:"none",
+      stroke:s.c,"stroke-width":2.8}));
+    s.k.forEach((v,i)=>svg.appendChild(mk("circle",{cx:xs(i),cy:ys(v),r:4.5,fill:s.c,
+      stroke:C("--surface"),"stroke-width":2})));
+  });
+  svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:ys(R.random_pick),y2:ys(R.random_pick),
+    stroke:C("--mute"),"stroke-width":1.5,"stroke-dasharray":"4 4"}));
+  const rt=mk("text",{x:W-P.r,y:ys(R.random_pick)-7,"text-anchor":"end",fill:C("--mute"),
+    "font-size":10,"font-family":C("--f-mono")});
+  rt.textContent=`random pick ${(R.random_pick*100).toFixed(1)}%`;svg.appendChild(rt);
+  const yl=mk("text",{x:P.l-8,y:P.t-8,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")});yl.textContent="share of 200 draws";svg.appendChild(yl);
+  legend("lg-rob",[{c:C("--c1"),t:"relay (251 candidates)"},{c:C("--c2"),t:"small cell (622)"}]);
+})();
+
+/* ---------- EIRP sweep ---------- */
+(function(){
+  const host=document.getElementById("c-eirp"), W=880,H=320,P={l:52,r:20,t:24,b:62};
+  const {svg}=makeSvg(host,W,H);
+  const E=A.headline.eirp, keys=Object.keys(E);
+  const ys=scale(0,6,H-P.b,P.t), bw=(W-P.l-P.r)/keys.length;
+  [0,2,4,6].forEach(v=>{
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:ys(v),y2:ys(v),stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-8,y:ys(v)+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=v;svg.appendChild(t);});
+  keys.forEach((k,i)=>{
+    const e=E[k], x=P.l+bw*i+bw*.22, w=bw*.56;
+    const hi = k==="20dB";
+    svg.appendChild(mk("rect",{x,y:ys(e.gain_pct),width:w,height:(H-P.b)-ys(e.gain_pct),
+      fill:hi?C("--c1"):C("--c2"),rx:3,opacity:hi?1:.8}));
+    const t=mk("text",{x:x+w/2,y:ys(e.gain_pct)-7,"text-anchor":"middle",fill:C("--ink"),
+      "font-size":12,"font-weight":700,"font-family":C("--f-mono")});
+    t.textContent="+"+e.gain_pct.toFixed(2); svg.appendChild(t);
+    const l=mk("text",{x:x+w/2,y:H-P.b+17,"text-anchor":"middle",fill:C("--ink2"),
+      "font-size":11,"font-weight":600,"font-family":C("--f-display")});
+    l.textContent="−"+k.replace("dB"," dB")+(hi?"  (assumed)":""); svg.appendChild(l);
+    const r=mk("text",{x:x+w/2,y:H-P.b+32,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});
+    r.textContent=e.service_radius_m+" m radius"; svg.appendChild(r);
+    const c=mk("text",{x:x+w/2,y:H-P.b+46,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});
+    c.textContent="site "+(e.dist_from_macro_m/1000).toFixed(1)+" km out"; svg.appendChild(c);
+  });
+  const yl=mk("text",{x:P.l-8,y:P.t-9,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")});yl.textContent="points of demand gained";svg.appendChild(yl);
+})();
+
+/* ---------- threshold bars ---------- */
+(function(){
+  const host=document.getElementById("c-thr"), W=880,H=250,P={l:52,r:20,t:20,b:52};
+  const {svg}=makeSvg(host,W,H);
+  const T=A.headline.threshold, keys=Object.keys(T);
+  const ys=scale(0,100,H-P.b,P.t), bw=(W-P.l-P.r)/keys.length;
+  [0,25,50,75,100].forEach(v=>{
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:ys(v),y2:ys(v),stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-8,y:ys(v)+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=v+"%";svg.appendChild(t);});
+  keys.forEach((k,i)=>{
+    const v=T[k].covered_before_pct, x=P.l+bw*i+bw*.28, w=bw*.44;
+    svg.appendChild(mk("rect",{x,y:ys(v),width:w,height:(H-P.b)-ys(v),
+      fill:v>70?C("--c1"):v>40?C("--c2"):C("--bad"),rx:3}));
+    const t=mk("text",{x:x+w/2,y:ys(v)-7,"text-anchor":"middle",fill:C("--ink"),
+      "font-size":14,"font-weight":700,"font-family":C("--f-display")});
+    t.textContent=v.toFixed(1)+"%"; svg.appendChild(t);
+    const l=mk("text",{x:x+w/2,y:H-P.b+18,"text-anchor":"middle",fill:C("--ink2"),
+      "font-size":12,"font-weight":600,"font-family":C("--f-display")});
+    l.textContent=parseFloat(k)+" Mbps uplink"; svg.appendChild(l);
+  });
+})();
+
+
+/* ---------- 6b. criterion bars ---------- */
+(function(){
+  const host=document.getElementById("c-crit"); if(!host)return;
+  const W=880,H=280,P={l:52,r:20,t:26,b:56};
+  const {svg}=makeSvg(host,W,H);
+  const Q=A.pct, order=["p90","mean","p50","p10","p05"];
+  const names={p90:"p90|best case",mean:"mean|planning average",p50:"p50|typical attempt",
+               p10:"p10|90% reliability",p05:"p05|95% reliability"};
+  const ys=scale(0,100,H-P.b,P.t), bw=(W-P.l-P.r)/order.length;
+  [0,25,50,75,100].forEach(v=>{
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:ys(v),y2:ys(v),stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-8,y:ys(v)+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=v+"%";svg.appendChild(t);});
+  order.forEach((k,i)=>{
+    const v=Q.coverage_by_criterion[k], x=P.l+bw*i+bw*.22, w=bw*.56;
+    const col = k==="mean"?C("--c1") : (k==="p10"||k==="p05")?C("--bad") : C("--c2");
+    svg.appendChild(mk("rect",{x,y:ys(v),width:w,height:(H-P.b)-ys(v),fill:col,rx:3}));
+    const t=mk("text",{x:x+w/2,y:ys(v)-8,"text-anchor":"middle",fill:C("--ink"),
+      "font-size":15,"font-weight":700,"font-family":C("--f-display")});
+    t.textContent=v.toFixed(1)+"%";svg.appendChild(t);
+    names[k].split("|").forEach((line,j)=>{
+      const l=mk("text",{x:x+w/2,y:H-P.b+18+j*14,"text-anchor":"middle",
+        fill:j?C("--mute"):C("--ink2"),"font-size":j?10:12,
+        "font-weight":j?400:600,"font-family":j?C("--f-mono"):C("--f-display")});
+      l.textContent=line;svg.appendChild(l);});
+  });
+  const yl=mk("text",{x:P.l-8,y:P.t-10,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")});
+  yl.textContent="route demand met";svg.appendChild(yl);
+})();
+
+/* ---------- conditional quantile fan ---------- */
+(function(){
+  const host=document.getElementById("c-fan"); if(!host)return;
+  const W=520,H=300,P={l:48,r:22,t:16,b:42};
+  const {svg,tip}=makeSvg(host,W,H);
+  const Q=A.pct, g=Q.rsrp_grid, CC=Q.conditional_curves;
+  const xs=scale(-118,-52,P.l,W-P.r), ys=scale(0,110,H-P.b,P.t);
+  axes(svg,W,H,P,[-110,-95,-80,-65].map(v=>({v,label:v})),
+       [0,25,50,75,100].map(v=>({v,label:v,valueOf:()=>v})),xs,v=>ys(v.v??v),"RSRP dBm","Mbps");
+  const up=g.map((x,i)=>[xs(x),ys(CC["0.9"][i])]);
+  const dn=g.map((x,i)=>[xs(x),ys(CC["0.1"][i])]).reverse();
+  svg.appendChild(mk("path",{d:path(up)+" L "+dn.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" L ")+" Z",
+    fill:C("--c2"),opacity:.16,stroke:"none"}));
+  [["0.9",C("--c2"),"4 3"],["0.5",C("--c1"),null],["0.1",C("--c2"),"4 3"],["mean",C("--c3"),"2 3"]]
+    .forEach(function(e){
+      const k=e[0],col=e[1],d=e[2];
+      const a={d:path(g.map((x,i)=>[xs(x),ys(CC[k][i])])),fill:"none",
+        stroke:col,"stroke-width":k==="0.5"?3:2};
+      if(d)a["stroke-dasharray"]=d;
+      svg.appendChild(mk("path",a));});
+  legend("lg-fan",[{c:C("--c1"),t:"p50"},{c:C("--c2"),t:"p10 / p90 band"},{c:C("--c3"),t:"mean"}]);
+  hover(host,svg,tip,W,H,P,g.map((x,i)=>({x:xs(x),v:x,i,marks:[
+    {y:ys(CC["0.1"][i]),c:C("--c2")},
+    {y:ys(CC["0.5"][i]),c:C("--c1")},
+    {y:ys(CC["0.9"][i]),c:C("--c2")}]})),
+    b=>b.v.toFixed(0)+" dBm<br>p10 "+CC["0.1"][b.i].toFixed(1)+"<br>p50 "+CC["0.5"][b.i].toFixed(1)
+       +"<br>mean "+CC["mean"][b.i].toFixed(1)+"<br>p90 "+CC["0.9"][b.i].toFixed(1)+" Mbps");
+})();
+
+/* ---------- site distance by criterion ---------- */
+(function(){
+  const host=document.getElementById("c-sites"); if(!host)return;
+  const W=520,H=300,P={l:78,r:56,t:16,b:40};
+  const {svg}=makeSvg(host,W,H);
+  const Q=A.pct, order=["p05","p10","p50","mean","p90"];
+  const xs=scale(0,7000,P.l,W-P.r);
+  [0,2000,4000,6000].forEach(v=>{
+    svg.appendChild(mk("line",{x1:xs(v),x2:xs(v),y1:P.t,y2:H-P.b,stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:xs(v),y:H-P.b+16,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=(v/1000)+" km";svg.appendChild(t);});
+  order.forEach((k,i)=>{
+    const p=Q.picks[k], y=P.t+i*48+12, h=24;
+    const col=k==="mean"?C("--c1"):(k==="p10"||k==="p05")?C("--bad"):C("--c2");
+    svg.appendChild(mk("rect",{x:xs(0),y,width:Math.max(2,xs(p.dist_from_macro_m)-xs(0)),
+      height:h,fill:col,rx:3}));
+    const l=mk("text",{x:P.l-10,y:y+h/2+4,"text-anchor":"end",fill:C("--ink"),
+      "font-size":12,"font-family":C("--f-display"),"font-weight":k==="mean"?700:500});
+    l.textContent=k;svg.appendChild(l);
+    const v=mk("text",{x:xs(p.dist_from_macro_m)+8,y:y+h/2+4,fill:C("--ink"),
+      "font-size":11,"font-weight":600,"font-family":C("--f-mono")});
+    v.textContent=(p.dist_from_macro_m/1000).toFixed(1)+" km";svg.appendChild(v);
+  });
+  const nt=mk("text",{x:P.l,y:H-6,fill:C("--mute"),"font-size":10,"font-family":C("--f-mono")});
+  nt.textContent="distance of the optimal relay site from the macro";svg.appendChild(nt);
+})();
+
+/* ---------- outage episode duration ---------- */
+(function(){
+  const host=document.getElementById("c-eps"); if(!host)return;
+  const W=880,H=300,P={l:52,r:20,t:26,b:58};
+  const {svg}=makeSvg(host,W,H);
+  const E=A.pct.episodes.time_share_by_duration;
+  const ys=scale(0,100,H-P.b,P.t), bw=(W-P.l-P.r)/E.length;
+  [0,25,50,75,100].forEach(v=>{
+    svg.appendChild(mk("line",{x1:P.l,x2:W-P.r,y1:ys(v),y2:ys(v),stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:P.l-8,y:ys(v)+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=v+"%";svg.appendChild(t);});
+  E.forEach((e,i)=>{
+    const x=P.l+bw*i+bw*.16, w=bw*.32;
+    [[e.pct_of_episodes,C("--mute"),0],[e.pct_of_outage_time,C("--c2"),1]].forEach(function(pair){
+      const v=pair[0],col=pair[1],off=pair[2];
+      const xx=x+off*(w+6);
+      svg.appendChild(mk("rect",{x:xx,y:ys(v),width:w,height:(H-P.b)-ys(v),fill:col,rx:3,
+        opacity:off?1:.5}));
+      const t=mk("text",{x:xx+w/2,y:ys(v)-7,"text-anchor":"middle",fill:C("--ink"),
+        "font-size":11,"font-weight":600,"font-family":C("--f-mono")});
+      t.textContent=v.toFixed(0)+"%";svg.appendChild(t);});
+    const l=mk("text",{x:x+w+3,y:H-P.b+18,"text-anchor":"middle",fill:C("--ink2"),
+      "font-size":11,"font-weight":600,"font-family":C("--f-display")});
+    l.textContent="longer than "+(e.longer_than_s>=60?(e.longer_than_s/60)+" min":e.longer_than_s+" s");
+    svg.appendChild(l);
+    const n=mk("text",{x:x+w+3,y:H-P.b+33,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});
+    n.textContent=e.episodes+" episodes";svg.appendChild(n);
+  });
+  const lg=mk("text",{x:W-P.r,y:P.t-10,"text-anchor":"end",fill:C("--mute"),
+    "font-size":10,"font-family":C("--f-mono")});
+  lg.textContent="pale = share of episodes / solid = share of outage TIME";svg.appendChild(lg);
+})();
+
+/* ---------- criterion + ping tables ---------- */
+(function(){
+  const Q=A.pct, tb=document.getElementById("tbl-crit"); if(!tb)return;
+  const meaning={p90:"the best tenth of attempts",mean:"the planning average we headlined",
+    p50:"a typical attempt",p10:"nine attempts in ten succeed",p05:"nineteen in twenty succeed"};
+  tb.innerHTML=["p90","mean","p50","p10","p05"].map(function(k){
+    const p=Q.picks[k], c=Q.coverage_by_criterion[k];
+    const away=p.m_from_mean_choice?' <span style="color:var(--mute)">('+p.m_from_mean_choice+' m away)</span>':"";
+    return '<tr class="'+(k==="mean"?"hi":"")+'"><td><b>'+k+'</b></td>'
+      +'<td class="n '+(c<20?"w":c>70?"g":"")+'">'+c.toFixed(1)+'%</td>'
+      +'<td class="n">'+(p.dist_from_macro_m/1000).toFixed(1)+' km out'+away+'</td>'
+      +'<td class="n">+'+p.gain_pct.toFixed(2)+' pts</td><td>'+meaning[k]+'</td></tr>';}).join("");
+  const pp=Q.ping_percentiles, pt=document.getElementById("tbl-ping");
+  pt.innerHTML='<tr><td>Ping, ms</td><td class="n">'+pp.p50+'</td><td class="n">'+pp.p90
+    +'</td><td class="n">'+pp.p95+'</td><td class="n w">'+pp.p99+'</td><td class="n w">'+pp.max+'</td></tr>';
+})();
+
+
+/* ---------- 8a. site + baseline by criterion ---------- */
+(function(){
+  const host=document.getElementById("c-bycrit"); if(!host)return;
+  const W=880,H=340,P={l:120,r:90,t:20,b:44};
+  const {svg,tip}=makeSvg(host,W,H);
+  const B=A.criteria.relay.by_criterion;
+  const order=["p90","mean","p50","p10","p05","availability"];
+  const xs=scale(0,7000,P.l,W-P.r), rowH=(H-P.t-P.b)/order.length;
+  [0,2000,4000,6000].forEach(v=>{
+    svg.appendChild(mk("line",{x1:xs(v),x2:xs(v),y1:P.t,y2:H-P.b,stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:xs(v),y:H-P.b+17,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=(v/1000)+" km";svg.appendChild(t);});
+  const pct=scale(0,100,P.l,W-P.r);
+  order.forEach((k,i)=>{
+    const b=B[k]; if(!b||b.dist_from_macro_m==null)return;
+    const y=P.t+i*rowH+rowH/2, h=15;
+    const hi=k===A.headline_criterion;
+    svg.appendChild(mk("rect",{x:xs(0),y:y-h/2,width:Math.max(2,xs(b.dist_from_macro_m)-xs(0)),
+      height:h,fill:hi?C("--c1"):C("--c2"),rx:3,opacity:hi?1:.55}));
+    const l=mk("text",{x:P.l-12,y:y+4,"text-anchor":"end",fill:C("--ink"),"font-size":12,
+      "font-family":C("--f-display"),"font-weight":hi?700:500});
+    l.textContent=k+(hi?"  ◂ headline":"");svg.appendChild(l);
+    const v=mk("text",{x:xs(b.dist_from_macro_m)+7,y:y+4,fill:C("--ink2"),"font-size":10.5,
+      "font-weight":600,"font-family":C("--f-mono")});
+    v.textContent=(b.dist_from_macro_m/1000).toFixed(1)+" km";svg.appendChild(v);
+    // dot = share of demand already met under this definition
+    svg.appendChild(mk("circle",{cx:pct(b.covered_before_pct),cy:y,r:6,
+      fill:C("--c3"),stroke:C("--surface"),"stroke-width":2}));
+    const d=mk("text",{x:pct(b.covered_before_pct),y:y-11,"text-anchor":"middle",
+      fill:C("--c3"),"font-size":10,"font-weight":600,"font-family":C("--f-mono")});
+    d.textContent=b.covered_before_pct.toFixed(0)+"%";svg.appendChild(d);
+  });
+  legend("lg-bycrit",[{c:C("--c1"),t:"headline definition"},{c:C("--c2"),t:"distance of optimal site"},
+                      {c:C("--c3"),t:"share of demand already met (dot, 0–100% across the same width)",dot:1}]);
+})();
+
+/* ---------- 8b. disagreement matrix ---------- */
+(function(){
+  const host=document.getElementById("c-dis"); if(!host)return;
+  const W=520,H=300,P={l:92,r:16,t:44,b:20};
+  const {svg,tip}=makeSvg(host,W,H);
+  const D2=A.criteria.relay.disagreement.pairwise_m;
+  const order=["p90","mean","p50","p10","p05","availability"];
+  const short={p90:"p90",mean:"mean",p50:"p50",p10:"p10",p05:"p05",availability:"avail"};
+  const n=order.length, cw=(W-P.l-P.r)/n, ch=(H-P.t-P.b)/n;
+  let mx=1; Object.values(D2).forEach(v=>{if(v>mx)mx=v;});
+  order.forEach((a,i)=>{
+    const t=mk("text",{x:P.l+cw*i+cw/2,y:P.t-8,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":9.5,"font-family":C("--f-mono")});t.textContent=short[a];svg.appendChild(t);
+    const l=mk("text",{x:P.l-8,y:P.t+ch*i+ch/2+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":9.5,"font-family":C("--f-mono")});l.textContent=short[a];svg.appendChild(l);
+  });
+  order.forEach((a,i)=>order.forEach((b,j)=>{
+    const key=a<b?a+"|"+b:b+"|"+a;
+    const v=(a===b)?0:(D2[key]!=null?D2[key]:null);
+    const x=P.l+cw*j, y=P.t+ch*i;
+    if(v==null){svg.appendChild(mk("rect",{x:x+1,y:y+1,width:cw-2,height:ch-2,
+      fill:C("--surface2")}));return;}
+    svg.appendChild(mk("rect",{x:x+1,y:y+1,width:cw-2,height:ch-2,
+      fill:C("--c2"),opacity:0.08+0.9*(v/mx)}));
+    const t=mk("text",{x:x+cw/2,y:y+ch/2+3.5,"text-anchor":"middle",
+      fill:v/mx>0.55?C("--ground"):C("--ink"),"font-size":9.5,"font-family":C("--f-mono")});
+    t.textContent=v===0?"—":(v>=1000?(v/1000).toFixed(1)+"k":v);svg.appendChild(t);
+  }));
+  const c=mk("text",{x:W-P.r,y:H-4,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")});
+  c.textContent="metres between the two definitions' chosen sites";svg.appendChild(c);
+})();
+
+/* ---------- 8c. consensus regret ---------- */
+(function(){
+  const host=document.getElementById("c-regret"); if(!host)return;
+  const W=520,H=300,P={l:92,r:40,t:20,b:44};
+  const {svg}=makeSvg(host,W,H);
+  const K=A.criteria.relay.consensus;
+  const order=["p90","mean","p50","p10","p05","availability"];
+  const xs=scale(0,1,P.l,W-P.r), rowH=(H-P.t-P.b)/order.length;
+  [0,.25,.5,.75,1].forEach(v=>{
+    svg.appendChild(mk("line",{x1:xs(v),x2:xs(v),y1:P.t,y2:H-P.b,stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:xs(v),y:H-P.b+17,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=v.toFixed(2);svg.appendChild(t);});
+  order.forEach((k,i)=>{
+    const v=K.per_criterion_regret[k]; if(v==null)return;
+    const y=P.t+i*rowH+rowH/2, h=15, worst=Math.abs(v-K.max_regret)<1e-6;
+    svg.appendChild(mk("rect",{x:xs(0),y:y-h/2,width:Math.max(2,xs(v)-xs(0)),height:h,
+      fill:worst?C("--bad"):C("--c2"),rx:3,opacity:worst?1:.6}));
+    const l=mk("text",{x:P.l-12,y:y+4,"text-anchor":"end",fill:C("--ink"),"font-size":11.5,
+      "font-family":C("--f-display"),"font-weight":worst?700:500});
+    l.textContent=k;svg.appendChild(l);
+    const t=mk("text",{x:xs(v)+7,y:y+4,fill:C("--ink2"),"font-size":10.5,
+      "font-weight":600,"font-family":C("--f-mono")});t.textContent=v.toFixed(2);svg.appendChild(t);
+  });
+  const nt=mk("text",{x:P.l,y:H-6,fill:C("--mute"),"font-size":9.5,"font-family":C("--f-mono")});
+  nt.textContent="0 = optimal under that definition / 1 = no better than useless";svg.appendChild(nt);
+})();
+
+
+/* ---------- 8a. site + baseline by criterion ---------- */
+(function(){
+  const host=document.getElementById("c-bycrit"); if(!host)return;
+  const W=880,H=340,P={l:120,r:90,t:20,b:44};
+  const {svg,tip}=makeSvg(host,W,H);
+  const B=A.criteria.relay.by_criterion;
+  const order=["p90","mean","p50","p10","p05","availability"];
+  const xs=scale(0,7000,P.l,W-P.r), rowH=(H-P.t-P.b)/order.length;
+  [0,2000,4000,6000].forEach(v=>{
+    svg.appendChild(mk("line",{x1:xs(v),x2:xs(v),y1:P.t,y2:H-P.b,stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:xs(v),y:H-P.b+17,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=(v/1000)+" km";svg.appendChild(t);});
+  const pct=scale(0,100,P.l,W-P.r);
+  order.forEach((k,i)=>{
+    const b=B[k]; if(!b||b.dist_from_macro_m==null)return;
+    const y=P.t+i*rowH+rowH/2, h=15;
+    const hi=k===A.headline_criterion;
+    svg.appendChild(mk("rect",{x:xs(0),y:y-h/2,width:Math.max(2,xs(b.dist_from_macro_m)-xs(0)),
+      height:h,fill:hi?C("--c1"):C("--c2"),rx:3,opacity:hi?1:.55}));
+    const l=mk("text",{x:P.l-12,y:y+4,"text-anchor":"end",fill:C("--ink"),"font-size":12,
+      "font-family":C("--f-display"),"font-weight":hi?700:500});
+    l.textContent=k+(hi?"  ◂ headline":"");svg.appendChild(l);
+    const v=mk("text",{x:xs(b.dist_from_macro_m)+7,y:y+4,fill:C("--ink2"),"font-size":10.5,
+      "font-weight":600,"font-family":C("--f-mono")});
+    v.textContent=(b.dist_from_macro_m/1000).toFixed(1)+" km";svg.appendChild(v);
+    // dot = share of demand already met under this definition
+    svg.appendChild(mk("circle",{cx:pct(b.covered_before_pct),cy:y,r:6,
+      fill:C("--c3"),stroke:C("--surface"),"stroke-width":2}));
+    const d=mk("text",{x:pct(b.covered_before_pct),y:y-11,"text-anchor":"middle",
+      fill:C("--c3"),"font-size":10,"font-weight":600,"font-family":C("--f-mono")});
+    d.textContent=b.covered_before_pct.toFixed(0)+"%";svg.appendChild(d);
+  });
+  legend("lg-bycrit",[{c:C("--c1"),t:"headline definition"},{c:C("--c2"),t:"distance of optimal site"},
+                      {c:C("--c3"),t:"share of demand already met (dot, 0–100% across the same width)",dot:1}]);
+})();
+
+/* ---------- 8b. disagreement matrix ---------- */
+(function(){
+  const host=document.getElementById("c-dis"); if(!host)return;
+  const W=520,H=300,P={l:92,r:16,t:44,b:20};
+  const {svg,tip}=makeSvg(host,W,H);
+  const D2=A.criteria.relay.disagreement.pairwise_m;
+  const order=["p90","mean","p50","p10","p05","availability"];
+  const short={p90:"p90",mean:"mean",p50:"p50",p10:"p10",p05:"p05",availability:"avail"};
+  const n=order.length, cw=(W-P.l-P.r)/n, ch=(H-P.t-P.b)/n;
+  let mx=1; Object.values(D2).forEach(v=>{if(v>mx)mx=v;});
+  order.forEach((a,i)=>{
+    const t=mk("text",{x:P.l+cw*i+cw/2,y:P.t-8,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":9.5,"font-family":C("--f-mono")});t.textContent=short[a];svg.appendChild(t);
+    const l=mk("text",{x:P.l-8,y:P.t+ch*i+ch/2+3.5,"text-anchor":"end",fill:C("--mute"),
+      "font-size":9.5,"font-family":C("--f-mono")});l.textContent=short[a];svg.appendChild(l);
+  });
+  order.forEach((a,i)=>order.forEach((b,j)=>{
+    const key=a<b?a+"|"+b:b+"|"+a;
+    const v=(a===b)?0:(D2[key]!=null?D2[key]:null);
+    const x=P.l+cw*j, y=P.t+ch*i;
+    if(v==null){svg.appendChild(mk("rect",{x:x+1,y:y+1,width:cw-2,height:ch-2,
+      fill:C("--surface2")}));return;}
+    svg.appendChild(mk("rect",{x:x+1,y:y+1,width:cw-2,height:ch-2,
+      fill:C("--c2"),opacity:0.08+0.9*(v/mx)}));
+    const t=mk("text",{x:x+cw/2,y:y+ch/2+3.5,"text-anchor":"middle",
+      fill:v/mx>0.55?C("--ground"):C("--ink"),"font-size":9.5,"font-family":C("--f-mono")});
+    t.textContent=v===0?"—":(v>=1000?(v/1000).toFixed(1)+"k":v);svg.appendChild(t);
+  }));
+  const c=mk("text",{x:W-P.r,y:H-4,"text-anchor":"end",fill:C("--mute"),
+    "font-size":9.5,"font-family":C("--f-mono")});
+  c.textContent="metres between the two definitions' chosen sites";svg.appendChild(c);
+})();
+
+/* ---------- 8c. consensus regret ---------- */
+(function(){
+  const host=document.getElementById("c-regret"); if(!host)return;
+  const W=520,H=300,P={l:92,r:40,t:20,b:44};
+  const {svg}=makeSvg(host,W,H);
+  const K=A.criteria.relay.consensus;
+  const order=["p90","mean","p50","p10","p05","availability"];
+  const xs=scale(0,1,P.l,W-P.r), rowH=(H-P.t-P.b)/order.length;
+  [0,.25,.5,.75,1].forEach(v=>{
+    svg.appendChild(mk("line",{x1:xs(v),x2:xs(v),y1:P.t,y2:H-P.b,stroke:C("--grid"),"stroke-width":1}));
+    const t=mk("text",{x:xs(v),y:H-P.b+17,"text-anchor":"middle",fill:C("--mute"),
+      "font-size":10,"font-family":C("--f-mono")});t.textContent=v.toFixed(2);svg.appendChild(t);});
+  order.forEach((k,i)=>{
+    const v=K.per_criterion_regret[k]; if(v==null)return;
+    const y=P.t+i*rowH+rowH/2, h=15, worst=Math.abs(v-K.max_regret)<1e-6;
+    svg.appendChild(mk("rect",{x:xs(0),y:y-h/2,width:Math.max(2,xs(v)-xs(0)),height:h,
+      fill:worst?C("--bad"):C("--c2"),rx:3,opacity:worst?1:.6}));
+    const l=mk("text",{x:P.l-12,y:y+4,"text-anchor":"end",fill:C("--ink"),"font-size":11.5,
+      "font-family":C("--f-display"),"font-weight":worst?700:500});
+    l.textContent=k;svg.appendChild(l);
+    const t=mk("text",{x:xs(v)+7,y:y+4,fill:C("--ink2"),"font-size":10.5,
+      "font-weight":600,"font-family":C("--f-mono")});t.textContent=v.toFixed(2);svg.appendChild(t);
+  });
+  const nt=mk("text",{x:P.l,y:H-6,fill:C("--mute"),"font-size":9.5,"font-family":C("--f-mono")});
+  nt.textContent="0 = optimal under that definition / 1 = no better than useless";svg.appendChild(nt);
+})();
+
+matchMedia("(prefers-color-scheme:dark)").addEventListener("change",()=>location.reload());
+</script>

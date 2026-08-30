@@ -89,6 +89,45 @@ using it for trees would be badly wrong.
 | Seed | 0 | — | same subsample across runs so comparisons are paired |
 | Metrics | RMSE, r, bias, MAE on test blocks | — | RMSE is the headline |
 
+### What the RMSE actually measures
+
+**RSRP in dBm, serving cell only.** `10*log10(sum |a|^2) + offset` against the `rsrp`
+column. Not throughput, not SINR, not latency. Because one `offset` is fitted per run
+(absorbing EIRP + antenna gain), it measures the *shape* of the path-gain surface, not
+absolute power. RSRP is quantised to 1 dB in the data.
+
+Chaining to the decision-relevant quantity degrades sharply (`scene/uplink_error.py`):
+
+| stage | error | r |
+|---|---|---|
+| RSRP (what every RMSE here reports) | **8.27 dB** | 0.832 |
+| -> uplink Mbps | **29.7 Mbps**, 35% median relative | **0.332** |
+| ceiling: *measured* RSRP -> uplink | 25.5 Mbps | 0.565 |
+
+The ceiling row matters: even with perfect RSRP the mapping only reaches r = 0.565, so the
+RSRP->uplink relationship is a bigger limitation than our propagation error. Improving RSRP
+alone cannot fix uplink prediction.
+
+### The validation set excludes the underserved
+
+| | rows |
+|---|---|
+| whole dataset | 7,144 |
+| **no serving cell — the genuinely underserved** | **3,023 (42%), excluded** |
+| reaching the uplink evaluation | 1,225 |
+| of those, uplink < 10 Mbps | 20 (1.6%) |
+
+Rows with no serving cell carry no RSRP, so they are dropped before validation runs. Every
+RMSE in this repository is therefore measured **where the network already works**. Scored on
+the actual decision — "is this location underserved?" — recall is **0.00** at both the 5 and
+10 Mbps thresholds.
+
+This does not invalidate the 8.27 dB, but it bounds what that number licenses: the model is
+validated on the easy half of the problem and effectively unvalidated on the half Challenge 3
+exists to solve. Any placement claim needs a validation path that includes the no-service
+rows — for example scoring *coverage classification* (does a location have any serving cell)
+rather than RSRP regression.
+
 **Do not compare RMSE across antenna heights.** A taller antenna links more receivers, and
 the extra ones are marginal far-out points that predict badly, so lower heights score better
 partly by being graded on an easier subset. Compare on a common linked subset.

@@ -1,0 +1,567 @@
+{
+  "headline_criterion": "p50",
+  "threshold_mbps": 10.0,
+  "availability_target": 0.9,
+  "total_weight": 1380.0,
+  "n_cells": 931,
+  "assets": {
+    "relay": {
+      "label": "Donor-fed relay",
+      "eirp_deficit_db": 20.0,
+      "n_feasible": 251,
+      "n_candidates": 622,
+      "covered_before_pct": 29.63768115942029,
+      "sites": [
+        {
+          "rank": 1,
+          "lat": 42.0085566,
+          "lon": -93.8146964,
+          "dist_from_macro_m": 3668,
+          "donor_rsrp_dbm": -89.8,
+          "cumulative_gain_pct": 1.5942028985507246
+        },
+        {
+          "rank": 2,
+          "lat": 42.0225495,
+          "lon": -93.7963955,
+          "dist_from_macro_m": 1892,
+          "donor_rsrp_dbm": -82.9,
+          "cumulative_gain_pct": 2.8260869565217392
+        },
+        {
+          "rank": 3,
+          "lat": 42.0083911,
+          "lon": -93.8273559,
+          "dist_from_macro_m": 4659,
+          "donor_rsrp_dbm": -92.3,
+          "cumulative_gain_pct": 3.9130434782608696
+        }
+      ],
+      "worst_point_baseline": {
+        "lat": 41.99407795454545,
+        "lon": -93.85832756363637,
+        "observed_uplink_mbps": 0.27,
+        "dist_from_macro_m": 7616,
+        "gain_pct": 0.8695652173913043
+      },
+      "optimiser_vs_worst_point_ratio": 1.8333333333333333,
+      "uniform_weight_sensitivity": {
+        "same_choice": false,
+        "distance_between_choices_m": 2432
+      },
+      "by_criterion": {
+        "p90": {
+          "label": "Best case",
+          "blurb": "the best tenth of attempts",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 94.78260869565217,
+          "idx": 122,
+          "lat": 42.0229843,
+          "lon": -93.8456471,
+          "dist_from_macro_m": 5957,
+          "gain_pct": 2.608695652173913
+        },
+        "mean": {
+          "label": "Planning average",
+          "blurb": "expected uplink, (1 - P(outage)) x mean rate",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 51.3768115942029,
+          "idx": 18,
+          "lat": 42.0084504,
+          "lon": -93.821106,
+          "dist_from_macro_m": 4167,
+          "gain_pct": 1.6666666666666667
+        },
+        "p50": {
+          "label": "Typical attempt",
+          "blurb": "half of attempts do at least this well",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 29.63768115942029,
+          "idx": 16,
+          "lat": 42.0085566,
+          "lon": -93.8146964,
+          "dist_from_macro_m": 3668,
+          "gain_pct": 1.5942028985507246
+        },
+        "p10": {
+          "label": "90% reliability",
+          "blurb": "nine attempts in ten reach the target",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 9.057971014492754,
+          "idx": 74,
+          "lat": 42.0225495,
+          "lon": -93.7963955,
+          "dist_from_macro_m": 1892,
+          "gain_pct": 0.7246376811594203
+        },
+        "p05": {
+          "label": "95% reliability",
+          "blurb": "nineteen attempts in twenty reach the target",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 8.478260869565217,
+          "idx": 74,
+          "lat": 42.0225495,
+          "lon": -93.7963955,
+          "dist_from_macro_m": 1892,
+          "gain_pct": 0.7246376811594203
+        },
+        "availability": {
+          "label": "Availability",
+          "blurb": "the cell has service at all, this fraction of the time",
+          "threshold": 0.9,
+          "unit": "fraction",
+          "covered_before_pct": 9.710144927536232,
+          "idx": 16,
+          "lat": 42.0085566,
+          "lon": -93.8146964,
+          "dist_from_macro_m": 3668,
+          "gain_pct": 0.9420289855072463
+        }
+      },
+      "consensus": {
+        "lat": 42.0349626,
+        "lon": -93.8387508,
+        "dist_from_macro_m": 5602,
+        "donor_rsrp_dbm": -94.2,
+        "max_regret": 0.773,
+        "per_criterion_gain_pct": {
+          "p90": 1.5217391304347827,
+          "mean": 0.5072463768115942,
+          "p50": 0.36231884057971014,
+          "p10": 0.21739130434782608,
+          "p05": 0.21739130434782608,
+          "availability": 0.21739130434782608
+        },
+        "per_criterion_regret": {
+          "p90": 0.417,
+          "mean": 0.696,
+          "p50": 0.773,
+          "p10": 0.7,
+          "p05": 0.7,
+          "availability": 0.769
+        },
+        "beats_single_criterion_worst_regret": {
+          "p90": 0.846,
+          "mean": 1.0,
+          "p50": 1.0,
+          "p10": 0.944,
+          "p05": 0.944,
+          "availability": 1.0
+        }
+      },
+      "criterion_disagreement": {
+        "pairwise_m": {
+          "mean|p90": 2593,
+          "mean|p50": 530,
+          "mean|p10": 2574,
+          "mean|p05": 2574,
+          "p50|p90": 3019,
+          "p10|p90": 4069,
+          "p10|p50": 2170,
+          "p05|p90": 4069,
+          "p05|p50": 2170,
+          "p05|p10": 0,
+          "availability|p90": 3019,
+          "availability|mean": 530,
+          "availability|p50": 0,
+          "availability|p10": 2170,
+          "availability|p05": 2170
+        },
+        "max_spread_m": 4069,
+        "n_distinct_sites": 4
+      },
+      "availability": {
+        "passes_with_service_before": 662.1,
+        "passes_with_service_after_headline": 671.3,
+        "passes_restored_headline": 9.2,
+        "best_site_lat": 42.0229843,
+        "best_site_lon": -93.8456471,
+        "best_site_dist_m": 5957,
+        "passes_restored_best": 10.6,
+        "pct_of_all_passes": 0.7648063780756722
+      },
+      "robustness": {
+        "n_draws": 200,
+        "n_feasible_candidates": 251,
+        "random_pick_baseline": 0.00398406374501992,
+        "exact_site_frequency": 0.05,
+        "within_500m_frequency": 0.19999999999999998,
+        "within_1km_frequency": 0.3,
+        "within_2km_frequency": 0.76,
+        "top5": [
+          {
+            "lat": 42.0230644,
+            "lon": -93.8099383,
+            "freq": 0.14,
+            "m_from_recommendation": 1660
+          },
+          {
+            "lat": 42.0084972,
+            "lon": -93.8178853,
+            "freq": 0.12,
+            "m_from_recommendation": 264
+          },
+          {
+            "lat": 42.0225495,
+            "lon": -93.7963955,
+            "freq": 0.115,
+            "m_from_recommendation": 2170
+          },
+          {
+            "lat": 42.0230462,
+            "lon": -93.8131188,
+            "freq": 0.1,
+            "m_from_recommendation": 1616
+          },
+          {
+            "lat": 42.0230775,
+            "lon": -93.8058609,
+            "freq": 0.065,
+            "m_from_recommendation": 1772
+          }
+        ]
+      },
+      "impact": {
+        "cells_converted": 9,
+        "passes_converted": 22,
+        "route_km_converted": 1.8,
+        "addressable_deficit_pct": 70.3623188405797,
+        "share_of_deficit_closed_pct": 2.265705458290422
+      }
+    },
+    "smallcell": {
+      "label": "Backhauled small cell",
+      "eirp_deficit_db": 26.0,
+      "n_feasible": 622,
+      "n_candidates": 622,
+      "covered_before_pct": 29.63768115942029,
+      "sites": [
+        {
+          "rank": 1,
+          "lat": 42.0085566,
+          "lon": -93.8146964,
+          "dist_from_macro_m": 3668,
+          "donor_rsrp_dbm": -89.8,
+          "cumulative_gain_pct": 0.9420289855072463
+        },
+        {
+          "rank": 2,
+          "lat": 41.9942,
+          "lon": -93.8486543,
+          "dist_from_macro_m": 6882,
+          "donor_rsrp_dbm": -96.4,
+          "cumulative_gain_pct": 1.8115942028985508
+        },
+        {
+          "rank": 3,
+          "lat": 41.979617,
+          "lon": -93.8418638,
+          "dist_from_macro_m": 7282,
+          "donor_rsrp_dbm": -97.0,
+          "cumulative_gain_pct": 2.681159420289855
+        }
+      ],
+      "worst_point_baseline": {
+        "lat": 41.99407795454545,
+        "lon": -93.85832756363637,
+        "observed_uplink_mbps": 0.27,
+        "dist_from_macro_m": 7616,
+        "gain_pct": 0.43478260869565216
+      },
+      "optimiser_vs_worst_point_ratio": 2.1666666666666665,
+      "uniform_weight_sensitivity": {
+        "same_choice": true,
+        "distance_between_choices_m": 0
+      },
+      "by_criterion": {
+        "p90": {
+          "label": "Best case",
+          "blurb": "the best tenth of attempts",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 94.78260869565217,
+          "idx": 228,
+          "lat": 42.0186605,
+          "lon": -93.8525138,
+          "dist_from_macro_m": 6526,
+          "gain_pct": 1.4492753623188406
+        },
+        "mean": {
+          "label": "Planning average",
+          "blurb": "expected uplink, (1 - P(outage)) x mean rate",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 51.3768115942029,
+          "idx": 38,
+          "lat": 41.994154,
+          "lon": -93.8518109,
+          "dist_from_macro_m": 7120,
+          "gain_pct": 1.2318840579710144
+        },
+        "p50": {
+          "label": "Typical attempt",
+          "blurb": "half of attempts do at least this well",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 29.63768115942029,
+          "idx": 16,
+          "lat": 42.0085566,
+          "lon": -93.8146964,
+          "dist_from_macro_m": 3668,
+          "gain_pct": 0.9420289855072463
+        },
+        "p10": {
+          "label": "90% reliability",
+          "blurb": "nine attempts in ten reach the target",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 9.057971014492754,
+          "idx": 164,
+          "lat": 41.9506023,
+          "lon": -93.8084968,
+          "dist_from_macro_m": 8345,
+          "gain_pct": 0.43478260869565216
+        },
+        "p05": {
+          "label": "95% reliability",
+          "blurb": "nineteen attempts in twenty reach the target",
+          "threshold": 10.0,
+          "unit": "Mbps",
+          "covered_before_pct": 8.478260869565217,
+          "idx": 10,
+          "lat": 42.0085705,
+          "lon": -93.7955608,
+          "dist_from_macro_m": 2283,
+          "gain_pct": 0.36231884057971014
+        },
+        "availability": {
+          "label": "Availability",
+          "blurb": "the cell has service at all, this fraction of the time",
+          "threshold": 0.9,
+          "unit": "fraction",
+          "covered_before_pct": 9.710144927536232,
+          "idx": 61,
+          "lat": 41.9895695,
+          "lon": -93.7764385,
+          "dist_from_macro_m": 3505,
+          "gain_pct": 0.43478260869565216
+        }
+      },
+      "consensus": {
+        "lat": 42.0235895,
+        "lon": -93.852236,
+        "dist_from_macro_m": 6504,
+        "donor_rsrp_dbm": -95.8,
+        "max_regret": 0.615,
+        "per_criterion_gain_pct": {
+          "p90": 1.2318840579710144,
+          "mean": 0.6521739130434783,
+          "p50": 0.36231884057971014,
+          "p10": 0.21739130434782608,
+          "p05": 0.21739130434782608,
+          "availability": 0.2898550724637681
+        },
+        "per_criterion_regret": {
+          "p90": 0.15,
+          "mean": 0.471,
+          "p50": 0.615,
+          "p10": 0.5,
+          "p05": 0.4,
+          "availability": 0.333
+        },
+        "beats_single_criterion_worst_regret": {
+          "p90": 0.692,
+          "mean": 1.0,
+          "p50": 1.0,
+          "p10": 1.0,
+          "p05": 1.0,
+          "availability": 1.0
+        }
+      },
+      "criterion_disagreement": {
+        "pairwise_m": {
+          "mean|p90": 2726,
+          "mean|p50": 3460,
+          "mean|p10": 6023,
+          "mean|p05": 4917,
+          "p50|p90": 3320,
+          "p10|p90": 8397,
+          "p10|p50": 6465,
+          "p05|p90": 4837,
+          "p05|p50": 1581,
+          "p05|p10": 6534,
+          "availability|p90": 7069,
+          "availability|mean": 6250,
+          "availability|p50": 3802,
+          "availability|p10": 5079,
+          "availability|p05": 2638
+        },
+        "max_spread_m": 8397,
+        "n_distinct_sites": 6
+      },
+      "availability": {
+        "passes_with_service_before": 662.1,
+        "passes_with_service_after_headline": 666.5,
+        "passes_restored_headline": 4.4,
+        "best_site_lat": 42.0186605,
+        "best_site_lon": -93.8525138,
+        "best_site_dist_m": 6526,
+        "passes_restored_best": 7.6,
+        "pct_of_all_passes": 0.5514276122005577
+      },
+      "robustness": {
+        "n_draws": 200,
+        "n_feasible_candidates": 622,
+        "random_pick_baseline": 0.001607717041800643,
+        "exact_site_frequency": 0.015,
+        "within_500m_frequency": 0.034999999999999996,
+        "within_1km_frequency": 0.075,
+        "within_2km_frequency": 0.21500000000000002,
+        "top5": [
+          {
+            "lat": 41.9942,
+            "lon": -93.8486543,
+            "freq": 0.23,
+            "m_from_recommendation": 3228
+          },
+          {
+            "lat": 41.994154,
+            "lon": -93.8518109,
+            "freq": 0.135,
+            "m_from_recommendation": 3460
+          },
+          {
+            "lat": 41.9974923,
+            "lon": -93.8495566,
+            "freq": 0.06,
+            "m_from_recommendation": 3132
+          },
+          {
+            "lat": 41.9918712,
+            "lon": -93.8493389,
+            "freq": 0.035,
+            "m_from_recommendation": 3411
+          },
+          {
+            "lat": 41.9941188,
+            "lon": -93.8548955,
+            "freq": 0.035,
+            "m_from_recommendation": 3689
+          }
+        ]
+      },
+      "impact": {
+        "cells_converted": 5,
+        "passes_converted": 13,
+        "route_km_converted": 1.0,
+        "addressable_deficit_pct": 70.3623188405797,
+        "share_of_deficit_closed_pct": 1.3388259526261586
+      }
+    }
+  },
+  "criteria": {},
+  "measurement_campaign": [
+    {
+      "lat": 42.00868925128205,
+      "lon": -93.79565948461538,
+      "band_mbps": 50.6,
+      "route_density": 5,
+      "dist_from_macro_m": 2282
+    },
+    {
+      "lat": 41.97943891621622,
+      "lon": -93.69838005405406,
+      "band_mbps": 50.6,
+      "route_density": 5,
+      "dist_from_macro_m": 7745
+    },
+    {
+      "lat": 41.950899283333335,
+      "lon": -93.79546935833334,
+      "band_mbps": 51.5,
+      "route_density": 4,
+      "dist_from_macro_m": 8004
+    },
+    {
+      "lat": 42.00853487846154,
+      "lon": -93.81537474153846,
+      "band_mbps": 51.3,
+      "route_density": 4,
+      "dist_from_macro_m": 3721
+    },
+    {
+      "lat": 42.02282783636363,
+      "lon": -93.79626503181818,
+      "band_mbps": 50.0,
+      "route_density": 4,
+      "dist_from_macro_m": 1885
+    }
+  ],
+  "threshold_sensitivity": {
+    "5.0": {
+      "covered_before_pct": 31.231884057971016,
+      "gain_pct": 1.6666666666666667,
+      "lat": 42.0084972,
+      "lon": -93.8178853
+    },
+    "10.0": {
+      "covered_before_pct": 29.63768115942029,
+      "gain_pct": 1.5942028985507246,
+      "lat": 42.0085566,
+      "lon": -93.8146964
+    },
+    "25.0": {
+      "covered_before_pct": 10.652173913043478,
+      "gain_pct": 1.0144927536231885,
+      "lat": 42.0085705,
+      "lon": -93.7955608
+    }
+  },
+  "eirp_sensitivity": {
+    "10dB": {
+      "gain_pct": 4.27536231884058,
+      "cells_converted": 26,
+      "service_radius_m": 1175,
+      "lat": 42.0147052,
+      "lon": -93.8153739,
+      "dist_from_macro_m": 3523
+    },
+    "15dB": {
+      "gain_pct": 2.391304347826087,
+      "cells_converted": 14,
+      "service_radius_m": 725,
+      "lat": 42.0062763,
+      "lon": -93.8153854,
+      "dist_from_macro_m": 3823
+    },
+    "20dB": {
+      "gain_pct": 1.5942028985507246,
+      "cells_converted": 9,
+      "service_radius_m": 447,
+      "lat": 42.0085566,
+      "lon": -93.8146964,
+      "dist_from_macro_m": 3668
+    },
+    "26dB": {
+      "gain_pct": 0.9420289855072463,
+      "cells_converted": 5,
+      "service_radius_m": 255,
+      "lat": 42.0085566,
+      "lon": -93.8146964,
+      "dist_from_macro_m": 3668
+    },
+    "32dB": {
+      "gain_pct": 0.5072463768115942,
+      "cells_converted": 2,
+      "service_radius_m": 143,
+      "lat": 42.0225495,
+      "lon": -93.7963955,
+      "dist_from_macro_m": 1892
+    }
+  }
+}
