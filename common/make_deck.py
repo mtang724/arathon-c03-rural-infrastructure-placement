@@ -409,12 +409,9 @@ def s09_fno(prs, d):
                   "angular_wedges"]:
             v = bench.get(k, {}).get("rmse")
             vals.append(round(v, 2) if v else 0.0)
-        bar(s, Inches(6.9), Inches(2.3), Inches(5.9), Inches(2.4),
+        bar(s, Inches(6.9), Inches(2.25), Inches(5.9), Inches(2.35),
             ["in sample", "random", "KMeans", "wedges"],
             [("RMSE", vals)], [VIOL], labels=True, numfmt="0.00")
-        caption(s, Inches(7.0), Inches(4.8), Inches(5.8),
-                "Same splits, same buffer, same seed as every other simulator "
-                "on slide 11.")
     else:
         rect(s, Inches(6.9), Inches(1.95), Inches(5.9), Inches(2.6), fill=BG,
              line=GREY)
@@ -541,7 +538,7 @@ def s11_backtest(prs, d):
 
 def s12_planner_what(prs, d):
     s = slide(prs)
-    header(s, 12, "the tool · 1 of 2", "A planner that re-solves for whatever you ask it",
+    header(s, 12, "the tool · 1 of 3", "A planner that re-solves for whatever you ask it",
            "One self-contained HTML file. No server, no install, no network — "
            "open it by double-clicking.")
     b = d["bundles"].get("terrain-parametric")
@@ -580,7 +577,7 @@ def s12_planner_what(prs, d):
 
 def s13_planner_params(prs, d):
     s = slide(prs)
-    header(s, 13, "the tool · 2 of 2",
+    header(s, 13, "the tool · 2 of 3",
            "Every axis that moves the answer is a control",
            "A number that swings on a choice nobody wrote down is a hidden "
            "assumption, not a result.")
@@ -620,9 +617,58 @@ def s13_planner_params(prs, d):
     return s
 
 
-def s14_recommendation(prs, d):
+def s14_constraints(prs, d):
     s = slide(prs)
-    header(s, 14, "the recommendation", "What to build, and how far to trust it",
+    header(s, 14, "the tool · 3 of 3",
+           "Where an asset can actually be built",
+           "The measurements say where service is poor. They say nothing about "
+           "whether you are allowed to build there, or could get power to it.")
+    rect(s, Inches(0.55), Inches(1.9), Inches(5.9), Inches(1.15), fill=SURF,
+         line=WINE, lw=1.5)
+    rect(s, Inches(0.55), Inches(1.9), Inches(0.06), Inches(1.15), fill=WINE)
+    txt(s, Inches(0.85), Inches(2.05), Inches(5.4), Inches(0.28),
+        "The gap this closes", 12.5, WINE, True, FD)
+    txt(s, Inches(0.85), Inches(2.4), Inches(5.4), Inches(0.55),
+        "The optimiser had no feasible set. It would happily nominate the middle "
+        "of a field, kilometres from the nearest pole or track.",
+        11, INK2, False, FD)
+    rows = [["layer", "open-data proxy", "features", "default"],
+            ["Grid power", "tower, pole, line, substation", "1,057", "≤ 2 km"],
+            ["Land access", "any mapped highway", "81,471", "≤ 250 m"],
+            ["Existing structure", "building, silo, mast", "109,018", "≤ 500 m"],
+            ["Backhaul", "distance to a base station", "4", "≤ 8 km"],
+            ["Water (exclusion)", "mapped water or riverbank", "4,834", "≥ 50 m"]]
+    table(s, Inches(0.55), Inches(3.25), Inches(5.9), Inches(2.2), rows,
+          col_w=[Inches(1.6), Inches(2.35), Inches(1.0), Inches(0.95)], size=8.5)
+    bullets(s, Inches(6.8), Inches(1.9), Inches(5.95), Inches(2.5), [
+        ("A post-processor, not a second planner.", True),
+        "It reads the built page, computes each candidate's distance to every "
+        "layer, and injects a constraints panel. It inherits the simulators, "
+        "the criteria and the map without knowing anything about them.",
+        ("Five sliders shrink the feasible set, live.", True),
+        "The optimiser re-solves over what survives, and the page reports the "
+        "count that remains."], size=11)
+    for i, (lab, val, note) in enumerate([
+            ("it reports", "the move", "metres from the free optimum"),
+            ("and", "the cost", "score given up to comply")]):
+        kpi(s, Inches(6.8 + i * 3.05), Inches(4.55), Inches(2.9), lab, val, note,
+            vcolor=TEAL, vsize=20)
+    rect(s, Inches(0.55), Inches(5.7), Inches(12.2), Inches(1.0), fill=SURF,
+         line=RULE)
+    txt(s, Inches(0.85), Inches(5.85), Inches(11.6), Inches(0.75),
+        "Every layer is an open-data proxy, not a utility record, and the page "
+        "says so on its face. OpenStreetMap maps transmission towers well and "
+        "rural distribution poorly, so grid power reads pessimistically here — "
+        "real utility data would replace it and would loosen the answer, not "
+        "tighten it.", 11.5, INK2, False, FD)
+    footer(s, "common/constraints.py · common/build_planner_constrained.py "
+              "· planner_constrained.html")
+    return s
+
+
+def s15_recommendation(prs, d):
+    s = slide(prs)
+    header(s, 15, "the recommendation", "What to build, and how far to trust it",
            "A ratio is a finding. An absolute percentage is indicative. The "
            "difference is stated rather than left to the reader.")
     cov = d.get("coverage")
@@ -665,7 +711,8 @@ def s14_recommendation(prs, d):
 
 SLIDES = [s01_title, s02_requirement, s03_campaign, s04_contents, s05_findings,
           s06_platform, s07_physics, s08_sionna, s09_fno, s10_pinn, s11_backtest,
-          s12_planner_what, s13_planner_params, s14_recommendation]
+          s12_planner_what, s13_planner_params, s14_constraints,
+          s15_recommendation]
 
 
 def build(verbose=True):
@@ -681,9 +728,9 @@ def build(verbose=True):
               f"{len(prs.slides.__iter__.__self__._sldIdLst)} slides")
         print(f"[deck] data present: {', '.join(have) or 'none'} | "
               f"bundles: {', '.join(d['bundles']) or 'none'}")
-        if not d.get("fno"):
-            print("[deck] FNO slide rendered in RESERVED state "
-                  "(no run with >= 50 epochs in reports/fno_compare.json)")
+        for nm in ("terrain-parametric", "sionna-hybrid-agronomy", "terrain-fno"):
+            if nm not in (d.get("bench") or {}):
+                print(f"[deck] {nm}: RESERVED -- no entry in reports/testbench.json")
     return OUT
 
 
