@@ -65,3 +65,6 @@ sionna-approach/scene copy/
 # Coverage bundles from common/bundle.py, same policy as bundles/ above: they carry the
 # demand grid and candidate coordinates. Regenerable by run_pipeline.py.
 reports/bundle_*.json
+# browser-automation scratch from verifying the planner
+.playwright-mcp/
+planner.png
