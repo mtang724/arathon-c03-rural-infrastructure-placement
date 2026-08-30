@@ -433,7 +433,6 @@ same diffraction physics as everything else rather than distance alone.
 ```
 python run_all.py            # features → model → optimise → planner, ~2.5 min
 python src/backtest.py       # the honesty check in §4
-python src/make_deck.py      # the six-slide deck
 ```
 
 | Stage | Reads | Writes |

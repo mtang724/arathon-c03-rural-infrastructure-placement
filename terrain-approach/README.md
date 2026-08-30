@@ -106,7 +106,6 @@ regenerable, and far past GitHub's file limit.
 python run_all.py                        # features → model → optimise → planner
 python src/propagation.py                # mosaic + clip the 3DEP tiles
 python src/backtest.py                   # the honesty check above
-python src/make_deck.py                  # six-slide deck
 ```
 
 The neural-operator comparison is deliberately **not** in `run_all.py` — it
@@ -177,7 +176,6 @@ src/
   fno_compare.py       neural operators vs the diffraction physics
   robustness.py        path-specific shadow fading, four correlation models
   backtest.py          the zero-intervention check
-  make_deck.py         the six-slide deck
 web/
   eda_template.html        the exploratory write-up, __DATA__ injected at build
   analysis_template.html   the full analysis write-up
@@ -190,7 +188,6 @@ NEURAL_OPERATOR.md     the deep-learning comparison, and why most of it cannot w
 coverage_view.html     terrain + coverage, no dependencies
 coverage_map.html      the same over satellite tiles; open from disk
 survey_extent.html     the survey box and every measurement
-ARA_Challenge3.pptx    six slides, native charts throughout
 ```
 
 ### What is and is not committed
