@@ -65,3 +65,8 @@ sionna-approach/scene copy/
 # Coverage bundles from common/bundle.py, same policy as bundles/ above: they carry the
 # demand grid and candidate coordinates. Regenerable by run_pipeline.py.
 reports/bundle_*.json
+
+# --- pinn-approach ---------------------------------------------------------
+# Torch checkpoints and cached prediction arrays carry measurement coordinates.
+pinn-approach/data/
+pinn-approach/**/*.pt

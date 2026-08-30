@@ -35,6 +35,7 @@ Each approach lives in its own folder and can be read and run independently.
 |---|---|---|
 | [`sionna-approach/`](sionna-approach/) | Physics-based ray tracing (Sionna RT) over real terrain and OSM building geometry | Twin validated at 8.58 dB RMSE on held-out blocks — [report](sionna-approach/REPORT.md). Siting optimisation not started |
 | [`terrain-approach/`](terrain-approach/) | Two-slope path-loss law fitted to the measurements, plus ITU-R P.526 terrain diffraction; greedy coverage siting | Propagation validated at **7.35 dB RMSE in sample, 9.66 dB held out by geography (R² +0.15)**. Siting solved, scenario planner shipped. Availability step remains weak — see [README](terrain-approach/README.md) |
+| [`pinn-approach/`](pinn-approach/) | Physics-informed neural network (ReVeal / ReVeal-MT, DySPAN'25) — learned shadowing field over a parametric multi-transmitter path-loss law | **Third of three.** 5.63 dB in sample — best here — but 15.83 / 15.09 dB held out by geography, 1.6–1.9× the others. Kept for the diagnosis, not the accuracy: the published ReLU makes the physics loss a no-op, the PDE term is unobservable from a route, and every extra input is also a location label — [report](pinn-approach/README.md) |
 
 Other approaches are being explored in parallel — add a sibling folder, a row here, and an
 adapter implementing [the shared contract](common/README.md#1-the-contract).
