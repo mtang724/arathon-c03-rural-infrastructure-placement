@@ -43,12 +43,14 @@ from .deckkit import (BG, FD, FM, GREY, H, INK, INK2, MUTE, OCHRE, RULE, SURF,
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "ARA_Challenge3.pptx"
 
-ORDER = ["terrain-parametric", "sionna-hybrid-agronomy", "terrain-fno"]
+ORDER = ["terrain-parametric", "sionna-hybrid-agronomy", "terrain-fno",
+         "reveal-mt-pinn"]
 LABEL = {"terrain-parametric": "Baseline — fitted physics",
          "sionna-hybrid-agronomy": "Ray tracing — Sionna",
-         "terrain-fno": "Deep learning — FNO"}
+         "terrain-fno": "Deep learning — FNO",
+         "reveal-mt-pinn": "PINN — ReVeal-MT"}
 SHORT = {"terrain-parametric": "Baseline", "sionna-hybrid-agronomy": "Ray tracing",
-         "terrain-fno": "Deep learning"}
+         "terrain-fno": "Deep learning", "reveal-mt-pinn": "PINN"}
 
 
 def load():
@@ -60,7 +62,18 @@ def load():
         except Exception:
             return None
 
+    # The shared bench, plus anything a collaborator ran separately. An
+    # approach that benchmarks itself writes reports/backtest_<name>.json rather
+    # than editing the shared file, so merge those in instead of hand-copying
+    # numbers out of a README -- which is how a deck starts to drift from the
+    # models it describes.
     d["bench"] = rd("reports/testbench.json") or {}
+    for extra in sorted(glob.glob(str(ROOT / "reports" / "backtest_*.json"))):
+        blob = rd(Path(extra).relative_to(ROOT).as_posix()) or {}
+        sims = blob.get("simulators", blob)
+        for k, v in sims.items():
+            if isinstance(v, dict) and "in_sample" in v:
+                d["bench"].setdefault(k, v)
     d["geom"] = rd("reports/split_geometry.json")
     d["coverage"] = rd("terrain-approach/reports/coverage_terrain.json")
     d["hyp"] = rd("reports/hypothesis_test.json")
@@ -373,7 +386,6 @@ def s7_accuracy(prs, d):
                          f"{r2:+.2f}" if r2 is not None else "—"])
         else:
             rows.append([LABEL[nm], "—", "—", "—", "—", "—"])
-    rows.append(["PINN", "—", "—", "—", "—", "reserved"])
     table(s, Inches(0.55), Inches(1.85), Inches(6.3), Inches(1.9), rows,
           col_w=[Inches(2.0), Inches(0.95), Inches(0.85), Inches(0.85),
                  Inches(0.85), Inches(0.8)], size=9)
