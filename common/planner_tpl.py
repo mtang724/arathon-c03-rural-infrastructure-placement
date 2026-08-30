@@ -53,6 +53,16 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 padding:9px;border-radius:5px;cursor:pointer}
 .act.ghost{background:transparent;border:1px solid var(--ln);color:var(--mut)}
 .note{font-size:11px;color:var(--mut);margin-top:6px}
+.steps{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 2px;font-size:10.5px;
+color:var(--mut)}
+.steps b{display:inline-block;width:14px;height:14px;line-height:14px;text-align:center;
+border-radius:50%;background:var(--acc);color:#06121f;font-size:9px;margin-right:4px}
+.keyrow{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0 2px;font-size:10.5px;
+color:var(--mut);align-items:center}
+.keyrow i{display:inline-block;width:9px;height:9px;margin-right:4px;border-radius:2px;
+vertical-align:-1px}
+.keyrow span{cursor:default}
+.keyrow .tog{cursor:pointer;text-decoration:underline dotted}
 .lg{margin-top:8px}
 .lgbar{height:12px;border-radius:3px;border:1px solid var(--ln);position:relative}
 .lgtick{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg);
@@ -67,6 +77,9 @@ padding:6px 8px;font-size:11px;line-height:1.45;white-space:nowrap}
 border:1px solid var(--ln);border-radius:4px;padding:5px 9px;font-size:10px;
 color:var(--mut);display:flex;align-items:center;gap:7px}
 .sbar{height:3px;background:var(--fg);border-radius:1px}
+.sdiv{width:1px;height:14px;background:var(--ln);display:inline-block}
+.scell{display:inline-block;background:rgba(77,163,255,.55);border:1px solid var(--acc);
+margin-right:5px;vertical-align:-1px}
 .warn{border-left:2px solid var(--warn);padding-left:8px;color:var(--warn);font-size:11px;margin-top:8px}
 .tag{display:inline-block;font-size:10px;border:1px solid var(--ln);border-radius:3px;
 padding:1px 5px;color:var(--mut);margin-left:5px}
@@ -77,11 +90,20 @@ padding:1px 5px;color:var(--mut);margin-left:5px}
   <div id="tip"></div>
   <div class="hint" id="hint">click to place &middot; drag to pan &middot; scroll to zoom</div>
   <div class="busy" id="busy">computing&hellip;</div>
-  <div class="scale" id="scale"><div class="sbar" id="sbar"></div><span id="slab"></span></div>
+  <div class="scale" id="scale">
+   <span>map scale</span><div class="sbar" id="sbar"></div><span id="slab"></span>
+   <span class="sdiv"></span>
+   <span><i class="scell" id="scell"></i><span id="sclab"></span></span>
+  </div>
  </div>
  <div id="side">
   <h1>Rural Coverage Planner</h1>
   <div class="sub">ARA COTS &middot; any simulator, any objective</div>
+  <div class="steps">
+   <span><b>1</b> pick a simulator</span><span><b>2</b> pick what counts as served</span>
+   <span><b>3</b> press <i>Find the best site</i></span>
+  </div>
+  <div class="keyrow" id="keyrow"></div>
 
   <h2>Simulator</h2>
   <select id="sim"></select>
@@ -163,7 +185,7 @@ const R_EARTH=6371000;
 let VW=0,VH=0,zoom=1,panX=0,panY=0,drag=null,placed=null;
 let bi=0,asset='macro',agl=0,dfc=0,critKey='',target=0,wRoute=0.70;
 let matCache={};                 // "bi|agl" -> Float32Array(nCand*nCell)
-let view='heat',domCache={},relief=null;
+let view='heat',domCache={},relief=null,showPts=true;
 
 function B(){return D.bundles[bi];}
 function nCells(){return B().grid.lat.length;}
@@ -409,14 +431,21 @@ function draw(){
   cx.globalAlpha=al;cx.fillStyle=col;
   cx.fillRect(p[0],p[1],Math.max(1,w),Math.max(1,h));
  }
- // the driven route: where demand was actually measured, not assumed
- cx.globalAlpha=1;cx.strokeStyle='rgba(230,237,243,.20)';cx.lineWidth=1;
- for(let i=0;i<b.grid.lat.length;i++){
-  if(b.grid.route_km[i]<=0)continue;
-  const p=proj(b.grid.lat[i]+cd/2,b.grid.lon[i]-cd/2/kx),sc=p[2];
-  const w=cd*kx*sc,h=cd*sc;
-  if(p[0]<-w||p[0]>VW||p[1]<-h||p[1]>VH)continue;
-  cx.strokeRect(p[0]+.5,p[1]+.5,Math.max(1,w)-1,Math.max(1,h)-1);
+ /* THE MEASURED DATA, in a contrasting warm hue against the cool prediction
+    ramp. Two jobs at once: it separates evidence from inference -- the van
+    covers about 7% of this area and a coverage surface does not otherwise say
+    which parts were seen -- and because the drive test followed roads, the
+    samples ARE the road network, so they double as the basemap that makes the
+    rest of the picture locatable. */
+ cx.globalAlpha=1;
+ if(showPts&&D.pts&&D.pts.length){
+  for(let i=0;i<D.pts.length;i++){
+   const q=D.pts[i],p=proj(q[0],q[1]);
+   if(p[0]<-4||p[0]>VW+4||p[1]<-4||p[1]>VH+4)continue;
+   cx.fillStyle=q[2]?'#f08040':'#ff5c5c';
+   const r=q[2]?1.6:2.4;
+   cx.fillRect(p[0]-r,p[1]-r,2*r,2*r);
+  }
  }
  const m=proj(b.macro.lat,b.macro.lon);
  cx.fillStyle='#ffb454';cx.beginPath();cx.arc(m[0],m[1],5,0,7);cx.fill();
@@ -426,14 +455,36 @@ function draw(){
   cx.strokeStyle='#4da3ff';cx.lineWidth=2;cx.beginPath();cx.arc(q[0],q[1],7,0,7);cx.stroke();}
  drawScale();
 }
+/* Two different lengths live in this corner and they were previously run
+   together into one confusing string. They are separated because they mean
+   unrelated things: the bar is a DISTANCE reference on the map, the square is
+   the SIZE OF ONE DEMAND CELL -- the unit every coverage number is counted in. */
 function drawScale(){
  const sc=proj(D.bounds[0],D.bounds[1])[2];
  const mPerPx=1/(sc/111320);
  let m=1000;const targets=[100,200,500,1000,2000,5000,10000];
  for(const t of targets){if(t/mPerPx<=160){m=t;}}
  $('sbar').style.width=Math.round(m/mPerPx)+'px';
- $('slab').textContent=(m>=1000?(m/1000)+' km':m+' m')+' · '+
-   B().grid.grid_m.toFixed(0)+' m cells';
+ $('slab').textContent=(m>=1000?(m/1000)+' km':m+' m');
+ const g=B().grid.grid_m, px=Math.max(3,Math.min(22,Math.round(g/mPerPx)));
+ const e=$('scell');
+ e.style.width=px+'px';e.style.height=px+'px';
+ $('sclab').textContent='one '+g.toFixed(0)+' m demand cell';
+}
+/* The key. Measured and modelled are the distinction a newcomer needs first --
+   the van covered about 7% of this box, and everything else on screen is
+   inference. */
+function key(){
+ const n=(D.pts||[]).length;
+ let h='<span><i style="background:#f08040"></i>measured, had service</span>'
+      +'<span><i style="background:#ff5c5c"></i>measured, NO service</span>'
+      +'<span><i style="background:#4da3ff"></i>predicted field</span>'
+      +'<span><i style="background:#ffb454;border-radius:50%"></i>existing tower</span>';
+ if(n)h+='<span class="tog" id="togPts">'+(showPts?'hide':'show')+' the '
+   +n.toLocaleString()+' samples</span>';
+ $('keyrow').innerHTML=h;
+ const t=$('togPts');
+ if(t)t.addEventListener('click',()=>{showPts=!showPts;key();draw();});
 }
 function legend(){
  const b=B(),c=b.objective.criteria[critKey],dm=domain();
@@ -659,7 +710,7 @@ function refreshAll(){
  target=b.objective.criteria[critKey].default_threshold;
  placed=null;$('best').innerHTML='';$('site').innerHTML='';
  if(!relief)relief=buildRelief();
- refreshCrit();refreshModel();refreshKPI();legend();draw();
+ refreshCrit();refreshModel();refreshKPI();legend();key();draw();
 }
 function tip(e){
  if(drag&&drag.m){$('tip').style.display='none';return;}
