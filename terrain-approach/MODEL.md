@@ -373,15 +373,41 @@ than a coding error.
 
 ## 5. The tool
 
-`planner.html` — one self-contained file, no server, no install, no network.
-Open it by double-clicking.
+> **Superseded.** The tool is now [`../planner.html`](../planner.html), built by
+> `common/build_planner.py`, and it is parameterised over the simulator, the
+> service criterion and the route/area weighting rather than fixed to
+> availability at 50%. `terrain-approach/planner.html` is kept only for its four
+> analysis tabs, which have not been ported. **Do not quote its numbers** — see
+> the correction below.
+
+**A correction.** This section used to claim that `terrain-approach/planner.html`
+tracks the offline optimiser to about 1%. That was true when it was written and
+stopped being true when the model gained its dual slope, Fresnel term and
+orthogonalisation offsets: the page's JavaScript carries a hand-copied subset of
+the fitted constants and was never updated, so it still evaluates
+
+```
+b0 + slope*log10(d) - deficit + b_diff * J(v)
+```
+
+while `rsrp_from_node` evaluates that plus `b_dual*dual` and `b_fres*fres`, both
+orthogonalised. Measured over four candidate sites and all 4,731 demand cells,
+the page is **optimistic by a mean of 5.95 dB, RMS 8.37 dB, up to 31 dB** — which
+is larger than the model's own 7.35 dB residual σ. Nothing detected it because
+nothing checked that the copy was complete.
+
+The replacement carries every coefficient the declared formula family requires,
+and `common/schema.py::validate` refuses a bundle that does not. Against Python
+on the same candidate and cells it agrees to **mean −0.07 dB, RMS 1.34 dB,
+correlation 0.994, with zero service disagreements** over 300 cells; what remains
+is the 31 m versus 10 m DEM stride, which is the 0.994 figure below.
 
 **It recomputes.** The page carries the 3DEP terrain grid at 31 m posts and runs
 the entire chain in JavaScript — path profile, earth bulge, Fresnel radius,
 P.526 loss, RSRP, availability, threshold. A pin dropped anywhere gets a genuine
-prediction, not a nearest-neighbour lookup. It tracks the offline optimiser to
-about 1%; 31 m rather than 10 m posts costs 0.15 dB of mean diffraction error
-(correlation 0.994), checked rather than assumed.
+prediction, not a nearest-neighbour lookup. 31 m rather than 10 m posts costs
+0.15 dB of mean diffraction error (correlation 0.994), checked rather than
+assumed.
 
 **Controls.** Asset class (relay / small cell / macro), mast height 6–60 m,
 transmit power 0–34 dB below the tower, service threshold 20–90% availability.

@@ -126,10 +126,20 @@ Then open `planner.html`.
 
 ## The tool
 
-One self-contained HTML file. No server, no install, no network — it carries the
-terrain grid at 31 m posts and runs the whole chain in JavaScript, so a pin
-dropped anywhere gets a genuine prediction rather than a stored lookup. It tracks
-the offline optimiser to about 1%.
+The planner now lives at the repository root — [`../planner.html`](../planner.html),
+built by `common/build_planner.py` — and is parameterised over the simulator, the
+service criterion (availability, RSRP, SINR, RSRQ, uplink/downlink p50 and p10)
+and the route-versus-area weighting, re-solving the siting for whatever
+combination you pick.
+
+> `terrain-approach/planner.html` is the older single-model page. Its four
+> analysis tabs have not been ported yet, but **its numbers are superseded**: its
+> JavaScript carries an incomplete copy of the fitted constants and is optimistic
+> for a new node by a mean of 5.95 dB, RMS 8.37 dB. See [`MODEL.md`](MODEL.md) §5.
+
+Either way it is one self-contained HTML file — no server, no install, no network.
+It carries the terrain grid at 31 m posts and runs the whole chain in JavaScript,
+so a pin dropped anywhere gets a genuine prediction rather than a stored lookup.
 
 Four tabs, one per thing the brief asks a team to demonstrate:
 
@@ -144,8 +154,17 @@ Four tabs, one per thing the brief asks a team to demonstrate:
 
 ## Layout
 
+This approach exposes its models to the repository-wide tools through
+[`src/adapter.py`](src/adapter.py) — see [`../common/README.md`](../common/README.md).
+Both the shared backtest testbench and the shared planner run on them:
+
+```bash
+python -c "import sys; sys.path[:0]=['..','src']; ..."   # see common/BACKTEST.md
+```
+
 ```
 src/
+  adapter.py           the two models, behind the shared simulator contract
   config.py            every tunable assumption, one file
   features.py          COTS.csv → labelled frame (three service states)
   propagation.py       3DEP mosaic, Fresnel zone, ITU-R P.526 diffraction
