@@ -86,6 +86,49 @@ using it for trees would be badly wrong.
 the extra ones are marginal far-out points that predict badly, so lower heights score better
 partly by being graded on an easier subset. Compare on a common linked subset.
 
+## Scene validation against aerial imagery
+
+`scene/verify_orientation.py` runs five independent checks designed to fail loudly on a
+flip, mirror or axis swap rather than degrade quietly. All pass:
+
+| check | result |
+|---|---|
+| Coordinate handedness | east → +x (8272 m per 0.1°), north → +y (11132 m). **PASS** |
+| Base-station relative geometry | all six pairwise distances within **0.11%** of great-circle truth |
+| Terrain vs an independent DEM read | mean error **+0.04 m**, std 1.16 m, r = 0.9973. N–S flipped would give r = 0.38, E–W flipped r = −0.42 |
+| Measured sector bearings (data only) | `015` at 116.6° (assumed 115), `01F` at 233.9° (assumed 240) |
+| **Predicted best server vs measured serving cell** | **97.1% agreement** over 3,156 points against 33% chance |
+
+The last is the strongest: it couples geometry, projection and antenna azimuth in one
+number, and any mirror or rotation would drive it toward chance.
+
+Two caveats it surfaced:
+
+- **A 0.11% scale inflation.** Blosm's projection uses the WGS84 semi-major axis
+  (6,378,137 m) as a spherical radius, while true distances use the mean radius
+  (6,371,000 m). Every scene distance is therefore 0.112% long — 13 m over 12 km.
+  Negligible for RF, but it is a systematic bias, not noise.
+- **Sector `00019C00B`'s azimuth is uncertain.** Its measured bearings have a circular mean
+  of 317°, not the assumed 0°. With only 170 samples, one-sided coverage of the arc cannot
+  be distinguished from a genuinely different azimuth. The model still agrees with the
+  network on 86.5% of those points, versus 100% and 96.7% for the other two sectors.
+
+## OSM building coverage is the weak input, not the terrain
+
+Verified against USGS NAIP imagery (`scene/verify_vs_aerial.py`, figure
+`scene_validation.png`):
+
+- **6 OSM buildings exist in the 2×2 km box around Agronomy Farm.** The imagery shows
+  dozens of large agricultural sheds, grain bins and the ISU research complex.
+- **365 of 10,063 buildings (3.6%) sit in the rural western half** of the extract; 96.4%
+  are in Ames and on the ISU campus to the east — where almost no measurements were taken.
+- The six that do exist land accurately on real roofs, so this is a **completeness** problem
+  in OpenStreetMap, not a georeferencing problem in our pipeline.
+
+Buildings are therefore close to absent along the measured rural route. That weakens
+`itu_concrete` as a tuning target and makes building-derived scattering essentially
+unmodelled where the data actually lives.
+
 ## What has been ruled out
 
 Six hypotheses for the ~9 dB residual, tested and rejected. Full run log in

@@ -89,7 +89,23 @@ unmodelled rather than as zero coverage — an important distinction, and a know
 
 ---
 
-### 2.1 The measurement floor is ~2 dB
+### 2.1 The scene is not flipped
+
+Five independent orientation checks pass (`scene/verify_orientation.py`). The decisive one:
+the model's predicted best-serving sector matches the sector the network actually used on
+**97.1% of 3,156 points**, against 33% chance. That single number couples projection,
+geometry and antenna azimuth, and any mirror or rotation would collapse it. Terrain matches
+an independent DEM read to +0.04 m mean error (r = 0.9973), where a north–south flip would
+give r = 0.38.
+
+Validation against USGS NAIP aerial imagery (`scene_validation.png`) confirms the
+georeferencing but exposes a different problem: **only 6 OSM buildings exist in the 2×2 km
+box around the serving site**, and just 3.6% of the extract's 10,063 buildings lie in the
+rural half where the measurements are. The ones present land on real roofs, so this is
+OpenStreetMap incompleteness rather than a pipeline error — but it means buildings are
+effectively unmodelled along the measured route.
+
+### 2.2 The measurement floor is ~2 dB
 
 The campaign comprises four drive runs. 255 locations were revisited on *separate* runs with
 the same serving cell:
@@ -171,8 +187,10 @@ being graded on an easier subset. Any conclusion about height needs a common lin
   the figure distinguishes them.
 - **The antenna is the largest unmodelled object.** Real sector pattern, electrical tilt and
   EIRP are unknown and collapsed into one scalar; `tr38901` may simply be the wrong pattern.
-- **Building heights are defaults** — only 665 of 10,079 footprints carry `building:levels`.
-  Buildings are sparse on the measured rural route, so this is unlikely to dominate.
+- **Buildings are effectively absent where the data is.** Only 6 OSM buildings exist within
+  2 km of the serving site, and only 3.6% of the extract's buildings lie in the rural half.
+  Heights are Blosm defaults for the 93% lacking `building:levels`. Aerial imagery shows
+  many large sheds and grain bins that OpenStreetMap simply does not record.
 - **Water bodies (172) and grain bins (29 tagged) are excluded** and untested. Metal silos
   are strong specular scatterers at 8.7 cm.
 - **The sweep in §3 used 800 sampled rows per run.** Those runs are *paired* (identical

@@ -13,6 +13,11 @@ facility-location problem.
 
 ![measured, predicted and held-out validation](coverage_validation.png)
 
+Scene validated against public-domain aerial imagery — georeferencing confirmed,
+OpenStreetMap building coverage found wanting:
+
+![scene validation against NAIP imagery](scene_validation.png)
+
 ## Status
 
 | Stage | State |
