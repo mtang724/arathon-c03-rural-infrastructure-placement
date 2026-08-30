@@ -10,17 +10,30 @@ from the group that runs ARA — on the COTS drive test.**
 
 ## Where it lands
 
-`common/backtest.py`, identical splits, 200 m buffer, RMSE in dB:
+`common/backtest.py`, identical splits, 200 m buffer, RMSE in dB. The two
+right-hand columns are the ones that decide anything.
 
-| model | in sample | random split | **KMeans blocks** | **angular wedges** | agree% | base% |
-|---|---|---|---|---|---|---|
-| **reveal-mt-pinn** | **5.63** | 5.92 | 15.83 | 15.09 | 58.9 | 63.9 |
-| terrain-parametric | 7.35 | 7.33 | **9.66** | **9.78** | 60.5 | 63.9 |
-| sionna-hybrid | 7.61 | 7.59 | **7.95** | **7.80** | — | — |
+| model | in sample | random split | **KMeans blocks** | **angular wedges** |
+|---|---|---|---|---|
+| sionna-hybrid (Agronomy) | 7.61 | 7.59 | **7.95** | **7.80** |
+| terrain-parametric | 7.35 | 7.33 | **9.59** | **9.81** |
+| sionna-hybrid (full network) | 9.02 | 9.01 | 9.97 | 8.86 |
+| terrain-fno | 7.26 | 7.52 | 14.04 | 11.47 |
+| **reveal-mt-pinn** | **5.63** | 5.92 | 15.83 | 15.09 |
 
-**Best of the three in sample by ~2 dB, worst of the three by 1.6–1.9× where it
-counts.** That shape is the whole story: a flexible model whose only input is
-position fits what it has seen and does not generalise past it.
+**Best of all five in sample by 1.6 dB, last on both geographic splits.**
+
+Read it beside `terrain-fno`, which landed independently. Both neural models
+show the same signature — strong in sample, collapsing on geography — from
+completely different architectures: a 1-D FNO over terrain profiles, and a
+physics-informed MLP over position. Neither beats the fitted physics where the
+challenge is decided. **Two architectures, one conclusion**, which is a much
+stronger statement than either could make alone.
+
+The random-split column is a **contamination gauge, not a score**. We "win" it
+because position is the model's entire input, so it can answer by looking up its
+own training set. `BACKTEST.md` warns about exactly this; ReVeal is the extreme
+case of it, and `NEURAL_OPERATOR.md` §4 measures why.
 
 Its service classifier scores **58.9% against a 63.9% base rate** — below the
 base rate, i.e. worse than answering "served" every time. `terrain-approach`
