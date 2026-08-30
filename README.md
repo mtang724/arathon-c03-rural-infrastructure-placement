@@ -16,7 +16,7 @@ Each approach lives in its own folder and can be read and run independently.
 
 | Folder | Approach | Status |
 |---|---|---|
-| [`sionna-approach/`](sionna-approach/) | Physics-based ray tracing (Sionna RT) over real terrain and OSM building geometry | Twin built and validated; siting optimisation not started |
+| [`sionna-approach/`](sionna-approach/) | Physics-based ray tracing (Sionna RT) over real terrain and OSM building geometry | Twin validated at 8.58 dB RMSE on held-out blocks — [report](sionna-approach/REPORT.md). Siting optimisation not started |
 
 Other approaches are being explored in parallel — add a sibling folder and a row here.
 

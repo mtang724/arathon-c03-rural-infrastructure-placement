@@ -23,8 +23,10 @@ facility-location problem.
 | Predicted service surface over the unmeasured area | **done** |
 | Facility-location optimisation | **not started** |
 
-Honest headline: on spatially disjoint held-out blocks the twin reaches **RMSE 8.6 dB,
-r = 0.82, bias +1.7 dB** (n = 1,763). 57% of grid cells get a modelled path; the rest are
+Full write-up: **[REPORT.md](REPORT.md)**.
+
+Honest headline: on spatially disjoint held-out blocks the twin reaches **RMSE 8.58 dB,
+r = 0.83, bias +1.8 dB** (n = 1,762). 57% of grid cells get a modelled path; the rest are
 a known gap, not an absence of coverage. Antenna height, tilt and EIRP are not in the
 dataset — EIRP and gain are absorbed into one fitted constant, and height is currently
 asserted at 30 m because it is **not identifiable** from the data (see `HANDOFF.md`).
@@ -101,6 +103,7 @@ over-predicts precisely in wooded areas, so it will call coverage adequate where
 ## Layout
 
 ```
+REPORT.md        technical report: method, results, what was ruled out, next steps
 PARAMETERS.md    every model parameter with provenance: measured / inferred /
                  assumed / fitted / ruled out
 RESULTS.md       experiment log, auto-generated from scene/experiments.jsonl
