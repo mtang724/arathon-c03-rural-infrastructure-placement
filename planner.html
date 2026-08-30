@@ -609,11 +609,13 @@ function after(){
 }
 function showBest(picks){
  const b=B();let h='<tr><th>#</th><th>position</th><th class="n">marginal</th></tr>';
- let prev=0;
+ /* solve() already stores the MARGINAL gain of each round: it adds bg to the running
+    score s0 before the next round, so picks[k].gain is the gain over everything placed
+    before it. Differencing it again turned rounds 2 and 3 negative. */
  picks.forEach((p,k)=>{const c=b.prediction.candidates[p.i];
   h+='<tr><td>'+(k+1)+'</td><td>'+c.lat.toFixed(5)+', '+c.lon.toFixed(5)
-   +'<span class="tag">'+c.kind+'</span></td><td class="n">+'
-   +(p.gain-prev).toFixed(3)+'</td></tr>';prev=p.gain;});
+   +'<span class="tag">'+c.kind+'</span></td><td class="n">'
+   +(p.gain>=0?'+':'')+p.gain.toFixed(3)+'</td></tr>';});
  $('best').innerHTML=h;
  window.__picks=picks;
 }
