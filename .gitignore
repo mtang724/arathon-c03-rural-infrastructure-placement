@@ -6,6 +6,8 @@ COTS_Dataset.zip
 sionna-approach/bundle/data/
 *.zip
 *.npz
+# per-chunk crash-recovery saves from predict_surface.py
+*.part[0-9][0-9][0-9].npy
 # figure kept: private repo, needed by the approach README
 
 # --- Regenerable build artifacts; several exceed GitHub's 100 MB limit ------
@@ -28,3 +30,7 @@ __pycache__/
 .DS_Store
 # 16 MB each, regenerate with make_terrain_variants.py from dem_3dep.tif
 sionna-approach/scene/mitsuba/meshes/Terrain3DEP_s3_*.ply
+# 61 MB, re-download from minedbuildings.z5.web.core.windows.net (see RUNNING.md)
+sionna-approach/scene/iowa_ms.zip
+# regenerate with build_ms_buildings.py <height>
+sionna-approach/scene/mitsuba/meshes/ms_buildings_h*.ply

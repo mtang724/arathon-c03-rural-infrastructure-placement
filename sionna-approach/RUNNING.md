@@ -56,6 +56,30 @@ The whole 2x2 terrain/diffraction sweep in section 4 took ~50 min on CPU; it is 
 re-running on GPU with more receivers, since several conclusions there rest on only 800
 sampled points.
 
+### Heavy runs: `./run_gpu.sh`
+
+Batches the work that is not worth doing on a CPU — the building-height and antenna-height
+sweeps, a full-sample re-test of the six rejected hypotheses on the improved scene, and a
+100 m service surface (4x the grid points of the committed 200 m one).
+
+```bash
+git pull
+pip install sionna-rt
+python -c "import mitsuba as mi; print(mi.variant())"   # want cuda_ad_mono_polarized
+cd scene && N_RX=4000 RT_CHUNK=16000 ./run_gpu.sh
+python summarize_experiments.py ../RESULTS.md
+```
+
+**Building meshes are not committed** — they are regenerated from `ms_buildings.json`
+(which is) by `build_ms_buildings.py <height>`, and `run_gpu.sh` does that first. Only the
+61 MB Microsoft state download is absent, and nothing needs it.
+
+Two things to watch. `N_RX=4000` uses every measured row: the 800-row sweeps in `RESULTS.md`
+are paired and so correctly *ordered*, but their absolute level is ~1.2 dB pessimistic.
+And when comparing antenna heights, score on a **common linked subset** — a taller antenna
+links more marginal far-out points that predict badly, so it is penalised for reaching
+further.
+
 ### On CPU (macOS / no GPU)
 
 **Sionna RT will not import without `DRJIT_LIBLLVM_PATH`.** Any libLLVM from a conda env,

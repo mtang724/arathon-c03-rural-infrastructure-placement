@@ -1,0 +1,17 @@
+<scene version="2.1.0">
+	<bsdf type="twosided" id="mat-itu_concrete" name="mat-itu_concrete">
+		<bsdf type="principled" name="bsdf"><rgb value="0.7 0.7 0.7" name="base_color"/><float name="roughness" value="1.0"/></bsdf>
+	</bsdf>
+	<bsdf type="twosided" id="mat-itu_medium_dry_ground" name="mat-itu_medium_dry_ground">
+		<bsdf type="principled" name="bsdf"><rgb value="0.45 0.38 0.26" name="base_color"/><float name="roughness" value="1.0"/></bsdf>
+	</bsdf>
+	<shape type="ply" id="mesh-buildings" name="mesh-buildings">
+		<string name="filename" value="meshes/ms_buildings_h4.ply"/>
+		<boolean name="face_normals" value="true"/>
+		<ref id="mat-itu_concrete" name="bsdf"/>
+	</shape>
+	<shape type="ply" id="mesh-Terrain" name="mesh-Terrain">
+		<string name="filename" value="meshes/Terrain.ply"/>
+		<ref id="mat-itu_medium_dry_ground" name="bsdf"/>
+	</shape>
+</scene>

@@ -19,11 +19,14 @@ surface over the unmeasured area.
 The more useful result is negative. **Six independent hypotheses for the residual error
 were tested and rejected, each moving RMSE by ≤0.15 dB**: terrain resolution, diffraction,
 ground permittivity, antenna downtilt, earth curvature, and vegetation. The residual sits
-at 8–9 dB, which is the established range of log-normal shadow fading in rural
-environments (6–10 dB). We conclude the deterministic model is close to the floor of what
-this geometry can explain, and that the productive direction is to predict a *distribution*
-rather than a better mean — which is what the challenge's robustness requirement asks for
-anyway.
+at 8–9 dB, in the established range of log-normal shadow fading for rural environments
+(6–10 dB).
+
+Crucially, that residual is **not** measurement noise. The campaign is repeatable to ~2 dB
+(§2.1), so the remaining 8.6 dB is systematic and spatially deterministic — recoverable in
+principle, but not by any scene refinement we tried. The evidence points instead at the
+transmitter, whose pattern, height, tilt and EIRP are all unknown and currently absorbed
+into one fitted scalar. See [`DATA_REQUEST.md`](DATA_REQUEST.md).
 
 ![Measured, predicted and held-out validation](coverage_validation.png)
 
@@ -85,6 +88,73 @@ unmodelled rather than as zero coverage — an important distinction, and a know
 (§4).
 
 ---
+
+### 2.1 The scene is not flipped
+
+Five independent orientation checks pass (`scene/verify_orientation.py`). The decisive one:
+the model's predicted best-serving sector matches the sector the network actually used on
+**97.1% of 3,156 points**, against 33% chance. That single number couples projection,
+geometry and antenna azimuth, and any mirror or rotation would collapse it. Terrain matches
+an independent DEM read to +0.04 m mean error (r = 0.9973), where a north–south flip would
+give r = 0.38.
+
+Validation against USGS NAIP aerial imagery (`scene_validation.png`) exposes a separate
+problem: **only 6 OSM buildings exist in the 2×2 km box around the serving site**, and just
+3.6% of the extract's 10,063 buildings lie in the rural half where the measurements are —
+so buildings were effectively unmodelled along the measured route. §2.2 replaces them.
+
+### 2.2 Replacing the building source is the one change that helped
+
+Microsoft's US Building Footprints are ML-extracted from imagery, so rural coverage does not
+depend on volunteer mapping. Substituting them raises building counts within 2 km of the
+serving site from **6 to 37**, and across the rural half from **365 to 2,167**.
+
+| buildings | RMSE | r | link rate |
+|---|---|---|---|
+| OpenStreetMap | 8.58 dB | 0.826 | 0.82 |
+| **Microsoft ML, 4 m** | **8.29 dB** | **0.832** | 0.80 |
+| Microsoft ML, 10 m | 9.32 dB | 0.787 | 0.77 |
+
+Footprint alignment was measured rather than assumed: cross-correlating against imagery
+contrast gives a sharp peak at **+2 m East**, collapsing to background by +/-10 m
+(`scene/check_alignment.py`). That residual is an order of magnitude below the terrain post
+spacing and shifts shadowing by under 0.1 deg at these ranges, so it does not hurt. It is
+also independent confirmation of the projection chain, since these footprints pass through
+the same export path as everything else.
+
+**+0.29 dB, roughly twice any other single change tested** — and the only one to improve
+correlation as well. Compare `scene_validation.png` with `scene_validation_ms.png`.
+
+Recomputing the full service surface gives **8.27 dB** (r = 0.832) against the OSM scene's
+8.58 dB. The change is **concentrated, not uniform**: 7% of grid cells shift by more than
+1 dB, median absolute change 0.10 dB, maximum 27 dB — see `surface_comparison.png`. That
+pattern is what a building-driven effect should look like, and it matters for Challenge 3,
+since a 27 dB local change can move a cell across a service threshold even though the map
+as a whole barely moves.
+
+Two honest caveats: link rate falls from 0.82 to 0.80 as the extra buildings occlude more
+paths, so the test sets are not identical (1,763 vs 1,722 points); and building height is
+fitted, not known, since the footprints carry none.
+
+That the *only* effective fix was better input data rather than better physics is consistent
+with §3 — and it suggests the next gains lie in what the scene contains, not in how it is
+traced.
+
+### 2.3 The measurement floor is ~2 dB
+
+The campaign comprises four drive runs. 255 locations were revisited on *separate* runs with
+the same serving cell:
+
+| comparison | spread |
+|---|---|
+| Across separate runs, same 25 m cell and serving cell | 2.1 dB std, 3.0 dB median range |
+| Within a single run, same 25 m cell | 2.1 dB std |
+
+This bounds what any model could achieve, and it is far below our 8.58 dB error. The
+implication is important: **the model's error is systematic and location-specific, not
+random**. Repeat visits to the same place see the same value. Whatever we are missing is a
+fixed property of the geometry or the transmitter, not fading that averages away — so it is
+recoverable, given the right inputs.
 
 ## 3. What does not explain the residual
 
@@ -152,8 +222,11 @@ being graded on an easier subset. Any conclusion about height needs a common lin
   the figure distinguishes them.
 - **The antenna is the largest unmodelled object.** Real sector pattern, electrical tilt and
   EIRP are unknown and collapsed into one scalar; `tr38901` may simply be the wrong pattern.
-- **Building heights are defaults** — only 665 of 10,079 footprints carry `building:levels`.
-  Buildings are sparse on the measured rural route, so this is unlikely to dominate.
+- **Building height is fitted, not known.** Microsoft footprints carry no height; 4 m fits
+  best and 10 m clearly does not. Real rural buildings vary from 4 m sheds to 25 m grain
+  bins, so a uniform height is a real approximation.
+- **Vegetation is still absent.** Aerial imagery shows tree lines and shelterbelts that
+  neither building source records.
 - **Water bodies (172) and grain bins (29 tagged) are excluded** and untested. Metal silos
   are strong specular scatterers at 8.7 cm.
 - **The sweep in §3 used 800 sampled rows per run.** Those runs are *paired* (identical
@@ -168,18 +241,23 @@ being graded on an easier subset. Any conclusion about height needs a common lin
 
 ## 5. What we would do next
 
-1. **Predict a distribution, not a mean.** If the residual is largely shadow fading, the
-   deterministic surface should carry an uncertainty band, and placement should optimise
-   expected coverage under that uncertainty. The challenge explicitly asks for robustness to
-   model uncertainty, so this converts a limitation into the required deliverable.
-2. **Define "underserved" on uplink.** Downlink saturates near 230 Mbps for any SINR > 0
+1. **Request the antenna specifications.** Given that measurements repeat to 2 dB while the
+   model errs by 8.6 dB, the missing information is systematic, and the transmitter is the
+   largest thing we do not know. Pattern, height, tilt and EIRP are all currently collapsed
+   into one fitted constant. [`DATA_REQUEST.md`](DATA_REQUEST.md) ranks this and everything
+   else worth asking ARA for.
+2. **Predict a distribution, not a mean.** Whatever the residual turns out to be, the
+   surface should carry an uncertainty band and placement should optimise expected coverage
+   under it. The challenge explicitly asks for robustness to model uncertainty, so this
+   converts a limitation into the required deliverable.
+3. **Define "underserved" on uplink.** Downlink saturates near 230 Mbps for any SINR > 0
    while uplink tracks RSRP hard across 8–63 Mbps. A downlink-based objective would call
    almost everywhere adequate.
-3. **Treat unmodelled cells as unknown, not as zero.** With 43% of cells lacking a path, the
+4. **Treat unmodelled cells as unknown, not as zero.** With 43% of cells lacking a path, the
    optimiser's treatment of them will drive its answer more than the propagation model does.
-4. **Use Research Park as a negative control.** It serves 0 of 7,144 rows. Any model
+5. **Use Research Park as a negative control.** It serves 0 of 7,144 rows. Any model
    predicting usable coverage from it is wrong regardless of its fit at Agronomy.
-5. **Re-run the sweep at full sample size on a GPU.** Every rejection in §3 rests on paired
+6. **Re-run the sweep at full sample size on a GPU.** Every rejection in §3 rests on paired
    800-row runs.
 
 ---
