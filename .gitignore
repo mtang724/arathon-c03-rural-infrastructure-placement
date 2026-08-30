@@ -52,10 +52,23 @@ sionna-approach/scene/iowa_ms.zip
 # regenerate with build_ms_buildings.py <height>
 sionna-approach/scene/mitsuba/meshes/ms_buildings_h*.ply
 
-# ~30 MB of cached simulation output: path-gain matrices, service surfaces, per-run
-# dumps. Derived from the measurement dataset, so excluded on licence grounds as well
-# as size. sionna-approach/simcache/README.md documents how to regenerate every file.
-sionna-approach/simcache/
+# Cached simulation output. The expensive artifacts carry NO measurement values or
+# coordinates and are tracked, so nobody has to re-run the GPU work; the per-run dumps
+# and raw surfaces carry meas_lat / meas_lon / meas_rsrp (and uplink, sinr, downlink)
+# and stay out under the dataset policy above. They are also the cheapest to rebuild:
+# ~25 s each. simcache/README.md gives the command for every file.
+sionna-approach/simcache/*
+!sionna-approach/simcache/README.md
+!sionna-approach/simcache/dem10.npz
+# an earlier `*.npz` rule still matches inside an un-ignored directory, so each
+# tracked .npz needs naming explicitly -- git takes the last matching pattern
+!sionna-approach/simcache/siting/
+!sionna-approach/simcache/siting/siting_G.npz
+!sionna-approach/simcache/siting/siting_eval.npz
+!sionna-approach/simcache/surfaces/
+sionna-approach/simcache/surfaces/*
+!sionna-approach/simcache/surfaces/surface_h37.npz
+!sionna-approach/simcache/surfaces/surface_hybrid.npz
 
 # A working copy of scene/ made to hand over the Microsoft building meshes. Contains
 # 375 MB .blend files and the 127 MB Geofabrik PBF; the scene/ rules above do not match
