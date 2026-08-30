@@ -1,0 +1,30 @@
+# --- Arathon dataset: NOT redistributable before ARA's public release -------
+# Raw measurements plus anything derived that carries measurement values or
+# coordinates. Keep these out until the dataset is officially published.
+extracted/
+COTS_Dataset.zip
+sionna-approach/bundle/data/
+*.zip
+*.npz
+# figure kept: private repo, needed by the approach README
+
+# --- Regenerable build artifacts; several exceed GitHub's 100 MB limit ------
+# gitignore has no trailing comments, so sizes/sources are noted above each line.
+# 127 MB, re-download from Geofabrik
+sionna-approach/scene/iowa-latest.osm.pbf
+# 51 MB, regenerate with clip_osm.py
+sionna-approach/scene/ames.osm
+# 17 MB, one curl (see sionna_handoff/README.md)
+sionna-approach/scene/dem_3dep.tif
+# 148 MB, regenerate with build_terrain_3dep.py
+sionna-approach/scene/mitsuba/meshes/Terrain3DEP.ply
+# skadi tiles, auto-cached on first import
+sionna-approach/scene/blosm_data/
+# 40 MB and 375 MB, rebuilt by import_scene.py / make_blend_3dep.py
+sionna-approach/scene/*.blend
+sionna-approach/scene/*.blend1
+sionna-approach/scene/preview_*.png
+
+__pycache__/
+*.pyc
+.DS_Store
