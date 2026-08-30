@@ -125,9 +125,16 @@ the same export path as everything else.
 **+0.29 dB, roughly twice any other single change tested** — and the only one to improve
 correlation as well. Compare `scene_validation.png` with `scene_validation_ms.png`.
 
-Two honest caveats: link rate falls as the extra buildings occlude more paths, so the test
-sets are not identical (1,762 vs 1,718 points); and building height is fitted, not known,
-since the footprints carry none.
+Recomputing the full service surface gives **8.27 dB** (r = 0.832) against the OSM scene's
+8.58 dB. The change is **concentrated, not uniform**: 7% of grid cells shift by more than
+1 dB, median absolute change 0.10 dB, maximum 27 dB — see `surface_comparison.png`. That
+pattern is what a building-driven effect should look like, and it matters for Challenge 3,
+since a 27 dB local change can move a cell across a service threshold even though the map
+as a whole barely moves.
+
+Two honest caveats: link rate falls from 0.82 to 0.80 as the extra buildings occlude more
+paths, so the test sets are not identical (1,763 vs 1,722 points); and building height is
+fitted, not known, since the footprints carry none.
 
 That the *only* effective fix was better input data rather than better physics is consistent
 with §3 — and it suggests the next gains lie in what the scene contains, not in how it is

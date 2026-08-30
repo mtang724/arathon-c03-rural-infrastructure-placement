@@ -6,6 +6,8 @@ COTS_Dataset.zip
 sionna-approach/bundle/data/
 *.zip
 *.npz
+# per-chunk crash-recovery saves from predict_surface.py
+*.part[0-9][0-9][0-9].npy
 # figure kept: private repo, needed by the approach README
 
 # --- Regenerable build artifacts; several exceed GitHub's 100 MB limit ------

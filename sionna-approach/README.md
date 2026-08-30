@@ -19,9 +19,14 @@ OpenStreetMap records only 6 buildings within 2 km of the serving site:
 ![scene validation, OpenStreetMap buildings](scene_validation.png)
 
 Microsoft's ML-extracted footprints raise that to 37, and improve held-out RMSE from
-8.58 dB to **8.29 dB** — the largest single gain of any change tested:
+8.58 dB to **8.27 dB** — the largest single gain of any change tested:
 
 ![scene validation, Microsoft ML buildings](scene_validation_ms.png)
+
+The effect on the service surface is concentrated rather than uniform: 7% of cells shift by
+more than 1 dB, with a median absolute change of 0.10 dB and a maximum of 27 dB.
+
+![service surface, old vs new vs difference](surface_comparison.png)
 
 ## Status
 
