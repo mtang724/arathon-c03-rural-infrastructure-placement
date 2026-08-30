@@ -100,13 +100,27 @@ def _solution(sim, base_r, by_agl, cand, cells, scorer, thr, draws, seed):
 
 
 def build(sim, df, macro_lat, macro_lon, out=None, draws=200, seed=42,
-          include_analytic=True, verbose=True) -> CoverageBundle:
+          include_analytic=True, max_candidates=None, verbose=True) -> CoverageBundle:
     """One simulator in, one coverage bundle out.
 
     `include_analytic` asks the simulator for a closed form via an optional
     `bundle_prediction()` method. Models that have one get a planner that can
     evaluate a pin dropped anywhere; models that do not are tabulated only, and
     the planner snaps to the nearest candidate and says so.
+
+    `max_candidates` thins the candidate lattice before the expensive part. It
+    exists because the cost of a bundle is dominated by inference, not fitting:
+    627 candidates x 4,731 cells x 2 mast heights is 5.9 million link
+    predictions, and for a model with no closed form -- a ray tracer, a neural
+    operator -- each one walks a full terrain profile first. A slow model can
+    therefore take hours for its first bundle.
+
+    Thinning to 60 candidates makes that about ten minutes, which is enough to
+    prove the model reaches the planner and to compare its recommendation with
+    another model's. It is a RESOLUTION reduction and should be said out loud:
+    the site it returns is chosen from a coarser lattice, so quote it as "within
+    a kilometre" rather than as a pole. Run it unthinned before quoting a final
+    site.
     """
     t0 = time.time()
     if "outage" not in df:
@@ -116,9 +130,18 @@ def build(sim, df, macro_lat, macro_lon, out=None, draws=200, seed=42,
     clat, clon = cells.lat.to_numpy(), cells.lon.to_numpy()
     cand = build_candidates(df, cells, macro_lat, macro_lon,
                             donor_rsrp_fn=sim.macro_rsrp)
+    thinned = None
+    if max_candidates and len(cand) > max_candidates:
+        step = int(np.ceil(len(cand) / max_candidates))
+        thinned = (len(cand), step)
+        cand = cand.iloc[::step].reset_index(drop=True)
     if verbose:
         print(f"[bundle] {sim.info.name}: {len(cells):,} cells | "
               f"{scorer.tot_rk:.1f} route-km | {len(cand)} candidates", flush=True)
+        if thinned:
+            print(f"[bundle] THINNED from {thinned[0]} candidates (every "
+                  f"{thinned[1]}) -- a coarser lattice, so quote the site to "
+                  f"about a kilometre, not to a pole", flush=True)
 
     base_r = np.asarray(sim.macro_rsrp(clat, clon), float)
     cs = crit.build(df, sim, verbose=verbose)
