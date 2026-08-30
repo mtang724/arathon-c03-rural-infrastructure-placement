@@ -104,6 +104,7 @@ over-predicts precisely in wooded areas, so it will call coverage adequate where
 
 ```
 REPORT.md        technical report: method, results, what was ruled out, next steps
+DATA_REQUEST.md  what to ask ARA for, ranked by measured impact
 PARAMETERS.md    every model parameter with provenance: measured / inferred /
                  assumed / fitted / ruled out
 RESULTS.md       experiment log, auto-generated from scene/experiments.jsonl

@@ -19,11 +19,14 @@ surface over the unmeasured area.
 The more useful result is negative. **Six independent hypotheses for the residual error
 were tested and rejected, each moving RMSE by ≤0.15 dB**: terrain resolution, diffraction,
 ground permittivity, antenna downtilt, earth curvature, and vegetation. The residual sits
-at 8–9 dB, which is the established range of log-normal shadow fading in rural
-environments (6–10 dB). We conclude the deterministic model is close to the floor of what
-this geometry can explain, and that the productive direction is to predict a *distribution*
-rather than a better mean — which is what the challenge's robustness requirement asks for
-anyway.
+at 8–9 dB, in the established range of log-normal shadow fading for rural environments
+(6–10 dB).
+
+Crucially, that residual is **not** measurement noise. The campaign is repeatable to ~2 dB
+(§2.1), so the remaining 8.6 dB is systematic and spatially deterministic — recoverable in
+principle, but not by any scene refinement we tried. The evidence points instead at the
+transmitter, whose pattern, height, tilt and EIRP are all unknown and currently absorbed
+into one fitted scalar. See [`DATA_REQUEST.md`](DATA_REQUEST.md).
 
 ![Measured, predicted and held-out validation](coverage_validation.png)
 
@@ -85,6 +88,22 @@ unmodelled rather than as zero coverage — an important distinction, and a know
 (§4).
 
 ---
+
+### 2.1 The measurement floor is ~2 dB
+
+The campaign comprises four drive runs. 255 locations were revisited on *separate* runs with
+the same serving cell:
+
+| comparison | spread |
+|---|---|
+| Across separate runs, same 25 m cell and serving cell | 2.1 dB std, 3.0 dB median range |
+| Within a single run, same 25 m cell | 2.1 dB std |
+
+This bounds what any model could achieve, and it is far below our 8.58 dB error. The
+implication is important: **the model's error is systematic and location-specific, not
+random**. Repeat visits to the same place see the same value. Whatever we are missing is a
+fixed property of the geometry or the transmitter, not fading that averages away — so it is
+recoverable, given the right inputs.
 
 ## 3. What does not explain the residual
 
@@ -168,18 +187,23 @@ being graded on an easier subset. Any conclusion about height needs a common lin
 
 ## 5. What we would do next
 
-1. **Predict a distribution, not a mean.** If the residual is largely shadow fading, the
-   deterministic surface should carry an uncertainty band, and placement should optimise
-   expected coverage under that uncertainty. The challenge explicitly asks for robustness to
-   model uncertainty, so this converts a limitation into the required deliverable.
-2. **Define "underserved" on uplink.** Downlink saturates near 230 Mbps for any SINR > 0
+1. **Request the antenna specifications.** Given that measurements repeat to 2 dB while the
+   model errs by 8.6 dB, the missing information is systematic, and the transmitter is the
+   largest thing we do not know. Pattern, height, tilt and EIRP are all currently collapsed
+   into one fitted constant. [`DATA_REQUEST.md`](DATA_REQUEST.md) ranks this and everything
+   else worth asking ARA for.
+2. **Predict a distribution, not a mean.** Whatever the residual turns out to be, the
+   surface should carry an uncertainty band and placement should optimise expected coverage
+   under it. The challenge explicitly asks for robustness to model uncertainty, so this
+   converts a limitation into the required deliverable.
+3. **Define "underserved" on uplink.** Downlink saturates near 230 Mbps for any SINR > 0
    while uplink tracks RSRP hard across 8–63 Mbps. A downlink-based objective would call
    almost everywhere adequate.
-3. **Treat unmodelled cells as unknown, not as zero.** With 43% of cells lacking a path, the
+4. **Treat unmodelled cells as unknown, not as zero.** With 43% of cells lacking a path, the
    optimiser's treatment of them will drive its answer more than the propagation model does.
-4. **Use Research Park as a negative control.** It serves 0 of 7,144 rows. Any model
+5. **Use Research Park as a negative control.** It serves 0 of 7,144 rows. Any model
    predicting usable coverage from it is wrong regardless of its fit at Agronomy.
-5. **Re-run the sweep at full sample size on a GPU.** Every rejection in §3 rests on paired
+6. **Re-run the sweep at full sample size on a GPU.** Every rejection in §3 rests on paired
    800-row runs.
 
 ---
