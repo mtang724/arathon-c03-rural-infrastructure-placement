@@ -65,6 +65,11 @@ sionna-approach/scene copy/
 # Coverage bundles from common/bundle.py, same policy as bundles/ above: they carry the
 # demand grid and candidate coordinates. Regenerable by run_pipeline.py.
 reports/bundle_*.json
+# EXCEPTION, requested by the team: pinn-approach cannot be rebuilt by anyone
+# without torch, so its bundle is committed rather than regenerated. Same
+# deliberate exception the rendered tools take above -- the repo is private and
+# this is what the planner reads. Delete it if the repo is ever made public.
+!reports/bundle_reveal-mt-pinn.json
 # browser-automation scratch from verifying the planner
 .playwright-mcp/
 planner.png
