@@ -48,6 +48,8 @@ def load():
             return None
 
     d["backtest"] = rd("terrain-approach/reports/backtest.json")
+    # the shared bench, whoever ran it: this is the table that matters
+    d["bench"] = rd("reports/testbench.json")
     d["coverage"] = rd("terrain-approach/reports/coverage_terrain.json")
     fno = rd("terrain-approach/reports/fno_compare.json")
     # A smoke run leaves a file that reads like a result. Two epochs trains
@@ -89,10 +91,18 @@ def s01_title(prs, d):
         "intervention — which means predicting where nothing was measured, and "
         "being explicit about how far that prediction can be trusted.",
         14, INK2, False, FD)
+    # never hardcode the headline: the best held-out score belongs to whichever
+    # simulator currently holds it, and that changes as approaches land
+    best, who = None, ""
+    for nm, v in (d.get("bench") or {}).items():
+        r = (v.get("kmeans_on_position") or {}).get("rmse")
+        if r and (best is None or r < best):
+            best, who = r, nm
     for i, (lab, val, note) in enumerate([
             ("measurements", "7,144", "rows, 4 runs, 2 days"),
             ("no serving cell", "40.4%", "measured absence, not missing"),
-            ("held-out accuracy", "9.66 dB", "RMSE, geographic blocks"),
+            ("best held-out", f"{best:.2f} dB" if best else "—",
+             f"KMeans blocks · {who}" if best else "not yet measured"),
             ("route covered today", "44%", "of 116.7 km driven")]):
         kpi(s, Inches(0.55 + i * 3.08), Inches(4.85), Inches(2.85), lab, val, note,
             vcolor=TEAL if i > 1 else INK)
@@ -478,24 +488,35 @@ def s11_backtest(prs, d):
            "If two models are evaluated on different splits they are not being "
            "compared, however carefully each RMSE was computed.")
     cols = ["simulator", "in sample", "random", "KMeans", "wedges", "fitted?"]
-    ins = rmse(d, "in_sample")
-    rows = [cols,
-            ["Fitted physics",
-             f"{ins:.2f}" if ins else "—",
-             f"{rmse(d, 'random_split'):.2f}" if ins else "—",
-             f"{rmse(d, 'kmeans_on_position'):.2f}" if ins else "—",
-             f"{rmse(d, 'angular_wedges'):.2f}" if ins else "—", "yes"],
-            ["Sionna ray tracing", "—", "—", "8.29", "—", "no — nothing fitted"],
-            ["FNO on profiles", "—", "—", "—", "—", "yes"],
-            ["PINN", "—", "—", "—", "—", "—"]]
+    LABEL = {"terrain-parametric": "Fitted physics",
+             "sionna-hybrid-agronomy": "Sionna ray tracing (hybrid)",
+             "terrain-fno": "FNO on path profiles"}
+    bench = d.get("bench") or {}
+
+    def cell(v, k):
+        try:
+            return f"{v[k]['rmse']:.2f}"
+        except (KeyError, TypeError):
+            return "—"
+
+    rows = [cols]
+    for name in ["terrain-parametric", "sionna-hybrid-agronomy", "terrain-fno"]:
+        v = bench.get(name)
+        if v:
+            rows.append([LABEL[name], cell(v, "in_sample"), cell(v, "random_split"),
+                         cell(v, "kmeans_on_position"), cell(v, "angular_wedges"),
+                         "yes" if v.get("fitted") else "no — nothing fitted"])
+        else:
+            rows.append([LABEL[name], "—", "—", "—", "—", "not yet run"])
+    rows.append(["PINN", "—", "—", "—", "—", "reserved"])
     table(s, Inches(0.55), Inches(1.9), Inches(12.2), Inches(1.9), rows,
           col_w=[Inches(3.2), Inches(1.7), Inches(1.7), Inches(1.7), Inches(1.7),
                  Inches(2.2)], size=10)
     caption(s, Inches(0.55), Inches(3.9), Inches(12.2),
-            "Blank cells are work not yet done, not results withheld. The table "
-            "is completed when every simulator has run — the numbers above are "
-            "produced by python -m common.selftest, which fails if the bench "
-            "itself has changed.")
+            "Dashes are work not yet done, not results withheld. Produced by one "
+            "harness from reports/testbench.json — and python -m common.selftest "
+            "reproduces the published reference to 0.02 dB, so a change to the "
+            "bench is caught rather than absorbed into the numbers.")
     for i, (nm, txt_, col) in enumerate([
             ("random split", "Report it, then discount it. Samples are 2.63 s "
              "apart — metres at driving speed — so the test set is very nearly "
