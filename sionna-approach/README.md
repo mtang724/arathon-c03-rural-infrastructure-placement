@@ -13,6 +13,21 @@ facility-location problem.
 
 ![measured, predicted and held-out validation](coverage_validation.png)
 
+Scene validated against public-domain aerial imagery. Georeferencing is confirmed, but
+OpenStreetMap records only 6 buildings within 2 km of the serving site:
+
+![scene validation, OpenStreetMap buildings](scene_validation.png)
+
+Microsoft's ML-extracted footprints raise that to 37, and improve held-out RMSE from
+8.58 dB to **8.27 dB** — the largest single gain of any change tested:
+
+![scene validation, Microsoft ML buildings](scene_validation_ms.png)
+
+The effect on the service surface is concentrated rather than uniform: 7% of cells shift by
+more than 1 dB, with a median absolute change of 0.10 dB and a maximum of 27 dB.
+
+![service surface, old vs new vs difference](surface_comparison.png)
+
 ## Status
 
 | Stage | State |
@@ -104,6 +119,7 @@ over-predicts precisely in wooded areas, so it will call coverage adequate where
 
 ```
 REPORT.md        technical report: method, results, what was ruled out, next steps
+DATA_REQUEST.md  what to ask ARA for, ranked by measured impact
 PARAMETERS.md    every model parameter with provenance: measured / inferred /
                  assumed / fitted / ruled out
 RESULTS.md       experiment log, auto-generated from scene/experiments.jsonl

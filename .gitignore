@@ -6,6 +6,8 @@ COTS_Dataset.zip
 sionna-approach/bundle/data/
 *.zip
 *.npz
+# per-chunk crash-recovery saves from predict_surface.py
+*.part[0-9][0-9][0-9].npy
 # figure kept: private repo, needed by the approach README
 
 # --- Regenerable build artifacts; several exceed GitHub's 100 MB limit ------
@@ -45,3 +47,7 @@ terrain-approach/reports/percentiles.json
 # Coverage bundles carry the demand grid and candidate coordinates, so they fall
 # under the dataset policy above. They are regenerable: common/bundle.py.
 bundles/
+# 61 MB, re-download from minedbuildings.z5.web.core.windows.net (see RUNNING.md)
+sionna-approach/scene/iowa_ms.zip
+# regenerate with build_ms_buildings.py <height>
+sionna-approach/scene/mitsuba/meshes/ms_buildings_h*.ply
