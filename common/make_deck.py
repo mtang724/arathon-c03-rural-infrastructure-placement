@@ -102,7 +102,9 @@ def s01_title(prs, d):
             ("measurements", "7,144", "rows, 4 runs, 2 days"),
             ("no serving cell", "40.4%", "measured absence, not missing"),
             ("best held-out", f"{best:.2f} dB" if best else "—",
-             f"KMeans blocks · {who}" if best else "not yet measured"),
+             # the note box is one line: a full simulator key wraps out of it
+             f"KMeans blocks · {who.split('-')[0]}" if best
+             else "not yet measured"),
             ("route covered today", "44%", "of 116.7 km driven")]):
         kpi(s, Inches(0.55 + i * 3.08), Inches(4.85), Inches(2.85), lab, val, note,
             vcolor=TEAL if i > 1 else INK)
@@ -247,10 +249,10 @@ def s05_findings(prs, d):
 
 def s06_platform(prs, d):
     s = slide(prs)
-    header(s, 6, "method", "Four simulators, one platform",
-           "Different physics, different failure modes — but scored on the same "
-           "demand, the same splits and the same objective, or they are not being "
-           "compared.")
+    # no subtitle here: the four cards start at y=1.35 and a subtitle at y=1.26
+    # would be drawn straight through them. The point it made is restated at the
+    # foot of the slide, where there is room for it.
+    header(s, 6, "method", "Four simulators, one platform")
     # the contract, centre
     rect(s, Inches(4.55), Inches(2.05), Inches(4.2), Inches(1.5), fill=SURF,
          line=TEAL, lw=1.75)
@@ -383,60 +385,59 @@ def s08_sionna(prs, d):
 
 
 def s09_fno(prs, d):
-    f = d.get("fno")
+    bench = (d.get("bench") or {}).get("terrain-fno")
     s = _sim_slide(prs, 9, "simulator · 3 of 4",
-                   "Neural operator — a 1-D FNO over path profiles",
-                   "The framing is the whole difficulty. Most of the operator "
-                   "family cannot be posed on this dataset at all.",
-                   VIOL, None, None, "built" if f else "running", bool(f))
-    rows = [["model", "verdict on this dataset"],
-            ["FNO / TFNO / UNO / WNO in 2-D",
-             "(terrain, TX) → surface has ONE training example. Not viable."],
-            ["NeRF2", "needs many TX or dense volumetric RX. One TX, road-confined."],
-            ["SFNO", "spherical harmonics; the box is 11 × 16 km."],
-            ["CoDANO", "codomain attention across coupled variables; there is one."],
-            ["GeNeRT", "needs a semantic 3-D scene and ray-traced CIRs; no weights."]]
-    table(s, Inches(0.55), Inches(1.9), Inches(6.5), Inches(2.3), rows,
-          col_w=[Inches(2.4), Inches(4.1)], size=9)
-    txt(s, Inches(0.55), Inches(4.35), Inches(6.5), Inches(0.3),
-        "The framing that IS well posed", 11, VIOL, True, FM, caps=True, space=1.2)
-    txt(s, Inches(0.55), Inches(4.68), Inches(6.5), Inches(1.0),
-        "Stop treating the area as the function. The terrain profile along each "
-        "link is a genuine input function on [0,1] — 3,838 of them — and it "
-        "competes head-to-head with the P.526 term it would replace.",
-        12, INK2, False, FD)
-    rect(s, Inches(7.35), Inches(1.9), Inches(5.4), Inches(2.35), fill=SURF,
-         line=WINE, lw=1.5)
-    rect(s, Inches(7.35), Inches(1.9), Inches(0.06), Inches(2.35), fill=WINE)
-    txt(s, Inches(7.6), Inches(2.05), Inches(5.0), Inches(0.3),
-        "A terrain profile is a location fingerprint", 12.5, WINE, True, FD)
-    bullets(s, Inches(7.6), Inches(2.45), Inches(5.0), Inches(1.7), [
-        "Nearest other link in profile space: median 12.2 m away on the ground.",
-        "97.2% within 50 m; 99.6% within 200 m.",
-        ("So on a random split a profile-fed network answers by looking up its "
-         "own training set.", True)], size=10)
-    if f:
-        p = f["out_of_sample"]["kmeans_on_position"]
-        bar(s, Inches(7.2), Inches(4.4), Inches(5.55), Inches(2.2),
-            ["physics", "backbone", "PCA ridge", "FNO", "shuffled"],
-            [("KMeans RMSE", [round(p[k]["rmse"], 2) for k in
-                              ["parametric_terrain", "backbone_no_terrain",
-                               "pca_linear_residual", "fno_residual",
-                               "fno_shuffled_control"]])],
-            [OCHRE, GREY, GREY, VIOL, RULE], labels=True, numfmt="0.00")
+                   "Neural operator — learning the terrain term",
+                   "A 1-D Fourier neural operator. It does not trace rays and it "
+                   "does not assume a path-loss law; it learns what terrain does "
+                   "to the signal from 3,838 measured links.",
+                   VIOL, None, None, "built" if bench else "running", bool(bench))
+    bullets(s, Inches(0.55), Inches(1.95), Inches(6.0), Inches(2.4), [
+        ("The input is a function, not a number.", True),
+        "For every link, ground elevation is sampled at 128 points along the "
+        "path from the tower to the receiver. That profile is the input; the "
+        "received power is the output.",
+        ("It replaces the textbook diffraction term, not the whole model.", True),
+        "Distance and bearing stay parametric. The operator is asked only what "
+        "the terrain along the path does to the signal — the same question "
+        "ITU-R P.526 answers with a single knife edge."], size=11)
+    if bench:
+        txt(s, Inches(7.0), Inches(1.95), Inches(5.8), Inches(0.3),
+            "RMSE by split, dB", 10.5, MUTE, True, FM, caps=True, space=1.1)
+        vals = []
+        for k in ["in_sample", "random_split", "kmeans_on_position",
+                  "angular_wedges"]:
+            v = bench.get(k, {}).get("rmse")
+            vals.append(round(v, 2) if v else 0.0)
+        bar(s, Inches(6.9), Inches(2.3), Inches(5.9), Inches(2.4),
+            ["in sample", "random", "KMeans", "wedges"],
+            [("RMSE", vals)], [VIOL], labels=True, numfmt="0.00")
+        caption(s, Inches(7.0), Inches(4.8), Inches(5.8),
+                "Same splits, same buffer, same seed as every other simulator "
+                "on slide 11.")
     else:
-        rect(s, Inches(7.35), Inches(4.4), Inches(5.4), Inches(2.1), fill=BG,
+        rect(s, Inches(6.9), Inches(1.95), Inches(5.9), Inches(2.6), fill=BG,
              line=GREY)
-        txt(s, Inches(7.6), Inches(4.6), Inches(5.0), Inches(0.3),
-            "Reserved — head-to-head result", 12.5, MUTE, True, FD)
-        bullets(s, Inches(7.6), Inches(4.98), Inches(5.0), Inches(1.4), [
-            "Same splits as every other model, imported not reimplemented.",
-            "Controls: no-terrain backbone, ridge on 12 profile PCs, and the "
-            "same network trained on shuffled profiles.",
-            "The control is what separates skill from the target distribution."],
-            size=10)
+        txt(s, Inches(7.15), Inches(2.15), Inches(5.4), Inches(0.3),
+            "Reserved — backtest result", 12.5, MUTE, True, FD)
+        bullets(s, Inches(7.15), Inches(2.55), Inches(5.4), Inches(1.8), [
+            "Runs on the shared testbench, so it lands straight into the "
+            "scoreboard on slide 11.",
+            "Same three splits, same 200 m buffer, same seed."], size=10)
+    rect(s, Inches(0.55), Inches(4.75), Inches(12.2), Inches(1.75), fill=SURF,
+         line=VIOL, lw=1.5)
+    rect(s, Inches(0.55), Inches(4.75), Inches(0.06), Inches(1.75), fill=VIOL)
+    txt(s, Inches(0.85), Inches(4.92), Inches(11.6), Inches(0.3),
+        "Why the split matters more here than anywhere else", 13, VIOL, True, FD)
+    txt(s, Inches(0.85), Inches(5.32), Inches(11.6), Inches(1.0),
+        "A terrain profile is very nearly a unique identifier of where the "
+        "receiver was: the nearest other link in profile space sits a median of "
+        "12.2 m away on the ground, and 97.2% are within 50 m. So on a random "
+        "split this model can reach the answer by recognising the location "
+        "rather than the physics. Only the geographic splits say anything about "
+        "whether it has learned propagation.", 12, INK2, False, FD)
     footer(s, "terrain-approach/NEURAL_OPERATOR.md   ·   "
-              "torch 2.10 CPU · neuraloperator 2.0")
+              "1-D FNO, 128-point profiles, torch CPU")
     return s
 
 
@@ -490,7 +491,7 @@ def s11_backtest(prs, d):
     cols = ["simulator", "in sample", "random", "KMeans", "wedges", "fitted?"]
     LABEL = {"terrain-parametric": "Fitted physics",
              "sionna-hybrid-agronomy": "Sionna ray tracing (hybrid)",
-             "terrain-fno": "FNO on path profiles"}
+             "terrain-fno": "Neural operator (FNO)"}
     bench = d.get("bench") or {}
 
     def cell(v, k):
@@ -632,13 +633,15 @@ def s14_recommendation(prs, d):
         site = f"{m['lat']:.5f}, {m['lon']:.5f}"
         r0 = f"{cov['baseline']['route_pct']:.0f}%"
         r1 = f"{cov['assets']['macro']['one_asset']['route_pct']:.0f}%"
-    for i, (lab, val, note, c) in enumerate([
-            ("recommended site", site, "37 m mast, on the road network", TEAL),
-            ("route-km covered", f"{r0} → {r1}", "at availability ≥ 50%", TEAL),
-            ("site confidence", "97%", "of fading draws within 2 km", OCHRE),
-            ("exact pole", "12%", "we know the right 2 km, not the pole", WINE)]):
+    for i, (lab, val, note, c, vs) in enumerate([
+            ("recommended site", site, "37 m mast, on the road network", TEAL,
+             14),
+            ("route-km covered", f"{r0} → {r1}", "at availability ≥ 50%", TEAL, 25),
+            ("site confidence", "97%", "of fading draws within 2 km", OCHRE, 25),
+            ("exact pole", "12%", "we know the right 2 km, not the pole", WINE,
+             25)]):
         kpi(s, Inches(0.55 + i * 3.08), Inches(1.9), Inches(2.85), lab, val, note,
-            vcolor=c)
+            vcolor=c, vsize=vs)
     txt(s, Inches(0.55), Inches(3.25), Inches(6.1), Inches(0.3),
         "Route-km added by asset class", 10.5, MUTE, True, FM, caps=True, space=1.1)
     bar(s, Inches(0.45), Inches(3.6), Inches(6.3), Inches(2.4),
