@@ -215,6 +215,23 @@ being graded on an easier subset. Any conclusion about height needs a common lin
 
 ---
 
+### 2.4 What the headline number does and does not cover
+
+Every RMSE here is on **RSRP in dBm**, serving cell only — the quantity the ray tracer
+natively produces, and the most favourable one available. Chaining to uplink, the metric a
+placement decision needs, gives r = 0.332 and 29.7 Mbps RMSE. A control feeding the same
+curve *measured* RSRP reaches only r = 0.565, so the RSRP->uplink mapping is a larger
+limitation than the propagation model.
+
+More seriously, **the validation set excludes the underserved**. The 3,023 rows (42%) with
+no serving cell carry no RSRP and are dropped before scoring, so the model is validated
+where the network already works. Of the 1,225 points reaching the uplink evaluation, 20
+(1.6%) fall below 10 Mbps, and the model's recall on identifying them is **0.00**.
+
+The 8.27 dB is real, but it licenses less than it appears to. Closing this needs a
+validation path built on coverage *classification* — does a location have any serving cell —
+rather than RSRP regression on the subset where one already does.
+
 ## 4. Limitations
 
 - **43% of mapped cells have no modelled path**, and 6–27% of points where the UE genuinely
@@ -257,7 +274,10 @@ being graded on an easier subset. Any conclusion about height needs a common lin
    optimiser's treatment of them will drive its answer more than the propagation model does.
 5. **Use Research Park as a negative control.** It serves 0 of 7,144 rows. Any model
    predicting usable coverage from it is wrong regardless of its fit at Agronomy.
-6. **Re-run the sweep at full sample size on a GPU.** Every rejection in §3 rests on paired
+6. **Validate on the no-service rows.** Reframe scoring as coverage classification so the
+   42% of locations with no serving cell enter the evaluation instead of being dropped.
+   Without this, no placement recommendation is backed by a measured error.
+7. **Re-run the sweep at full sample size on a GPU.** Every rejection in §3 rests on paired
    800-row runs.
 
 ---
