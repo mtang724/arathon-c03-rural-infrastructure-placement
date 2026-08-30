@@ -1,0 +1,58 @@
+{
+  "n_rows": 3838,
+  "splits": [
+    "random_split",
+    "kmeans_on_position",
+    "angular_wedges"
+  ],
+  "buffer_m": 200.0,
+  "n_blocks": 5,
+  "seed": 42,
+  "simulators": {
+    "reveal-mt-pinn": {
+      "in_sample": {
+        "mae": 3.500699538747242,
+        "rmse": 5.632252331030481,
+        "bias": -0.07909200886005284,
+        "r2": 0.8842805604439908,
+        "n": 3838
+      },
+      "fitted": true,
+      "random_split": {
+        "mae": 3.794965578063105,
+        "rmse": 5.921086833313687,
+        "bias": 0.28353341388044073,
+        "r2": 0.8702756974822534,
+        "n_folds": 5
+      },
+      "kmeans_on_position": {
+        "mae": 13.03154492808739,
+        "rmse": 15.834294011766312,
+        "bias": -0.26650145575077533,
+        "r2": -1.4697112675626443,
+        "n_folds": 5
+      },
+      "angular_wedges": {
+        "mae": 12.692918395867503,
+        "rmse": 15.092763202652165,
+        "bias": 3.015921207586156,
+        "r2": -1.8764492236352783,
+        "n_folds": 4
+      },
+      "coverage": {
+        "cells_compared": 501,
+        "rsrp_threshold_dbm": -87.89999999998815,
+        "cellwise_agreement_pct": 58.88223552894212,
+        "base_rate_pct": 63.87225548902195,
+        "brier": 0.1419048475204948,
+        "observed_avail_pct": 67.8528451091628,
+        "predicted_avail_pct": 59.70796135494213
+      },
+      "info": {
+        "label": "ReVeal-MT PINN",
+        "approach": "pinn-approach",
+        "sigma_db": 5.63169697112094
+      }
+    }
+  }
+}
