@@ -64,6 +64,7 @@ def load():
     d["geom"] = rd("reports/split_geometry.json")
     d["coverage"] = rd("terrain-approach/reports/coverage_terrain.json")
     d["hyp"] = rd("reports/hypothesis_test.json")
+    d["sens"] = rd("reports/sensitivity.json")
     for f in sorted(glob.glob(str(ROOT / "bundles" / "*.json"))):
         try:
             b = json.loads(Path(f).read_text())
@@ -157,48 +158,45 @@ def s2_dataset(prs, d):
 
 def s3_questions(prs, d):
     s = slide(prs)
-    header(s, 3, "research questions",
-           "The brief's four criteria, taken literally",
-           "Quoted from COTS_Challenge_3.pdf — “how a team can demonstrate "
-           "success”. Each is answered on slide 8 by a measurement.")
-    qs = [("RQ1", "Thresholds",
-           "Before-and-after route coverage under explicit service thresholds",
-           "Eight service definitions, each a slider, each re-solving the site.",
-           TEAL),
-          ("RQ2", "Gains",
-           "Gains reported per intervention",
-           "Relay, small cell and macro, plus the marginal value of the 2nd "
-           "and 3rd installation.", OCHRE),
-          ("RQ3", "Robustness",
-           "Robustness to model uncertainty",
-           "200 shadow-fading draws re-solve the placement; we report how often "
-           "the answer survives.", VIOL),
-          ("RQ4", "Constraints",
-           "Sensitivity to placement constraints",
-           "Five open-data buildability layers shrink the feasible set, and we "
-           "report what complying costs.", WINE)]
+    header(s, 3, "research questions", "Four questions, each answerable",
+           "Each maps to a requirement in the brief, and each is answered later "
+           "by a measurement rather than an assertion.")
+    qs = [("RQ1", "Can we predict service where nobody drove \u2014 and does the "
+           "modelling paradigm matter?",
+           "The drive covers ~11% of the area; the deliverable is the other 89%. "
+           "So the test has to be geographic extrapolation, not interpolation.",
+           "slide 7", TEAL),
+          ("RQ2", "Where is service deficient, and what does one added asset "
+           "actually buy?",
+           "Before-and-after coverage at an explicit threshold, and the gain "
+           "reported per intervention.", "slide 8", OCHRE),
+          ("RQ3", "How much does the recommendation depend on what we assumed?",
+           "Robustness to model uncertainty, and sensitivity to the objective "
+           "and to placement constraints.", "slide 8", VIOL),
+          ("RQ4", "Does optimising against the predicted surface beat the naive "
+           "baseline?",
+           "The brief's own stated hypothesis: better than choosing the single "
+           "worst measured point.", "slide 8", WINE)]
     y = Inches(1.95)
-    for tag, verb, q, a, col in qs:
-        rect(s, Inches(0.55), y, Inches(12.2), Inches(0.98), fill=SURF, line=RULE)
-        rect(s, Inches(0.55), y, Inches(0.06), Inches(0.98), fill=col)
-        txt(s, Inches(0.9), y + Inches(0.14), Inches(0.7), Inches(0.28), tag,
+    for tag, q, a_, where, col in qs:
+        rect(s, Inches(0.55), y, Inches(12.2), Inches(1.06), fill=SURF, line=RULE)
+        rect(s, Inches(0.55), y, Inches(0.06), Inches(1.06), fill=col)
+        txt(s, Inches(0.9), y + Inches(0.16), Inches(0.7), Inches(0.28), tag,
             12.5, col, True, FM)
-        txt(s, Inches(1.75), y + Inches(0.12), Inches(1.6), Inches(0.28), verb,
-            13, INK, True, FD)
-        txt(s, Inches(3.45), y + Inches(0.11), Inches(6.0), Inches(0.3), q,
-            13, INK, True, FD)
-        txt(s, Inches(3.45), y + Inches(0.48), Inches(8.9), Inches(0.4), a,
+        txt(s, Inches(1.75), y + Inches(0.12), Inches(9.2), Inches(0.32), q,
+            13.5, INK, True, FD)
+        txt(s, Inches(1.75), y + Inches(0.53), Inches(9.2), Inches(0.44), a_,
             11, INK2, False, FD)
-        y += Inches(1.1)
-    rect(s, Inches(0.55), Inches(6.45), Inches(12.2), Inches(0.62), fill=SURF,
-         line=WINE, lw=1.5)
-    rect(s, Inches(0.55), Inches(6.45), Inches(0.06), Inches(0.62), fill=WINE)
-    txt(s, Inches(0.85), Inches(6.58), Inches(11.6), Inches(0.4),
-        "And the brief's own hypothesis:  “optimizing placement … will "
-        "outperform choosing only the single worst measured point.”  We test it "
-        "on slide 8 rather than assume it.", 12, INK, False, FD)
-    footer(s, "COTS_Challenge_3.pdf · scope note: geographically separated test "
-              "segments")
+        txt(s, Inches(11.35), y + Inches(0.16), Inches(1.3), Inches(0.24),
+            where, 8.5, MUTE, False, FM)
+        y += Inches(1.18)
+    rect(s, Inches(0.55), Inches(6.72), Inches(12.2), Inches(0.5), fill=SURF,
+         line=WINE, lw=1.25)
+    txt(s, Inches(0.85), Inches(6.83), Inches(11.6), Inches(0.3),
+        "RQ1 is the precondition: if a model cannot predict off the driven line, "
+        "nothing it says about siting is worth reading.", 11.5, INK, False, FD)
+    footer(s, "COTS_Challenge_3.pdf \u00b7 scope note: geographically separated "
+              "test segments")
     return s
 
 
@@ -362,7 +360,7 @@ def s6_splits(prs, d):
 
 def s7_accuracy(prs, d):
     s = slide(prs)
-    header(s, 7, "evaluation", "How well each approach predicts",
+    header(s, 7, "rq1 \u00b7 prediction", "Does the modelling paradigm matter?",
            "Run with no added transmitter and compared to what the van "
            "recorded — the claim everything downstream rests on.")
     rows = [["approach", "in sample", "random", "KMeans", "wedges", "R² KMeans"]]
@@ -415,58 +413,84 @@ def s7_accuracy(prs, d):
 
 def s8_answers(prs, d):
     s = slide(prs)
-    header(s, 8, "results", "The four questions, answered",
-           "Same demand, same objective, same solver across every approach.")
-    rows = [["approach", "recommended macro site", "route-km", "area", "within 2 km"]]
-    for nm in ORDER:
-        b = d["bundles"].get(nm)
-        if b and b["solution"].get("macro", {}).get("sites"):
-            m = b["solution"]["macro"]
-            st = m["sites"][0]
-            rows.append([LABEL[nm], f"{st['lat']:.5f}, {st['lon']:.5f}",
-                         f"{m['one_asset']['route_pct']:.1f}%",
-                         f"{m['one_asset']['area_pct']:.1f}%",
-                         f"{100*m['robustness']['within_2km']:.0f}%"])
-        else:
-            rows.append([LABEL[nm], "siting bundle not yet built", "—", "—", "—"])
-    table(s, Inches(0.55), Inches(1.85), Inches(12.2), Inches(1.5), rows,
-          col_w=[Inches(2.7), Inches(3.3), Inches(2.1), Inches(2.0), Inches(2.1)],
-          size=10)
-    for i, (tag, val, note, c) in enumerate([
-            ("RQ1 · thresholds", "44% → 69%", "route-km at availability ≥ 50%", TEAL),
-            ("RQ2 · gains", "+28.6 km", "macro; relay +1.4, small cell +0.7", OCHRE),
-            ("RQ3 · robustness", "97–100%", "of fading draws within 2 km", VIOL),
-            ("RQ4 · constraints", "5 layers", "open-data buildability", WINE)]):
-        kpi(s, Inches(0.55 + i * 3.08), Inches(3.6), Inches(2.85), tag, val, note,
-            vcolor=c, vsize=20)
+    header(s, 8, "rq2 \u00b7 rq3 \u00b7 rq4",
+           "What to build, how firm it is, and whether optimising paid")
+    txt(s, Inches(0.55), Inches(1.52), Inches(4.0), Inches(0.24),
+        "RQ2 \u2014 gains per intervention", 10, OCHRE, True, FM, caps=True,
+        space=1.2)
+    rows = [["asset", "site", "route-km"]]
+    pb = d["bundles"].get("terrain-parametric")
+    if pb:
+        for k in ("macro", "smallcell", "relay"):
+            m = pb["solution"].get(k)
+            if m and m.get("sites"):
+                st = m["sites"][0]
+                rows.append([k, "%.4f, %.4f" % (st["lat"], st["lon"]),
+                             "+%.1f" % m["one_asset"]["route_km_added"]])
+    table(s, Inches(0.55), Inches(1.82), Inches(4.0), Inches(1.25), rows,
+          col_w=[Inches(1.0), Inches(2.0), Inches(1.0)], size=8.5)
+    txt(s, Inches(0.55), Inches(3.2), Inches(4.0), Inches(1.3),
+        "Power dominates. Every 6 dB lost halves the radius and quarters the "
+        "area, so the relay and the small cell cannot fill a 9 km hole \u2014 "
+        "and both physics approaches agree on that even where they disagree "
+        "about where to build.", 10.5, INK2, False, FD)
+
+    txt(s, Inches(4.85), Inches(1.52), Inches(4.0), Inches(0.24),
+        "RQ3 \u2014 what moves the answer", 10, VIOL, True, FM, caps=True,
+        space=1.2)
+    sens = d.get("sens")
+    if sens:
+        ma = sens["by_asset"].get("macro", {})
+        sp = ma.get("site_spread_km", {})
+        order = ma.get("ranked", [])
+        nice = {"model": "which model", "criterion": "criterion",
+                "target": "target", "w_route": "route/area"}
+        bar(s, Inches(4.7), Inches(1.8), Inches(4.15), Inches(2.1),
+            [nice.get(f, f) for f in order],
+            [("km", [round(sp[f], 2) for f in order])], [VIOL], horizontal=True,
+            labels=True, numfmt="0.0", size=8)
+        c = ma.get("consensus", {})
+        txt(s, Inches(4.85), Inches(3.95), Inches(4.0), Inches(1.5),
+            "%d combinations of model, criterion, target, asset and weighting. "
+            "For a macro the choice of MODEL moves the site furthest \u2014 "
+            "%.1f km \u2014 further than any assumption about the objective. "
+            "The most-picked site wins only %.0f%% of runs."
+            % (sens["n_combinations"], sp.get("model", 0),
+               100 * c.get("share", 0)), 10.5, INK2, False, FD)
+
+    txt(s, Inches(9.15), Inches(1.52), Inches(3.6), Inches(0.24),
+        "RQ4 \u2014 was optimising worth it?", 10, WINE, True, FM, caps=True,
+        space=1.2)
     h = d.get("hyp")
-    rect(s, Inches(0.55), Inches(4.95), Inches(6.05), Inches(1.95), fill=SURF,
-         line=WINE, lw=1.5)
-    rect(s, Inches(0.55), Inches(4.95), Inches(0.06), Inches(1.95), fill=WINE)
-    txt(s, Inches(0.85), Inches(5.1), Inches(5.5), Inches(0.28),
-        "The brief's hypothesis, tested", 12.5, WINE, True, FD)
     if h:
         o, w = h["optimiser"], h["worst_measured"]
-        body = (f"Optimising beats siting at the single worst measured point — "
-                f"but only by {o['route_pct']-w['route_pct']:+.1f} points of "
-                f"route-km ({o['route_pct']:.1f}% vs {w['route_pct']:.1f}%). "
-                f"That naive choice ranks {w['rank']} of {w['n_candidates']} "
-                f"candidates. On this survey the worst point sits near the "
-                f"optimum because the hole is one coherent region; on a survey "
-                f"with several holes it would not.")
-    else:
-        body = "Not yet run."
-    txt(s, Inches(0.85), Inches(5.46), Inches(5.5), Inches(1.35), body,
-        11, INK2, False, FD)
-    bullets(s, Inches(6.95), Inches(4.95), Inches(5.8), Inches(1.95), [
-        ("The two physics models agree; the learned one does not.", True),
-        "Baseline and ray tracing both site south-west. The FNO sites ten "
-        "kilometres east for twelve points less coverage — exactly what its "
-        "held-out score predicts.",
-        ("Read the ratios, not the percentages.", True),
-        "Received power generalises; whether a cell HAS service does not — "
-        "60.5% agreement against a 63.9% base rate."], size=10.5)
-    footer(s, "bundles/*.json · reports/hypothesis_test.json · 200 fading draws")
+        kpi(s, Inches(9.15), Inches(1.82), Inches(3.6), "optimiser",
+            "%.1f%%" % o["route_pct"], "route-km covered", vcolor=TEAL,
+            vsize=21, h=Inches(0.95))
+        kpi(s, Inches(9.15), Inches(2.9), Inches(3.6), "worst measured point",
+            "%.1f%%" % w["route_pct"],
+            "ranks %d of %d candidates" % (w["rank"], w["n_candidates"]),
+            vcolor=MUTE, vsize=21, h=Inches(0.95))
+        txt(s, Inches(9.15), Inches(4.0), Inches(3.6), Inches(1.45),
+            "The hypothesis holds, narrowly: +%.1f points of route-km. The naive "
+            "choice already sits in the top 2%% of candidates, because on this "
+            "survey the deficit is one coherent region. On a survey with several "
+            "holes it would not be."
+            % (o["route_pct"] - w["route_pct"]), 10.5, INK2, False, FD)
+
+    rect(s, Inches(0.55), Inches(5.75), Inches(12.2), Inches(1.1), fill=SURF,
+         line=WINE, lw=1.5)
+    rect(s, Inches(0.55), Inches(5.75), Inches(0.06), Inches(1.1), fill=WINE)
+    txt(s, Inches(0.85), Inches(5.9), Inches(11.6), Inches(0.26),
+        "The finding inside RQ3 that matters most", 12.5, WINE, True, FD)
+    txt(s, Inches(0.85), Inches(6.22), Inches(11.6), Inches(0.56),
+        "Model choice moves the macro site further than any objective "
+        "assumption \u2014 but only because a model that fails its own held-out "
+        "test is in the pool. Averaging over an unvalidated model is not "
+        "robustness, it is noise. Validate first, then average: that is what "
+        "RQ1 is for.", 11.5, INK2, False, FD)
+    footer(s, "reports/sensitivity.json \u00b7 reports/hypothesis_test.json "
+              "\u00b7 bundles/*.json")
     return s
 
 
