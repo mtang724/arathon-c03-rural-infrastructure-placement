@@ -631,12 +631,14 @@ def n3_approaches(prs, d):
             False, FD)
     rect(s, Inches(0.52), Inches(5.5), Inches(12.31), Inches(0.95), fill=SURF,
          line=RULE)
+    # The old closing line quoted coverage percentages, which was a non-sequitur
+    # once this slide stopped showing coverage maps. It now follows from what is
+    # actually on the slide: four different bets about what matters.
     txt(s, Inches(0.82), Inches(5.64), Inches(11.8), Inches(0.32),
-        "All four cover about the same amount of ground — and disagree about "
-        "where", 14, INK, True, FD)
+        "Same ground, four different bets about what matters", 14, INK, True, FD)
     txt(s, Inches(0.82), Inches(5.99), Inches(11.8), Inches(0.36),
-        "34% to 41% of cells clear the threshold whichever you ask. The question "
-        "is not who covers more — it is who is still right somewhere new.",
+        "Distance, geometry, the shape of the ground, or whatever is left over. "
+        "Each is cheap to believe until you move it somewhere new.",
         12, INK2, False, FD)
     footer(s, "")
     return s

@@ -55,32 +55,45 @@ def main():
     frame(ax); fig.tight_layout(pad=0.25)
     fig.savefig(OUT / "how_baseline.png", facecolor="white"); plt.close(fig)
 
-    # 2. ray tracing: the reconstructed scene itself
-    src = ROOT / "sionna-approach" / "scene" / "preview_30m.png"
+    # 2. ray tracing: the reconstructed scene, over the real ground it came from.
+    # scene/preview_30m.png was the obvious source and is useless here -- a
+    # Workbench render of bare terrain is flat grey, pixel std 2.5, and reads as
+    # a blank panel. The alignment panel of scene_validation_ms.png shows the
+    # extracted buildings drawn on NAIP aerial imagery, which is the same claim
+    # made visibly.
+    src = ROOT / "sionna-approach" / "scene_validation_ms.png"
     if src.exists():
         im = Image.open(src).convert("RGB")
         w, h = im.size
-        im.crop((int(w * 0.18), int(h * 0.06), int(w * 0.82), int(h * 0.78))) \
+        # bottom-left quadrant, trimmed of its panel title and axis margins
+        im.crop((int(w * 0.075), int(h * 0.56), int(w * 0.46), int(h * 0.97))) \
           .resize((700, 530), Image.LANCZOS) \
           .save(OUT / "how_raytracing.png")
 
-    # 3. deep learning: the terrain profiles it consumes as functions
+    # 3. deep learning: ONE profile, legibly. Sixty overlaid curves showed that
+    # profiles exist, not what one is, which is the thing to communicate.
     prof = ROOT / "terrain-approach" / "data" / "profiles.npz"
     if prof.exists():
-        d = np.load(prof)
-        g = d["grel"]
-        rng = np.random.default_rng(3)
-        pick = rng.choice(len(g), 60, replace=False)
+        dd = np.load(prof)
+        g, dm = dd["grel"], dd["dist_m"]
+        pick = int(np.argsort(np.abs(dm - 6000))[0])   # a typical long link
+        xs = np.linspace(0, dm[pick] / 1000.0, g.shape[1])
+        y = g[pick]
         fig, ax = plt.subplots(**FIG)
-        for i in pick:
-            ax.plot(np.linspace(0, 1, g.shape[1]), g[i], color=SAGE, lw=0.55,
-                    alpha=0.5)
-        ax.plot(np.linspace(0, 1, g.shape[1]), g[pick].mean(axis=0),
-                color=INK, lw=2.0)
-        ax.set_xlabel("tower  →  receiver", fontsize=8)
+        for j in np.random.default_rng(3).choice(len(g), 12, replace=False):
+            ax.plot(np.linspace(0, dm[j] / 1000.0, g.shape[1]), g[j],
+                    color="#CFD6C6", lw=0.7, zorder=1)
+        ax.fill_between(xs, y.min() - 4, y, color=SAGE, alpha=0.85, zorder=2,
+                        linewidth=0)
+        ax.plot([xs[0], xs[-1]], [y[0] + 30, y[-1] + 2], color=RUST, lw=1.6,
+                ls="--", zorder=3)
+        ax.plot(xs[0], y[0] + 30, "^", ms=8, color=RUST, zorder=4)
+        ax.plot(xs[-1], y[-1] + 2, "o", ms=5, color=INK, zorder=4)
+        ax.text(xs[len(xs) // 2], y.max() + 16, "line of sight", fontsize=7.5,
+                color=RUST, ha="center")
+        ax.set_xlabel("km from tower", fontsize=8)
         ax.set_ylabel("ground height (m)", fontsize=8)
-        ax.text(0.03, 0.9, "60 of 3,838 links", transform=ax.transAxes,
-                fontsize=7.5, color=INK)
+        ax.set_ylim(y.min() - 4, y.max() + 26)
         frame(ax); fig.tight_layout(pad=0.25)
         fig.savefig(OUT / "how_deeplearning.png", facecolor="white")
         plt.close(fig)
