@@ -600,38 +600,44 @@ def n2_gap(prs, d):
 
 
 def n3_approaches(prs, d):
-    """Four maps of the same ground. What each method reads, and what it makes.
+    """What each method works FROM.
 
-    Every bundle carries the same demand grid, so one colour scale across four
-    panels is an honest comparison -- the eye can see that they broadly agree on
-    how much is covered and disagree about where.
+    Four predicted-coverage maps looked nearly identical -- every model puts
+    34-41% of cells above the threshold -- so four of them told an audience
+    almost nothing. These show the input instead, which is what actually differs.
     """
     s = slide(prs)
     header(s, 3, "approaches", "Four ways to fill in the map",
-           "Same ground, same scale. Each reads something different and each "
-           "can be wrong in its own way.")
+           "Each one reads something different about the same ground.")
     panels = ROOT / "sionna-approach" / "deck_panels"
-    apps = [("baseline", "reads distance and bearing", OCHRE),
-            ("ray_tracing", "reads terrain and buildings", TEAL),
-            ("deep_learning", "reads the shape of the ground", VIOL),
-            ("pinn", "reads position, guided by physics", WINE)]
-    MW = 2.95
-    for i, (key, blurb, col) in enumerate(apps):
-        x = Inches(0.5 + i * 3.09)
-        f = panels / f"map_{key}.png"
+    apps = [
+        ("how_baseline.png", "Baseline", OCHRE,
+         "Fit a curve to the measurements and read it off anywhere."),
+        ("how_raytracing.png", "Ray tracing", TEAL,
+         "Rebuild the terrain and buildings, then trace the signal through it."),
+        ("how_deeplearning.png", "Deep learning", VIOL,
+         "Feed it the ground profile along each link and let it learn the rest."),
+        ("how_pinn.png", "PINN", WINE,
+         "Learn what distance alone cannot explain, with physics as a rule."),
+    ]
+    MW = 2.92
+    for i, (fn, name, col, blurb) in enumerate(apps):
+        x = Inches(0.52 + i * 3.09)
+        txt(s, x, Inches(1.82), Inches(MW), Inches(0.3), name, 14, col, True, FD)
+        f = panels / fn
         if f.exists():
-            s.shapes.add_picture(str(f), x, Inches(1.9), width=Inches(MW))
-        txt(s, x + Inches(0.05), Inches(4.82), Inches(MW), Inches(0.42), blurb,
-            11.5, INK2, False, FD)
-    rect(s, Inches(0.5), Inches(5.45), Inches(12.35), Inches(1.0), fill=SURF,
+            s.shapes.add_picture(str(f), x, Inches(2.2), width=Inches(MW))
+        txt(s, x, Inches(4.5), Inches(MW), Inches(0.75), blurb, 11, INK2,
+            False, FD)
+    rect(s, Inches(0.52), Inches(5.5), Inches(12.31), Inches(0.95), fill=SURF,
          line=RULE)
-    txt(s, Inches(0.8), Inches(5.6), Inches(11.8), Inches(0.32),
-        "They agree on how much is covered — and disagree about where",
-        14, INK, True, FD)
-    txt(s, Inches(0.8), Inches(5.95), Inches(11.8), Inches(0.4),
-        "Between 34% and 41% of cells clear the threshold in all four. That "
-        "spread is small. The question is which one is still right when you "
-        "move it somewhere it has never seen.", 12, INK2, False, FD)
+    txt(s, Inches(0.82), Inches(5.64), Inches(11.8), Inches(0.32),
+        "All four cover about the same amount of ground — and disagree about "
+        "where", 14, INK, True, FD)
+    txt(s, Inches(0.82), Inches(5.99), Inches(11.8), Inches(0.36),
+        "34% to 41% of cells clear the threshold whichever you ask. The question "
+        "is not who covers more — it is who is still right somewhere new.",
+        12, INK2, False, FD)
     footer(s, "")
     return s
 
