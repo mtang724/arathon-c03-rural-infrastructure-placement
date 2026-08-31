@@ -594,49 +594,38 @@ def n2_gap(prs, d):
 
 
 def n3_approaches(prs, d):
-    """What each method eats, in one line, plus its cost in fitted constants."""
+    """Four maps of the same ground. What each method reads, and what it makes.
+
+    Every bundle carries the same demand grid, so one colour scale across four
+    panels is an honest comparison -- the eye can see that they broadly agree on
+    how much is covered and disagree about where.
+    """
     s = slide(prs)
-    header(s, 3, "approaches", "Four ways to predict where nobody drove",
-           "They share one interface and nothing else, so each can be wrong in "
-           "its own way and one testbench can tell.")
-    apps = [
-        ("Baseline", "Fitted physics", OCHRE, "distance and bearing",
-         "A curve fitted to the measurements themselves. Fast, and it carries "
-         "a mechanism.", "fitted"),
-        ("Ray tracing", "A simulated scene", TEAL, "terrain and buildings",
-         "Rebuild the landscape and trace the signal through it. Geometry does "
-         "the work, not the data.", "simulated"),
-        ("Deep learning", "Neural operator", VIOL, "the terrain profile",
-         "Learns the shape of the ground along each link instead of assuming "
-         "a formula.", "learned"),
-        ("PINN", "Physics-informed network", WINE, "position, with physics",
-         "Learns the field, with the physics added as a penalty to keep it "
-         "honest.", "learned"),
-    ]
-    for i, (kind, name, col, eats, body, cost) in enumerate(apps):
-        x = Inches(0.55 + i * 3.08)
-        rect(s, x, Inches(2.0), Inches(2.85), Inches(3.4), fill=SURF, line=col,
-             lw=1.5)
-        txt(s, x + Inches(0.2), Inches(2.16), Inches(2.5), Inches(0.2), kind,
-            8.5, col, True, FM, caps=True, space=1.2)
-        txt(s, x + Inches(0.2), Inches(2.4), Inches(2.5), Inches(0.5), name,
-            14, INK, True, FD)
-        txt(s, x + Inches(0.2), Inches(3.0), Inches(2.5), Inches(0.18),
-            "reads", 7.5, MUTE, False, FM, caps=True, space=1.1)
-        txt(s, x + Inches(0.2), Inches(3.2), Inches(2.5), Inches(0.3), eats,
-            12, col, True, FM)
-        txt(s, x + Inches(0.2), Inches(3.68), Inches(2.5), Inches(1.1), body,
-            10.5, INK2, False, FD)
-        rect(s, x + Inches(0.2), Inches(4.85), Inches(2.5), Inches(0.34),
-             fill=BG, line=RULE)
-        txt(s, x + Inches(0.32), Inches(4.92), Inches(2.3), Inches(0.24), cost,
-            10, INK, True, FM)
-    rect(s, Inches(0.55), Inches(5.72), Inches(12.2), Inches(0.6), fill=SURF,
+    header(s, 3, "approaches", "Four ways to fill in the map",
+           "Same ground, same scale. Each reads something different and each "
+           "can be wrong in its own way.")
+    panels = ROOT / "sionna-approach" / "deck_panels"
+    apps = [("baseline", "reads distance and bearing", OCHRE),
+            ("ray_tracing", "reads terrain and buildings", TEAL),
+            ("deep_learning", "reads the shape of the ground", VIOL),
+            ("pinn", "reads position, guided by physics", WINE)]
+    MW = 2.95
+    for i, (key, blurb, col) in enumerate(apps):
+        x = Inches(0.5 + i * 3.09)
+        f = panels / f"map_{key}.png"
+        if f.exists():
+            s.shapes.add_picture(str(f), x, Inches(1.9), width=Inches(MW))
+        txt(s, x + Inches(0.05), Inches(4.82), Inches(MW), Inches(0.42), blurb,
+            11.5, INK2, False, FD)
+    rect(s, Inches(0.5), Inches(5.45), Inches(12.35), Inches(1.0), fill=SURF,
          line=RULE)
-    txt(s, Inches(0.85), Inches(5.86), Inches(11.6), Inches(0.35),
-        "All four answer the same two questions, so one testbench scores them "
-        "the same way and the planner can drive any of them.", 12.5, INK,
-        False, FD)
+    txt(s, Inches(0.8), Inches(5.6), Inches(11.8), Inches(0.32),
+        "They agree on how much is covered — and disagree about where",
+        14, INK, True, FD)
+    txt(s, Inches(0.8), Inches(5.95), Inches(11.8), Inches(0.4),
+        "Between 34% and 41% of cells clear the threshold in all four. That "
+        "spread is small. The question is which one is still right when you "
+        "move it somewhere it has never seen.", 12, INK2, False, FD)
     footer(s, "")
     return s
 
