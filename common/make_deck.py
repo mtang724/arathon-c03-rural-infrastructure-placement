@@ -207,7 +207,7 @@ def n3_approaches(prs, d):
         ("how_baseline.png", "Baseline", OCHRE,
          "The physical law of how signal falls with distance, with its "
          "constants fitted to this network.",
-         "needs: how far, and which way"),
+         "needs: distance and direction"),
         ("how_raytracing.png", "Ray tracing", TEAL,
          "Rebuild the ground and the buildings, then trace the signal "
          "through them.",
