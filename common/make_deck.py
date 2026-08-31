@@ -198,26 +198,40 @@ def n3_approaches(prs, d):
     """
     s = slide(prs)
     header(s, 3, "approaches", "Four ways to fill in the map",
-           "Each one reads something different about the same ground.")
+           "They differ in what they need to know before they can answer.")
     panels = ROOT / "sionna-approach" / "deck_panels"
+    # Each panel also carries what the method NEEDS, so the four are comparable
+    # straight down the row. That is the summary; a band of prose underneath
+    # restating them read as filler however it was worded.
     apps = [
         ("how_baseline.png", "Baseline", OCHRE,
-         "Fit a curve to the measurements, read it off anywhere."),
+         "The physical law of how signal falls with distance, with its "
+         "constants fitted to this network.",
+         "needs: distance and bearing"),
         ("how_raytracing.png", "Ray tracing", TEAL,
-         "Rebuild the ground and buildings, then trace the signal."),
+         "Rebuild the ground and the buildings, then trace the signal "
+         "through them.",
+         "needs: a 3-D scene"),
         ("how_deeplearning.png", "Deep learning", VIOL,
-         "Give it the ground under each link, let it learn the rest."),
+         "No assumed law. Learn the mapping from the ground under each link "
+         "to the signal.",
+         "needs: thousands of examples"),
         ("how_pinn.png", "PINN", WINE,
-         "Learn what distance cannot explain, with physics as a rule."),
+         "Learn what the distance law cannot explain, with physics as a "
+         "penalty on the answer.",
+         "needs: examples and a law"),
     ]
     MW = 3.02
-    for i, (fn, name, col, blurb) in enumerate(apps):
+    for i, (fn, name, col, blurb, needs) in enumerate(apps):
         x = Inches(0.45 + i * 3.15)
-        txt(s, x, Inches(1.82), Inches(MW), Inches(0.3), name, 18, col, True, FH)
+        txt(s, x, Inches(1.78), Inches(MW), Inches(0.32), name, 18, col, True, FH)
         f = panels / fn
         if f.exists():
-            s.shapes.add_picture(str(f), x, Inches(2.24), width=Inches(MW))
-        txt(s, x, Inches(4.66), Inches(MW), Inches(1.1), blurb, 15.5, INK2,
+            s.shapes.add_picture(str(f), x, Inches(2.18), width=Inches(MW))
+        txt(s, x, Inches(4.58), Inches(MW), Inches(1.15), blurb, 14.5, INK2,
+            False, FD)
+        rect(s, x, Inches(5.9), Inches(MW), Inches(0.014), fill=RULE, line=None)
+        txt(s, x, Inches(5.99), Inches(MW), Inches(0.34), needs, 13.5, col,
             False, FD)
     footer(s, "")
     return s
