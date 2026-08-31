@@ -99,11 +99,17 @@ def header(s, num, eyebrow, title, sub=None, accent=TEAL):
         f"{num:02d}", 12, accent, True, FM)
     txt(s, Inches(1.05), Inches(0.36), Inches(8), Inches(0.3),
         eyebrow, 9.5, MUTE, False, FM, caps=True, space=1.6)
-    txt(s, Inches(0.55), Inches(0.68), Inches(12.2), Inches(0.62),
-        title, 29, INK, True, FD)
+    # A title long enough to wrap overflows a fixed 0.62" box and draws straight
+    # through the subtitle -- python-pptx never reflows, so it happens silently.
+    # Shrink past ~52 characters and drop the subtitle to clear two lines.
+    n = len(title)
+    size = 29 if n <= 52 else (26 if n <= 68 else 23)
+    two = n > 52
+    txt(s, Inches(0.55), Inches(0.68), Inches(12.2), Inches(1.0 if two else 0.62),
+        title, size, INK, True, FD)
     if sub:
-        txt(s, Inches(0.55), Inches(1.26), Inches(12.2), Inches(0.4),
-            sub, 12.5, INK2, False, FD)
+        txt(s, Inches(0.55), Inches(1.42 if two else 1.26), Inches(12.2),
+            Inches(0.4), sub, 12.5, INK2, False, FD)
 
 
 def kpi(s, x, y, w, label, value, note, vcolor=INK, h=Inches(1.02), vsize=25):
