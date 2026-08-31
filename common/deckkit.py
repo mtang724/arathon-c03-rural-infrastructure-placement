@@ -17,21 +17,22 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
 # ---- palette -------------------------------------------------------------
-INK = RGBColor(0x1C, 0x19, 0x17)
-INK2 = RGBColor(0x3A, 0x48, 0x42)
-MUTE = RGBColor(0x79, 0x71, 0x6B)
+INK = RGBColor(0x23, 0x20, 0x1C)
+INK2 = RGBColor(0x4A, 0x45, 0x40)
+MUTE = RGBColor(0x8A, 0x82, 0x79)
 BG = RGBColor(0xFF, 0xFF, 0xFF)
-SURF = RGBColor(0xF5, 0xF2, 0xEE)
-RULE = RGBColor(0xD9, 0xD3, 0xCB)
-TEAL = RGBColor(0x3E, 0x5C, 0x6B)
-OCHRE = RGBColor(0x9A, 0x6E, 0x1E)
-VIOL = RGBColor(0x6B, 0x7F, 0x5C)
-WINE = RGBColor(0xB4, 0x53, 0x2A)
+SURF = RGBColor(0xF7, 0xF4, 0xEF)
+RULE = RGBColor(0xDD, 0xD6, 0xCC)
+TEAL = RGBColor(0x55, 0x60, 0x6B)
+OCHRE = RGBColor(0x9C, 0x7A, 0x3C)
+VIOL = RGBColor(0x4E, 0x61, 0x51)
+WINE = RGBColor(0x8C, 0x3A, 0x28)
 WHITE = RGBColor(0xFF, 0xFF, 0xFF)
-GREY = RGBColor(0xB5, 0xAD, 0xA4)
+GREY = RGBColor(0xB0, 0xA8, 0x9E)
 
 W, H = Inches(13.333), Inches(7.5)
-FD, FM = "Archivo", "Consolas"
+FD, FM = "Calibri", "Consolas"
+FH = "Cambria"   # display serif
 
 
 def slide(prs):
@@ -98,9 +99,8 @@ def header(s, num, eyebrow, title, sub=None, accent=TEAL):
     # every slide, and "01 / SECTION" over every title, are the two things that
     # make a deck look generated rather than written. A single small square
     # carries the accent instead.
-    rect(s, Inches(0.55), Inches(0.42), Inches(0.12), Inches(0.12), fill=accent)
-    txt(s, Inches(0.8), Inches(0.34), Inches(8), Inches(0.3),
-        eyebrow, 10, MUTE, False, FD, caps=False)
+    txt(s, Inches(0.55), Inches(0.34), Inches(8), Inches(0.3),
+        eyebrow, 10.5, MUTE, False, FD, caps=False)
     # A title long enough to wrap overflows a fixed 0.62" box and draws straight
     # through the subtitle -- python-pptx never reflows, so it happens silently.
     # Shrink past ~52 characters and drop the subtitle to clear two lines.
@@ -108,7 +108,7 @@ def header(s, num, eyebrow, title, sub=None, accent=TEAL):
     size = 29 if n <= 52 else (26 if n <= 68 else 23)
     two = n > 52
     txt(s, Inches(0.55), Inches(0.68), Inches(12.2), Inches(1.0 if two else 0.62),
-        title, size, INK, True, FD)
+        title, size, INK, True, FH)
     if sub:
         txt(s, Inches(0.55), Inches(1.42 if two else 1.26), Inches(12.2),
             Inches(0.4), sub, 12.5, INK2, False, FD)
@@ -118,13 +118,15 @@ def kpi(s, x, y, w, label, value, note, vcolor=INK, h=Inches(1.02), vsize=25):
     """`vsize` drops for values that are long strings rather than short numbers.
     A latitude/longitude pair at 25pt wraps out of its box and draws over the
     note beneath it -- python-pptx never reflows, so it overlaps silently."""
-    rect(s, x, y, w, h, fill=SURF, line=RULE)
-    txt(s, x + Inches(0.14), y + Inches(0.10), w - Inches(0.28), Inches(0.16),
-        label, 8, MUTE, False, FM, caps=True, space=1.2)
-    txt(s, x + Inches(0.14), y + Inches(0.28), w - Inches(0.28), Inches(0.42),
-        value, vsize, vcolor, True, FD)
-    txt(s, x + Inches(0.14), y + Inches(0.72), w - Inches(0.28), Inches(0.24),
-        note, 8.5, MUTE, False, FM)
+    # A hairline and whitespace, not a filled tile with a border. Four bordered
+    # cards in a row is the most recognisable generated-deck pattern there is.
+    rect(s, x, y, w - Inches(0.35), Inches(0.014), fill=RULE, line=None)
+    txt(s, x, y + Inches(0.12), w - Inches(0.3), Inches(0.2),
+        label, 9.5, MUTE, False, FD)
+    txt(s, x, y + Inches(0.34), w - Inches(0.3), Inches(0.46),
+        value, vsize, vcolor, True, FH)
+    txt(s, x, y + Inches(0.8), w - Inches(0.3), Inches(0.26),
+        note, 9.5, MUTE, False, FD)
 
 
 def card(s, x, y, w, h, title, lines, accent=TEAL, status=None, dim=False):
@@ -249,9 +251,11 @@ def table(s, x, y, w, h, rows, col_w=None, size=9.5, head_fill=SURF):
 
 
 def caption(s, x, y, w, text, size=9.5, color=MUTE):
-    return txt(s, x, y, w, Inches(0.5), text, size, color, False, FM)
+    # prose, so a proportional face. Monospaced captions are the tell that a
+    # deck was laid out by something that thinks of text as data.
+    return txt(s, x, y, w, Inches(0.5), text, size, color, False, FD)
 
 
 def footer(s, text):
     txt(s, Inches(0.55), H - Inches(0.42), Inches(12.2), Inches(0.25),
-        text, 8.5, GREY, False, FM)
+        text, 9, GREY, False, FD)
