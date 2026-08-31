@@ -210,24 +210,15 @@ def n3_approaches(prs, d):
         ("how_pinn.png", "PINN", WINE,
          "Learn what distance cannot explain, with physics as a rule."),
     ]
-    MW = 2.92
+    MW = 3.02
     for i, (fn, name, col, blurb) in enumerate(apps):
-        x = Inches(0.52 + i * 3.09)
+        x = Inches(0.45 + i * 3.15)
         txt(s, x, Inches(1.82), Inches(MW), Inches(0.3), name, 18, col, True, FH)
         f = panels / fn
         if f.exists():
-            s.shapes.add_picture(str(f), x, Inches(2.2), width=Inches(MW))
-        txt(s, x, Inches(4.46), Inches(MW), Inches(1.0), blurb, 15, INK2,
+            s.shapes.add_picture(str(f), x, Inches(2.24), width=Inches(MW))
+        txt(s, x, Inches(4.66), Inches(MW), Inches(1.1), blurb, 15.5, INK2,
             False, FD)
-    rect(s, Inches(0.52), Inches(5.58), Inches(12.31), Inches(1.12), fill=SURF,
-         line=None)
-    txt(s, Inches(0.82), Inches(5.68), Inches(11.8), Inches(0.36),
-        "All four fit the drive test. Only one still works off it.", 18, INK,
-        True, FH)
-    txt(s, Inches(0.82), Inches(6.08), Inches(11.8), Inches(0.56),
-        "Every one of them lands within about 8 dB of the measurements. Score "
-        "them on ground they were never shown and three of the four fall apart.",
-        15, INK2, False, FD)
     footer(s, "")
     return s
 
