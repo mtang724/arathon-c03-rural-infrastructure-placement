@@ -221,11 +221,9 @@ def n3_approaches(prs, d):
             False, FD)
     rect(s, Inches(0.52), Inches(5.58), Inches(12.31), Inches(1.12), fill=SURF,
          line=None)
-    # The old closing line quoted coverage percentages, which was a non-sequitur
-    # once this slide stopped showing coverage maps. It now follows from what is
-    # actually on the slide: four different bets about what matters.
     txt(s, Inches(0.82), Inches(5.68), Inches(11.8), Inches(0.36),
-        "Same ground, four different bets about what matters", 18, INK, True, FD)
+        "All four fit the drive test. Only one still works off it.", 18, INK,
+        True, FH)
     txt(s, Inches(0.82), Inches(6.08), Inches(11.8), Inches(0.56),
         "Every one of them lands within about 8 dB of the measurements. Score "
         "them on ground they were never shown and three of the four fall apart.",
