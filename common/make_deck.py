@@ -520,11 +520,11 @@ def n1_problem(prs, d):
     s = slide(prs)
     txt(s, Inches(0.55), Inches(1.0), Inches(9), Inches(0.35),
         "Arathon Challenge 03", 12, WINE, True, FD)
-    txt(s, Inches(0.55), Inches(1.6), Inches(11.9), Inches(0.85),
-        "Where should the next tower go?", 44, INK, True, FD)
-    txt(s, Inches(0.55), Inches(2.62), Inches(11.0), Inches(0.42),
+    txt(s, Inches(0.55), Inches(1.6), Inches(6.0), Inches(1.3),
+        "Where should the\nnext tower go?", 40, INK, True, FD)
+    txt(s, Inches(0.55), Inches(3.02), Inches(5.9), Inches(0.42),
         "Rural network planning on 7% of the map", 19, WINE, False, FD)
-    txt(s, Inches(0.55), Inches(3.25), Inches(10.4), Inches(0.95),
+    txt(s, Inches(0.55), Inches(3.62), Inches(5.7), Inches(1.6),
         "A van drove one rural service area near Ames and logged 7,144 samples. "
         "They cover 7% of it. The decision has to be made about the other 93%, "
         "so we build a model of the ground and let it stand in for the survey.",
@@ -534,16 +534,20 @@ def n1_problem(prs, d):
         r = (v.get("kmeans_on_position") or {}).get("rmse")
         if r and nm != "fno-shuffled-control" and (best is None or r < best):
             best, who = r, nm
+    dec = ROOT / "sionna-approach" / "deck_panels" / "decision.png"
+    if dec.exists():
+        s.shapes.add_picture(str(dec), Inches(6.55), Inches(1.5),
+                             height=Inches(3.35))
+        caption(s, Inches(6.55), Inches(4.95), Inches(6.1),
+                "Four towers today. 627 places the next one could go.",
+                size=10.5, color=INK2)
     for i, (lab, val, note) in enumerate([
-            ("measured", "7,144", "rows · 42% with no service"),
+            ("measured", "7,144", "rows · 42% no service"),
             ("of the area", "7%", "the rest is predicted"),
-            ("best held out", f"{best:.2f} dB" if best else "—",
-             f"{SHORT.get(who, who)}" if best else "not measured"),
-            ("route covered", "44% → 69%", "one macro site")]):
-        kpi(s, Inches(0.55 + i * 3.08), Inches(4.55), Inches(2.85), lab, val,
-            note, vcolor=TEAL if i in (2, 3) else INK,
-            vsize=25 if i < 3 else 21)
-    txt(s, Inches(0.55), Inches(6.0), Inches(11.9), Inches(0.3),
+            ("route covered", "44% → 69%", "with one more site")]):
+        kpi(s, Inches(0.55 + i * 4.12), Inches(5.4), Inches(3.85), lab, val,
+            note, vcolor=WINE if i == 2 else INK, vsize=24 if i < 2 else 21)
+    txt(s, Inches(0.55), Inches(6.72), Inches(11.9), Inches(0.3),
         "Mingyue Tang  ·  David Alcantara  ·  Ishan Bansal", 11.5, MUTE, False, FD)
     footer(s, "AgWireless '26 · ARA COTS RAN, Ames IA")
     return s
@@ -559,12 +563,12 @@ def n2_gap(prs, d):
     """
     s = slide(prs)
     header(s, 2, "the gap", "Measurements alone cannot site a tower",
-           "Left: every sample the van recorded. Right: what a twin fills in.")
+           "Same ground, same scale, same colours. Only the coverage differs.")
     # Lay the two out from their real aspect ratios so they sit as a balanced
     # pair. Hard-coding x positions left three inches of gutter between them.
     panels = ROOT / "sionna-approach" / "deck_panels"
-    items = [("measured.png", "What we measured"),
-             ("predicted.png", "What the twin predicts")]
+    items = [("gap_measured.png", "What we measured"),
+             ("gap_predicted.png", "What the twin predicts")]
     PH, GAP = 3.85, 0.55
     widths = []
     for fn, _ in items:
