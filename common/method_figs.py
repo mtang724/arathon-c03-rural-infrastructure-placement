@@ -70,31 +70,39 @@ def main():
           .resize((700, 530), Image.LANCZOS) \
           .save(OUT / "how_raytracing.png")
 
-    # 3. deep learning: ONE profile, legibly. Sixty overlaid curves showed that
-    # profiles exist, not what one is, which is the thing to communicate.
+    # 3. deep learning: the MAPPING, not the terrain. The operator reads a
+    # profile and returns a signal level; a figure of terrain alone implies we
+    # are modelling the ground, which is not what it does.
     prof = ROOT / "terrain-approach" / "data" / "profiles.npz"
     if prof.exists():
         dd = np.load(prof)
-        g, dm = dd["grel"], dd["dist_m"]
-        pick = int(np.argsort(np.abs(dm - 6000))[0])   # a typical long link
-        xs = np.linspace(0, dm[pick] / 1000.0, g.shape[1])
-        y = g[pick]
+        g, plat, plon = dd["grel"], dd["lat"], dd["lon"]
+        # nearest-neighbour join: the two files carry the same points at
+        # different precision, so rounding to a fixed number of places matches
+        # nothing at all
+        from scipy.spatial import cKDTree
+        tree = cKDTree(np.column_stack([df.lat.values, df.lon.values]))
+        dist, idx = tree.query(np.column_stack([plat, plon]))
+        rssi = np.where(dist < 1e-4, df.rsrp.values[idx], np.nan)
+        good = np.where(np.isfinite(rssi))[0]
+        # one strong, one middling, one weak link, so the mapping is visible
+        picks = [good[np.argmin(np.abs(rssi[good] - v))] for v in (-65, -90, -112)]
+        cols = ["#2C7A4B", SAGE, RUST]
         fig, ax = plt.subplots(**FIG)
-        for j in np.random.default_rng(3).choice(len(g), 12, replace=False):
-            ax.plot(np.linspace(0, dm[j] / 1000.0, g.shape[1]), g[j],
-                    color="#CFD6C6", lw=0.7, zorder=1)
-        ax.fill_between(xs, y.min() - 4, y, color=SAGE, alpha=0.85, zorder=2,
-                        linewidth=0)
-        ax.plot([xs[0], xs[-1]], [y[0] + 30, y[-1] + 2], color=RUST, lw=1.6,
-                ls="--", zorder=3)
-        ax.plot(xs[0], y[0] + 30, "^", ms=8, color=RUST, zorder=4)
-        ax.plot(xs[-1], y[-1] + 2, "o", ms=5, color=INK, zorder=4)
-        ax.text(xs[len(xs) // 2], y.max() + 16, "line of sight", fontsize=7.5,
-                color=RUST, ha="center")
-        ax.set_xlabel("km from tower", fontsize=8)
-        ax.set_ylabel("ground height (m)", fontsize=8)
-        ax.set_ylim(y.min() - 4, y.max() + 26)
-        frame(ax); fig.tight_layout(pad=0.25)
+        for k, (i, c) in enumerate(zip(picks, cols)):
+            y = g[i] - g[i].min()
+            ax.plot(np.linspace(0, 1, g.shape[1]), y + k * 46, color=c, lw=1.7)
+            ax.text(1.015, k * 46 + 12, f"{rssi[i]:.0f} dBm", color=c,
+                    fontsize=9, weight="bold", va="center")
+        ax.set_xlim(0, 1.0); ax.set_xticks([0, 1])
+        ax.set_xticklabels(["tower", "receiver"], fontsize=8)
+        ax.set_yticks([])
+        ax.set_ylabel("ground profile", fontsize=8)
+        ax.text(0.02, 0.95, "shape in  →  signal out", transform=ax.transAxes,
+                fontsize=8.5, color=INK, va="top", weight="bold")
+        # no bbox_inches="tight" here: it trims to content and this panel would
+        # come out 665x476 against the others' 700x530, breaking the row
+        frame(ax); fig.subplots_adjust(left=0.13, right=0.76, top=0.95, bottom=0.14)
         fig.savefig(OUT / "how_deeplearning.png", facecolor="white")
         plt.close(fig)
 

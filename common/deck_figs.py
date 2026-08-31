@@ -75,35 +75,44 @@ def main():
         fig.savefig(OUT / f"{name}.png", facecolor="white"); plt.close(fig)
         print(f"  {name}.png")
 
-    # --- the decision itself: where an asset could go, and where it should ---
+    # --- why another tower at all: show the service that is missing ---------
+    # A continuous signal ramp is pretty and does not answer "why build". Split
+    # the surface at the service threshold instead, so the unserved ground is
+    # the thing the eye lands on.
     cand = b["prediction"]["candidates"]
     clon = np.array([c["lon"] for c in cand]); clat = np.array([c["lat"] for c in cand])
     hyp = json.loads((ROOT / "reports" / "hypothesis_test.json").read_text())
     rec = hyp["optimiser"]
     sites = json.loads((ROOT / "sionna-approach" / "scene" / "georef.json").read_text())["sites"]
 
+    THR = -90.0
+    served = gv >= THR
     fig, ax = plt.subplots(figsize=(6.2, 3.4), dpi=200)
-    ax.scatter(glon, glat, c=np.clip(gv, VMIN, VMAX), cmap="viridis",
-               vmin=VMIN, vmax=VMAX, s=2.4, marker="s", linewidths=0, alpha=0.85)
-    ax.scatter(clon, clat, s=7, facecolors="none", edgecolors="white",
-               linewidths=0.5, alpha=0.85)
+    ax.scatter(glon[served], glat[served], c="#BFD3C1", s=2.6, marker="s",
+               linewidths=0, label="usable service")
+    ax.scatter(glon[~served], glat[~served], c=RUST, s=2.6, marker="s",
+               linewidths=0, alpha=0.85, label="little or none")
     for nm, sv in sites.items():
-        ax.plot(sv["lon"], sv["lat"], "^", ms=9, mfc=RUST, mec="white", mew=1.1)
-    ax.plot(rec["lon"], rec["lat"], "*", ms=26, mfc="#FFD400", mec=INK, mew=1.3,
+        ax.plot(sv["lon"], sv["lat"], "^", ms=9, mfc=INK, mec="white", mew=1.1,
+                zorder=5)
+    ax.plot(rec["lon"], rec["lat"], "*", ms=24, mfc="#FFD400", mec=INK, mew=1.2,
             zorder=6)
     ax.annotate("one more here?", (rec["lon"], rec["lat"]),
-                xytext=(14, -20), textcoords="offset points", fontsize=11,
+                xytext=(13, -20), textcoords="offset points", fontsize=10.5,
                 color=INK, weight="bold",
-                bbox=dict(fc="white", ec=RULE, alpha=0.92, pad=2.5),
+                bbox=dict(fc="white", ec=RULE, alpha=0.93, pad=2.5),
                 arrowprops=dict(arrowstyle="-", color=INK, lw=1.0))
     ax.set_xlim(ext[0], ext[1]); ax.set_ylim(ext[2], ext[3]); frame(ax, mid)
-    ax.text(0.02, 0.035,
-            f"{len(cand)} possible sites  ·  {len(sites)} towers today",
-            transform=ax.transAxes, fontsize=9, color=INK,
-            bbox=dict(fc="white", ec="none", alpha=0.85, pad=2))
+    leg = ax.legend(loc="upper left", fontsize=8.5, frameon=True, markerscale=3,
+                    borderpad=0.4, handletextpad=0.5)
+    leg.get_frame().set_edgecolor(RULE); leg.get_frame().set_alpha(0.93)
+    pct = 100.0 * float((~served).mean())
+    ax.text(0.02, 0.035, f"{pct:.0f}% of the area has little or no service",
+            transform=ax.transAxes, fontsize=9.5, color=INK, weight="bold",
+            bbox=dict(fc="white", ec="none", alpha=0.88, pad=2.4))
     fig.tight_layout(pad=0.2)
     fig.savefig(OUT / "decision.png", facecolor="white"); plt.close(fig)
-    print("  decision.png")
+    print(f"  decision.png   {pct:.0f}% unserved")
 
 
 if __name__ == "__main__":

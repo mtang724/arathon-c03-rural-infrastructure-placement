@@ -525,9 +525,9 @@ def n1_problem(prs, d):
     txt(s, Inches(0.55), Inches(3.02), Inches(5.9), Inches(0.42),
         "Rural network planning on 7% of the map", 19, WINE, False, FD)
     txt(s, Inches(0.55), Inches(3.62), Inches(5.7), Inches(1.6),
-        "A van drove one rural service area near Ames and logged 7,144 samples. "
-        "They cover 7% of it. The decision has to be made about the other 93%, "
-        "so we build a model of the ground and let it stand in for the survey.",
+        "Four towers serve this area today, and most of it still has no usable "
+        "signal — 42% of the samples the van took found no cell at all. One "
+        "more asset could change that. The question is where to put it.",
         14.5, INK2, False, FD)
     best, who = None, ""
     for nm, v in d["bench"].items():
@@ -539,14 +539,14 @@ def n1_problem(prs, d):
         s.shapes.add_picture(str(dec), Inches(6.55), Inches(1.5),
                              height=Inches(3.35))
         caption(s, Inches(6.55), Inches(4.95), Inches(6.1),
-                "Four towers today. 627 places the next one could go.",
-                size=10.5, color=INK2)
+                "Red is where service fails today. The star is where our "
+                "planner would put the next tower.", size=10.5, color=INK2)
     for i, (lab, val, note) in enumerate([
-            ("measured", "7,144", "rows · 42% no service"),
-            ("of the area", "7%", "the rest is predicted"),
-            ("route covered", "44% → 69%", "with one more site")]):
+            ("unserved today", "60%", "of the area, by our model"),
+            ("we measured", "7%", "of it · the rest is predicted"),
+            ("with one more site", "44% → 69%", "of route covered")]):
         kpi(s, Inches(0.55 + i * 4.12), Inches(5.4), Inches(3.85), lab, val,
-            note, vcolor=WINE if i == 2 else INK, vsize=24 if i < 2 else 21)
+            note, vcolor=WINE if i in (0, 2) else INK, vsize=24 if i < 2 else 21)
     txt(s, Inches(0.55), Inches(6.72), Inches(11.9), Inches(0.3),
         "Mingyue Tang  ·  David Alcantara  ·  Ishan Bansal", 11.5, MUTE, False, FD)
     footer(s, "AgWireless '26 · ARA COTS RAN, Ames IA")
