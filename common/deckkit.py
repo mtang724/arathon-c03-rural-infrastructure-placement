@@ -43,7 +43,7 @@ def slide(prs):
     return s
 
 
-def txt(s, x, y, w, h, text, size=14, color=INK, bold=False, font=FD,
+def txt(s, x, y, w, h, text, size=18, color=INK, bold=False, font=FD,
         align=PP_ALIGN.LEFT, caps=False, space=0, anchor=MSO_ANCHOR.TOP):
     tb = s.shapes.add_textbox(x, y, w, h)
     tf = tb.text_frame; tf.word_wrap = True; tf.vertical_anchor = anchor
@@ -56,7 +56,7 @@ def txt(s, x, y, w, h, text, size=14, color=INK, bold=False, font=FD,
     return tb
 
 
-def bullets(s, x, y, w, h, items, size=12.5, color=INK2, font=FD, gap=6):
+def bullets(s, x, y, w, h, items, size=16, color=INK2, font=FD, gap=6):
     tb = s.shapes.add_textbox(x, y, w, h)
     tf = tb.text_frame; tf.word_wrap = True
     tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
@@ -100,7 +100,7 @@ def header(s, num, eyebrow, title, sub=None, accent=TEAL):
     # make a deck look generated rather than written. A single small square
     # carries the accent instead.
     txt(s, Inches(0.55), Inches(0.34), Inches(8), Inches(0.3),
-        eyebrow, 10.5, MUTE, False, FD, caps=False)
+        eyebrow, 15, MUTE, False, FD, caps=False)
     # A title long enough to wrap overflows a fixed 0.62" box and draws straight
     # through the subtitle -- python-pptx never reflows, so it happens silently.
     # Shrink past ~52 characters and drop the subtitle to clear two lines.
@@ -111,22 +111,22 @@ def header(s, num, eyebrow, title, sub=None, accent=TEAL):
         title, size, INK, True, FH)
     if sub:
         txt(s, Inches(0.55), Inches(1.42 if two else 1.26), Inches(12.2),
-            Inches(0.4), sub, 12.5, INK2, False, FD)
+            Inches(0.4), sub, 16, INK2, False, FD)
 
 
-def kpi(s, x, y, w, label, value, note, vcolor=INK, h=Inches(1.02), vsize=25):
+def kpi(s, x, y, w, label, value, note, vcolor=INK, h=Inches(1.02), vsize=28):
     """`vsize` drops for values that are long strings rather than short numbers.
     A latitude/longitude pair at 25pt wraps out of its box and draws over the
     note beneath it -- python-pptx never reflows, so it overlaps silently."""
     # A hairline and whitespace, not a filled tile with a border. Four bordered
     # cards in a row is the most recognisable generated-deck pattern there is.
     rect(s, x, y, w - Inches(0.35), Inches(0.014), fill=RULE, line=None)
-    txt(s, x, y + Inches(0.12), w - Inches(0.3), Inches(0.2),
-        label, 9.5, MUTE, False, FD)
-    txt(s, x, y + Inches(0.34), w - Inches(0.3), Inches(0.46),
+    txt(s, x, y + Inches(0.1), w - Inches(0.28), Inches(0.3),
+        label, 13, MUTE, False, FD)
+    txt(s, x, y + Inches(0.42), w - Inches(0.28), Inches(0.52),
         value, vsize, vcolor, True, FH)
-    txt(s, x, y + Inches(0.8), w - Inches(0.3), Inches(0.26),
-        note, 9.5, MUTE, False, FD)
+    txt(s, x, y + Inches(0.94), w - Inches(0.28), Inches(0.3),
+        note, 13, MUTE, False, FD)
 
 
 def card(s, x, y, w, h, title, lines, accent=TEAL, status=None, dim=False):
@@ -135,16 +135,16 @@ def card(s, x, y, w, h, title, lines, accent=TEAL, status=None, dim=False):
          line=RULE if dim else accent, lw=1.0 if dim else 1.5)
     rect(s, x, y, Inches(0.06), h, fill=GREY if dim else accent)
     txt(s, x + Inches(0.22), y + Inches(0.14), w - Inches(0.4), Inches(0.28),
-        title, 13.5, MUTE if dim else INK, True, FD)
+        title, 18, MUTE if dim else INK, True, FD)
     if status:
         txt(s, x + Inches(0.22), y + Inches(0.42), w - Inches(0.4), Inches(0.2),
-            status, 8.5, GREY if dim else accent, True, FM, caps=True, space=1.1)
+            status, 13, GREY if dim else accent, True, FM, caps=True, space=1.1)
     bullets(s, x + Inches(0.22), y + Inches(0.70), w - Inches(0.44),
-            h - Inches(0.84), lines, size=10, color=MUTE if dim else INK2, gap=3)
+            h - Inches(0.84), lines, size=15, color=MUTE if dim else INK2, gap=3)
     return None
 
 
-def style_chart(ch, size=9, legend=False, gridlines=False):
+def style_chart(ch, size=13, legend=False, gridlines=False):
     ch.font.size = Pt(size); ch.font.name = FM; ch.font.color.rgb = MUTE
     ch.has_title = False
     if legend:
@@ -173,7 +173,7 @@ def style_chart(ch, size=9, legend=False, gridlines=False):
 
 
 def bar(s, x, y, w, h, cats, series, colors, horizontal=False, gridlines=True,
-        labels=False, numfmt="0.0", size=9, gap=60, overlap=-20):
+        labels=False, numfmt="0.0", size=13, gap=60, overlap=-20):
     cd = CategoryChartData(); cd.categories = cats
     for nm, vals in series:
         cd.add_series(nm, vals)
@@ -195,7 +195,7 @@ def bar(s, x, y, w, h, cats, series, colors, horizontal=False, gridlines=True,
     return style_chart(ch, size, legend=len(series) > 1, gridlines=gridlines)
 
 
-def scatter(s, x, y, w, h, series, colors, sizes=None, legend=True, size=9):
+def scatter(s, x, y, w, h, series, colors, sizes=None, legend=True, size=13):
     cd = XyChartData()
     for nm, pts in series:
         sd = cd.add_series(nm)
@@ -212,7 +212,7 @@ def scatter(s, x, y, w, h, series, colors, sizes=None, legend=True, size=9):
     return style_chart(ch, size, legend=legend, gridlines=False)
 
 
-def line_chart(s, x, y, w, h, cats, series, colors, gridlines=True, size=9,
+def line_chart(s, x, y, w, h, cats, series, colors, gridlines=True, size=13,
                markers=False):
     cd = CategoryChartData(); cd.categories = cats
     for nm, vals in series:
@@ -226,7 +226,7 @@ def line_chart(s, x, y, w, h, cats, series, colors, gridlines=True, size=9,
     return style_chart(ch, size, legend=len(series) > 1, gridlines=gridlines)
 
 
-def table(s, x, y, w, h, rows, col_w=None, size=9.5, head_fill=SURF):
+def table(s, x, y, w, h, rows, col_w=None, size=13, head_fill=SURF):
     nr, nc = len(rows), len(rows[0])
     tb = s.shapes.add_table(nr, nc, x, y, w, h).table
     if col_w:
@@ -250,7 +250,7 @@ def table(s, x, y, w, h, rows, col_w=None, size=9.5, head_fill=SURF):
     return tb
 
 
-def caption(s, x, y, w, text, size=9.5, color=MUTE):
+def caption(s, x, y, w, text, size=13, color=MUTE):
     # prose, so a proportional face. Monospaced captions are the tell that a
     # deck was laid out by something that thinks of text as data.
     return txt(s, x, y, w, Inches(0.5), text, size, color, False, FD)
@@ -258,4 +258,4 @@ def caption(s, x, y, w, text, size=9.5, color=MUTE):
 
 def footer(s, text):
     txt(s, Inches(0.55), H - Inches(0.42), Inches(12.2), Inches(0.25),
-        text, 9, GREY, False, FD)
+        text, 13, GREY, False, FD)
