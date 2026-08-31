@@ -207,19 +207,19 @@ def n3_approaches(prs, d):
         ("how_baseline.png", "Baseline", OCHRE,
          "The physical law of how signal falls with distance, with its "
          "constants fitted to this network.",
-         "needs: distance and bearing"),
+         "needs: how far, and which way"),
         ("how_raytracing.png", "Ray tracing", TEAL,
          "Rebuild the ground and the buildings, then trace the signal "
          "through them.",
-         "needs: a 3-D scene"),
+         "needs: a 3-D model of the ground"),
         ("how_deeplearning.png", "Deep learning", VIOL,
          "No assumed law. Learn the mapping from the ground under each link "
          "to the signal.",
-         "needs: thousands of examples"),
+         "needs: thousands of measurements"),
         ("how_pinn.png", "PINN", WINE,
          "Learn what the distance law cannot explain, with physics as a "
          "penalty on the answer.",
-         "needs: examples and a law"),
+         "needs: measurements, and a law"),
     ]
     MW = 3.02
     for i, (fn, name, col, blurb, needs) in enumerate(apps):
@@ -231,7 +231,7 @@ def n3_approaches(prs, d):
         txt(s, x, Inches(4.58), Inches(MW), Inches(1.15), blurb, 14.5, INK2,
             False, FD)
         rect(s, x, Inches(5.9), Inches(MW), Inches(0.014), fill=RULE, line=None)
-        txt(s, x, Inches(5.99), Inches(MW), Inches(0.34), needs, 13.5, col,
+        txt(s, x, Inches(5.97), Inches(MW), Inches(0.56), needs, 13.5, col,
             False, FD)
     footer(s, "")
     return s
