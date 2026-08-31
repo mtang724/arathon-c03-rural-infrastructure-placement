@@ -227,8 +227,8 @@ def n3_approaches(prs, d):
     txt(s, Inches(0.82), Inches(5.68), Inches(11.8), Inches(0.36),
         "Same ground, four different bets about what matters", 18, INK, True, FD)
     txt(s, Inches(0.82), Inches(6.08), Inches(11.8), Inches(0.56),
-        "Distance, geometry, the ground itself, or whatever is left over. Each "
-        "is cheap to believe until you move it somewhere new.",
+        "Every one of them lands within about 8 dB of the measurements. Score "
+        "them on ground they were never shown and three of the four fall apart.",
         15, INK2, False, FD)
     footer(s, "")
     return s
@@ -257,8 +257,8 @@ def n4_results(prs, d):
             [("on data it has seen", ins), ("somewhere new", out)],
             [GREY, TEAL], labels=True, numfmt="0.0", size=15)
     caption(s, Inches(0.55), Inches(5.6), Inches(7.5),
-            "The left bar of each pair is the score on data the model has seen; "
-            "the right bar is somewhere new. The gap between them is memory.",
+            "Left bar: error on data the model was trained on. Right bar: error "
+            "somewhere it has never been. A tall right bar means it memorised.",
             size=15, color=INK2)
 
     px = Inches(8.35)
@@ -266,8 +266,8 @@ def n4_results(prs, d):
     txt(s, px + Inches(0.22), Inches(2.14), Inches(4.0), Inches(0.3),
         "Ray tracing barely moves", 18, TEAL, True, FH)
     txt(s, px + Inches(0.22), Inches(2.52), Inches(4.0), Inches(1.25),
-        "7.61 dB in sample, 7.95 held out. It is the only model that does not "
-        "care whether it has seen the ground before.", 16, INK2, False, FD)
+        "7.61 dB on training ground, 7.95 dB on new ground. It is the only one "
+        "of the four that barely changes.", 16, INK2, False, FD)
     rect(s, px, Inches(4.0), Inches(4.4), Inches(2.25), fill=SURF, line=None)
     txt(s, px + Inches(0.22), Inches(4.12), Inches(4.0), Inches(0.34),
         "The learned models memorise", 18, WINE, True, FH)
@@ -284,8 +284,8 @@ def n5_planner(prs, d):
     """The pipeline in four boxes, then the one chart that reorders priorities."""
     s = slide(prs)
     header(s, 5, "the planner", "Turning a surface into a decision",
-           "Score every candidate site, then move every assumption and watch "
-           "where the answer goes.")
+           "Change one assumption at a time, and measure how far the "
+           "recommendation moves.")
     steps = [("Predict", "a value in every 200 m cell"),
              ("Define served", "eight definitions, one threshold"),
              ("Score", "route-km and area gained"),
