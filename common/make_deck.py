@@ -102,10 +102,9 @@ def cell(v, k):
 
 def s1_title(prs, d):
     s = slide(prs)
-    rect(s, 0, 0, W, Inches(0.055), fill=TEAL)
     rect(s, Inches(0.55), Inches(1.5), Inches(1.5), Inches(0.055), fill=OCHRE)
     txt(s, Inches(0.55), Inches(1.0), Inches(9), Inches(0.35),
-        "ARATHON Challenge 03", 11, TEAL, True, FM, caps=True, space=2.4)
+        "Arathon Challenge 03", 12, WINE, True, FD)
     txt(s, Inches(0.55), Inches(1.8), Inches(11.6), Inches(1.4),
         "Where would one more asset\ndeliver the greatest improvement?",
         40, INK, True, FD)
@@ -519,9 +518,8 @@ def s8_answers(prs, d):
 def n1_problem(prs, d):
     """Open on the decision, not on the dataset."""
     s = slide(prs)
-    rect(s, 0, 0, W, Inches(0.055), fill=TEAL)
     txt(s, Inches(0.55), Inches(1.0), Inches(9), Inches(0.35),
-        "ARATHON Challenge 03", 11, TEAL, True, FM, caps=True, space=2.4)
+        "Arathon Challenge 03", 12, WINE, True, FD)
     txt(s, Inches(0.55), Inches(1.55), Inches(11.9), Inches(1.5),
         "Where do you build, when you have\nmeasured almost none of the map?",
         38, INK, True, FD)
@@ -550,192 +548,193 @@ def n1_problem(prs, d):
 
 
 def n2_gap(prs, d):
-    """Why the measurements alone cannot answer the question."""
+    """The two real maps side by side. The argument is visible, not asserted.
+
+    These are the only raster images in the deck, and they earn it: a drawn
+    schematic of a survey is a claim about the survey, whereas this is the
+    survey. Cropped from the project's own validation figure by
+    `common/crop_panels.py`.
+    """
     s = slide(prs)
     header(s, 2, "the gap", "Measurements alone cannot site a tower",
-           "You can only optimise over places you have a value for. The van "
-           "gives us 938 of the 8,176 cells in the box.")
-    rect(s, Inches(0.55), Inches(1.95), Inches(5.9), Inches(3.2), fill=SURF,
-         line=RULE)
-    txt(s, Inches(0.8), Inches(2.15), Inches(5.4), Inches(0.3),
-        "What the drive test gives us", 14, INK, True, FD)
-    bullets(s, Inches(0.8), Inches(2.6), Inches(5.4), Inches(2.4), [
-        "7,144 samples, but they sit on roads — a line through a 178 km² area.",
-        "42% of them record no serving cell at all. That is a measured absence "
-        "of service, not missing data, and it is exactly where an asset would go.",
-        "Consecutive samples are 22 m apart, so the data is far less "
-        "independent than its row count suggests.",
-        "Every candidate site we might recommend is somewhere nobody drove.",
-    ], size=11, gap=7)
-    rect(s, Inches(6.75), Inches(1.95), Inches(6.0), Inches(3.2), fill=SURF,
-         line=TEAL, lw=1.5)
-    txt(s, Inches(7.0), Inches(2.15), Inches(5.5), Inches(0.3),
-        "What a digital twin adds", 14, TEAL, True, FD)
-    bullets(s, Inches(7.0), Inches(2.6), Inches(5.5), Inches(2.4), [
-        "A model that returns a value at any coordinate, not only where the "
-        "van happened to be.",
-        "That turns siting into an optimisation: score every candidate against "
-        "every demand cell, then pick.",
-        "It also lets us ask the counterfactual the brief is really posing — "
-        "what happens if we put a transmitter over there?",
-        "The measurements stop being the answer and become the test set.",
-    ], size=11, color=INK2, gap=7)
-    rect(s, Inches(0.55), Inches(5.4), Inches(12.2), Inches(0.62), fill=BG,
-         line=RULE)
-    txt(s, Inches(0.85), Inches(5.54), Inches(11.6), Inches(0.4),
-        "So the question becomes: how good does that prediction have to be, and "
-        "which way of building it survives being moved somewhere it has never "
-        "seen?", 12.5, INK, False, FD)
-    footer(s, "7,144 rows · 116.7 route-km · 178 km² box · 200 m demand cells")
+           "Left: every sample the van recorded. Right: what a twin fills in.")
+    # Lay the two out from their real aspect ratios so they sit as a balanced
+    # pair. Hard-coding x positions left three inches of gutter between them.
+    panels = ROOT / "sionna-approach" / "deck_panels"
+    items = [("measured.png", "What we measured"),
+             ("predicted.png", "What the twin fills in")]
+    PH, GAP = 3.85, 0.55
+    widths = []
+    for fn, _ in items:
+        f = panels / fn
+        if f.exists():
+            from PIL import Image as _Im
+            w0, h0 = _Im.open(f).size
+            widths.append(PH * w0 / h0)
+        else:
+            widths.append(0.0)
+    x0 = (13.33 - (sum(widths) + GAP)) / 2.0
+    for (fn, cap), wid in zip(items, widths):
+        f = panels / fn
+        if f.exists():
+            s.shapes.add_picture(str(f), Inches(x0), Inches(1.9),
+                                 height=Inches(PH))
+        txt(s, Inches(x0), Inches(5.85), Inches(wid), Inches(0.36), cap, 13.5,
+            INK, True, FD)
+        x0 += wid + GAP
+    for i, (val, lab) in enumerate([("42%", "of samples had no serving cell"),
+                                    ("938", "of 8,176 cells hold a measurement"),
+                                    ("0", "candidate sites the van visited")]):
+        x = Inches(0.75 + i * 4.12)
+        txt(s, x, Inches(6.42), Inches(1.0), Inches(0.42), val, 20, WINE, True, FD)
+        txt(s, x + Inches(1.0), Inches(6.5), Inches(3.05), Inches(0.32), lab,
+            10.5, INK2, False, FD)
+    footer(s, "7,144 samples · 117 km of road · a 178 km² box")
     return s
 
 
 def n3_approaches(prs, d):
-    """Four ways to build the twin. All four are built."""
+    """What each method eats, in one line, plus its cost in fitted constants."""
     s = slide(prs)
     header(s, 3, "approaches", "Four ways to predict where nobody drove",
-           "They share one interface of two methods and nothing else, so each "
-           "can be wrong in its own way and one testbench can tell.")
+           "They share one interface and nothing else, so each can be wrong in "
+           "its own way and one testbench can tell.")
     apps = [
-        ("Baseline", "Fitted physics", OCHRE, [
-            "Two-slope path loss fitted to the measurements.",
-            "Terrain enters as ITU-R P.526 diffraction and Fresnel clearance.",
-            "Seven constants. Cheap, interpretable, carries a mechanism."]),
-        ("Ray tracing", "Sionna RT", TEAL, [
-            "A reconstructed scene: 3DEP terrain and Microsoft building "
-            "footprints, four sites, twelve sectors.",
-            "Traced path gain, corrected by profile diffraction where the "
-            "tracer finds no path.",
-            "Five constants. Everything else is geometry."]),
-        ("Deep learning", "Fourier neural operator", VIOL, [
-            "The terrain profile along each link is the input function.",
-            "Learns the terrain term instead of assuming P.526.",
-            "3,838 training links. No closed form, so the planner reads a "
-            "precomputed grid."]),
-        ("PINN", "ReVeal-MT", WINE, [
-            "A learned shadowing field over a parametric multi-transmitter "
-            "path-loss law.",
-            "Physics as a loss term, meant to discipline extrapolation where "
-            "data is absent.",
-            "Replicated from DySPAN'25."]),
+        ("Baseline", "Fitted physics", OCHRE, "distance and bearing",
+         "A curve fitted to the measurements themselves. Fast, and it carries "
+         "a mechanism.", "fitted"),
+        ("Ray tracing", "A simulated scene", TEAL, "terrain and buildings",
+         "Rebuild the landscape and trace the signal through it. Geometry does "
+         "the work, not the data.", "simulated"),
+        ("Deep learning", "Neural operator", VIOL, "the terrain profile",
+         "Learns the shape of the ground along each link instead of assuming "
+         "a formula.", "learned"),
+        ("PINN", "Physics-informed network", WINE, "position, with physics",
+         "Learns the field, with the physics added as a penalty to keep it "
+         "honest.", "learned"),
     ]
-    for i, (kind, name, col, lines) in enumerate(apps):
+    for i, (kind, name, col, eats, body, cost) in enumerate(apps):
         x = Inches(0.55 + i * 3.08)
-        rect(s, x, Inches(1.95), Inches(2.85), Inches(3.75), fill=SURF,
-             line=col, lw=1.5)
-        txt(s, x + Inches(0.18), Inches(2.12), Inches(2.5), Inches(0.2), kind,
+        rect(s, x, Inches(2.0), Inches(2.85), Inches(3.4), fill=SURF, line=col,
+             lw=1.5)
+        txt(s, x + Inches(0.2), Inches(2.16), Inches(2.5), Inches(0.2), kind,
             8.5, col, True, FM, caps=True, space=1.2)
-        txt(s, x + Inches(0.18), Inches(2.36), Inches(2.5), Inches(0.5), name,
-            13.5, INK, True, FD)
-        bullets(s, x + Inches(0.18), Inches(2.95), Inches(2.5), Inches(2.6),
-                lines, size=9.5, color=INK2, gap=5)
-    rect(s, Inches(0.55), Inches(5.92), Inches(12.2), Inches(0.55), fill=BG,
+        txt(s, x + Inches(0.2), Inches(2.4), Inches(2.5), Inches(0.5), name,
+            14, INK, True, FD)
+        txt(s, x + Inches(0.2), Inches(3.0), Inches(2.5), Inches(0.18),
+            "reads", 7.5, MUTE, False, FM, caps=True, space=1.1)
+        txt(s, x + Inches(0.2), Inches(3.2), Inches(2.5), Inches(0.3), eats,
+            12, col, True, FM)
+        txt(s, x + Inches(0.2), Inches(3.68), Inches(2.5), Inches(1.1), body,
+            10.5, INK2, False, FD)
+        rect(s, x + Inches(0.2), Inches(4.85), Inches(2.5), Inches(0.34),
+             fill=BG, line=RULE)
+        txt(s, x + Inches(0.32), Inches(4.92), Inches(2.3), Inches(0.24), cost,
+            10, INK, True, FM)
+    rect(s, Inches(0.55), Inches(5.72), Inches(12.2), Inches(0.6), fill=SURF,
          line=RULE)
-    txt(s, Inches(0.85), Inches(6.03), Inches(11.6), Inches(0.35),
-        "One contract:  macro_rsrp(lat, lon)  ·  node_rsrp(tx, agl, ΔEIRP, lat, "
-        "lon).  Implement two methods and the testbench, the planner and this "
-        "deck all work on your model.", 11, INK, False, FM)
-    footer(s, "common/README.md · terrain-approach/src/adapter.py is the reference")
+    txt(s, Inches(0.85), Inches(5.86), Inches(11.6), Inches(0.35),
+        "All four answer the same two questions, so one testbench scores them "
+        "the same way and the planner can drive any of them.", 12.5, INK,
+        False, FD)
+    footer(s, "")
     return s
 
 
 def n4_results(prs, d):
-    """The result: learned models win in sample and lose on geography."""
+    """One chart. The gap between the pairs of bars is the whole finding."""
     s = slide(prs)
     header(s, 4, "results", "In sample is not the same as somewhere new",
-           "RSRP error in dB, same rows, same splits, same 200 m buffer. Lower "
-           "is better.")
-    rows = [["", "in sample", "held out by region", "held out by bearing"]]
-    order = [("reveal-mt-pinn", "PINN"), ("terrain-fno", "Deep learning"),
-             ("terrain-parametric", "Baseline — fitted physics"),
-             ("sionna-hybrid-agronomy", "Ray tracing — Sionna")]
+           "RSRP error in dB. Lower is better. Same rows, same splits, same "
+           "200 m buffer between train and test.")
+    order = [("reveal-mt-pinn", "PINN"), ("terrain-fno", "Deep\nlearning"),
+             ("terrain-parametric", "Baseline"), ("sionna-hybrid-agronomy",
+                                                  "Ray tracing")]
+    cats, ins, out = [], [], []
     for key, lab in order:
         v = d["bench"].get(key, {})
-        rows.append([lab, cell(v, "in_sample"),
-                     cell(v, "kmeans_on_position"), cell(v, "angular_wedges")])
-    table(s, Inches(0.55), Inches(2.0), Inches(7.4), Inches(2.0), rows,
-          col_w=[Inches(3.05), Inches(1.45), Inches(1.45), Inches(1.45)],
-          size=11)
-    txt(s, Inches(0.55), Inches(4.25), Inches(7.4), Inches(0.3),
-        "Read the last two columns", 13, INK, True, FD)
-    bullets(s, Inches(0.55), Inches(4.62), Inches(7.4), Inches(1.6), [
-        "The PINN is the most accurate model on data it has seen and the least "
-        "accurate on data it has not.",
-        "Ray tracing barely notices the difference: 7.61 in sample, 7.95 held "
-        "out. It is the only one that does.",
-        "A random split hides all of this, because samples 22 m apart put the "
-        "same road metre on both sides of it.",
-    ], size=11, gap=6)
-    rect(s, Inches(8.25), Inches(2.0), Inches(4.5), Inches(4.2), fill=SURF,
-         line=WINE, lw=1.5)
-    txt(s, Inches(8.5), Inches(2.2), Inches(4.0), Inches(0.6),
-        "Why the learned models fail", 14, WINE, True, FD)
-    bullets(s, Inches(8.5), Inches(2.9), Inches(4.0), Inches(3.05), [
-        "A 128-point terrain profile is very nearly a unique location label. "
-        "Its nearest neighbour in profile space sits a median 12 m away on the "
-        "ground.",
-        "So on a random split the model can look the answer up instead of "
-        "learning propagation.",
-        "The control settles it: feed the operator profiles paired with the "
-        "wrong links and it scores 13.16 dB, against 13.13 with the right "
-        "ones. It is not using the terrain at all.",
-    ], size=10.5, color=INK2, gap=6)
-    footer(s, "reports/testbench.json · terrain-approach/reports/fno_compare.json")
+        try:
+            i_ = v["in_sample"]["rmse"]
+            o_ = v["kmeans_on_position"]["rmse"]
+        except (KeyError, TypeError):
+            continue
+        cats.append(lab); ins.append(round(i_, 2)); out.append(round(o_, 2))
+    if cats:
+        bar(s, Inches(0.55), Inches(2.0), Inches(7.5), Inches(3.5), cats,
+            [("on data it has seen", ins), ("somewhere new", out)],
+            [GREY, TEAL], labels=True, numfmt="0.0", size=10)
+    caption(s, Inches(0.55), Inches(5.6), Inches(7.5),
+            "Grey is in sample. Teal is held out by region. The distance "
+            "between a pair is how much of the score was memory.",
+            size=10.5, color=INK2)
+
+    px = Inches(8.35)
+    rect(s, px, Inches(2.0), Inches(4.4), Inches(1.55), fill=SURF, line=TEAL,
+         lw=1.5)
+    txt(s, px + Inches(0.22), Inches(2.14), Inches(4.0), Inches(0.3),
+        "Ray tracing barely moves", 13.5, TEAL, True, FD)
+    txt(s, px + Inches(0.22), Inches(2.5), Inches(4.0), Inches(0.95),
+        "7.61 dB in sample, 7.95 held out. It is the only model that does not "
+        "care whether it has seen the ground before.", 11, INK2, False, FD)
+    rect(s, px, Inches(3.7), Inches(4.4), Inches(2.55), fill=SURF, line=WINE,
+         lw=1.5)
+    txt(s, px + Inches(0.22), Inches(3.84), Inches(4.0), Inches(0.3),
+        "The learned models memorise", 13.5, WINE, True, FD)
+    txt(s, px + Inches(0.22), Inches(4.2), Inches(4.0), Inches(1.9),
+        "A terrain profile is nearly a unique location label — its nearest "
+        "neighbour sits 12 m away on the ground. Feed the operator profiles "
+        "from the wrong links and it scores 13.16 dB against 13.13 with the "
+        "right ones. It never used the terrain.", 11, INK2, False, FD)
+    footer(s, "Held out by region · 200 m buffer between train and test")
     return s
 
 
 def n5_planner(prs, d):
-    """From a predicted surface to a place to build."""
+    """The pipeline in four boxes, then the one chart that reorders priorities."""
     s = slide(prs)
     header(s, 5, "the planner", "Turning a surface into a decision",
-           "Score every candidate site against every demand cell, then let the "
-           "assumptions move and watch what the answer does.")
-    steps = [("Predict", "A value in every 200 m cell, from whichever model "
-              "you pick."),
-             ("Define served", "Availability, RSRP, SINR, uplink — eight "
-              "definitions, and a threshold."),
-             ("Score", "Route-km and area gained, weighted, for each of 627 "
-              "candidate sites."),
-             ("Constrain", "Grid power, road access, structures, backhaul, "
-              "water — from open data.")]
+           "Score 627 candidate sites against 4,731 demand cells — then move "
+           "every assumption and watch where the answer goes.")
+    steps = [("Predict", "a value in every 200 m cell"),
+             ("Define served", "eight definitions, one threshold"),
+             ("Score", "route-km and area gained"),
+             ("Constrain", "power, access, structures, backhaul")]
     for i, (name, body) in enumerate(steps):
         x = Inches(0.55 + i * 3.08)
-        rect(s, x, Inches(1.95), Inches(2.85), Inches(1.5), fill=SURF, line=RULE)
-        txt(s, x + Inches(0.18), Inches(2.08), Inches(2.5), Inches(0.2),
-            f"step {i + 1}", 8, MUTE, False, FM, caps=True, space=1.2)
-        txt(s, x + Inches(0.18), Inches(2.3), Inches(2.5), Inches(0.3), name,
-            13, INK, True, FD)
-        txt(s, x + Inches(0.18), Inches(2.66), Inches(2.5), Inches(0.7), body,
-            9.5, INK2, False, FD)
+        rect(s, x, Inches(1.95), Inches(2.85), Inches(0.92), fill=SURF,
+             line=RULE)
+        txt(s, x + Inches(0.18), Inches(2.05), Inches(2.5), Inches(0.28), name,
+            12.5, INK, True, FD)
+        txt(s, x + Inches(0.18), Inches(2.36), Inches(2.5), Inches(0.42), body,
+            9.5, MUTE, False, FD)
         if i < 3:
-            txt(s, x + Inches(2.87), Inches(2.45), Inches(0.2), Inches(0.3),
+            txt(s, x + Inches(2.87), Inches(2.2), Inches(0.2), Inches(0.3),
                 "→", 15, RULE, True, FD)
-    txt(s, Inches(0.55), Inches(3.75), Inches(12.2), Inches(0.3),
-        "What that sweep found", 15, INK, True, FD)
-    for i, (val, lab, note, col) in enumerate([
-            ("4.24 km", "changing what counts as served",
-             "moves the recommended site further than anything else", WINE),
-            ("2.06 km", "changing the propagation model",
-             "half as much — the models mostly agree", TEAL),
-            ("11.1 km", "requiring grid power within 1 km",
-             "for a quarter of the benefit given up", OCHRE),
-            ("3 km", "radius needed for a stable pick",
-             "the exact site repeats in only 10% of draws", MUTE)]):
-        x = Inches(0.55 + i * 3.08)
-        rect(s, x, Inches(4.2), Inches(2.85), Inches(1.5), fill=SURF, line=RULE)
-        txt(s, x + Inches(0.18), Inches(4.35), Inches(2.5), Inches(0.45), val,
-            22, col, True, FD)
-        txt(s, x + Inches(0.18), Inches(4.85), Inches(2.5), Inches(0.24), lab,
-            9.5, INK, True, FD)
-        txt(s, x + Inches(0.18), Inches(5.12), Inches(2.5), Inches(0.5), note,
-            9, MUTE, False, FD)
-    rect(s, Inches(0.55), Inches(5.9), Inches(12.2), Inches(0.62), fill=BG,
-         line=TEAL, lw=1.25)
-    txt(s, Inches(0.85), Inches(6.04), Inches(11.6), Inches(0.4),
-        "So we report a neighbourhood, not a pin — and the definition of "
-        "service belongs in the write-up, argued for rather than defaulted.",
-        12, INK, False, FD)
-    footer(s, "RECOMMENDATIONS.md · CONSTRAINTS.md · 198 combinations swept")
+    txt(s, Inches(0.55), Inches(3.05), Inches(7.5), Inches(0.32),
+        "How far the recommended site moves when you change one assumption",
+        13, INK, True, FD)
+    bar(s, Inches(0.4), Inches(3.4), Inches(7.7), Inches(2.75),
+        ["what counts as served", "asset class", "propagation model",
+         "threshold", "route vs area"],
+        [("km", [4.24, 3.35, 2.06, 1.28, 1.21])],
+        [WINE, OCHRE, TEAL, GREY, GREY], horizontal=True, labels=True,
+        numfmt='0.0"km"', size=10, gridlines=False)
+    px = Inches(8.35)
+    rect(s, px, Inches(3.05), Inches(4.4), Inches(1.5), fill=SURF, line=WINE,
+         lw=1.5)
+    txt(s, px + Inches(0.22), Inches(3.18), Inches(4.0), Inches(0.3),
+        "The definition beats the physics", 13.5, WINE, True, FD)
+    txt(s, px + Inches(0.22), Inches(3.54), Inches(4.0), Inches(0.9),
+        "Changing what counts as service moves the site twice as far as "
+        "changing the model. It was chosen, not measured.", 11, INK2, False, FD)
+    rect(s, px, Inches(4.7), Inches(4.4), Inches(1.45), fill=SURF, line=TEAL,
+         lw=1.5)
+    txt(s, px + Inches(0.22), Inches(4.83), Inches(4.0), Inches(0.3),
+        "A neighbourhood, not a pin", 13.5, TEAL, True, FD)
+    txt(s, px + Inches(0.22), Inches(5.19), Inches(4.0), Inches(0.9),
+        "Requiring grid power within 1 km moves it 11 km. The exact site "
+        "repeats in 10% of draws; 3 km in 99%.", 11, INK2, False, FD)
+    footer(s, "198 combinations of model, asset, criterion, threshold and weighting")
     return s
 
 
@@ -801,8 +800,7 @@ def s9_demo(prs, d):
             "Three sweep buttons re-solve across every criterion, every "
             "weighting and every approach; a constrained variant adds the five "
             "buildability layers.", size=10, color=INK2)
-    footer(s, "planner.html · planner_constrained.html · no server, no install, "
-              "no network")
+    footer(s, "Runs in a browser. No server, no install, no network.")
     return s
 
 

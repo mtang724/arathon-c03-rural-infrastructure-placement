@@ -17,18 +17,18 @@ from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Inches, Pt
 
 # ---- palette -------------------------------------------------------------
-INK = RGBColor(0x16, 0x21, 0x1C)
+INK = RGBColor(0x1C, 0x19, 0x17)
 INK2 = RGBColor(0x3A, 0x48, 0x42)
-MUTE = RGBColor(0x65, 0x72, 0x6B)
-BG = RGBColor(0xFB, 0xFC, 0xFA)
-SURF = RGBColor(0xF1, 0xF4, 0xEF)
-RULE = RGBColor(0xC3, 0xCC, 0xBF)
-TEAL = RGBColor(0x0F, 0x6E, 0x70)
-OCHRE = RGBColor(0x8F, 0x62, 0x00)
-VIOL = RGBColor(0x5B, 0x3A, 0x9B)
-WINE = RGBColor(0x8C, 0x1D, 0x40)
+MUTE = RGBColor(0x79, 0x71, 0x6B)
+BG = RGBColor(0xFF, 0xFF, 0xFF)
+SURF = RGBColor(0xF5, 0xF2, 0xEE)
+RULE = RGBColor(0xD9, 0xD3, 0xCB)
+TEAL = RGBColor(0x3E, 0x5C, 0x6B)
+OCHRE = RGBColor(0x9A, 0x6E, 0x1E)
+VIOL = RGBColor(0x6B, 0x7F, 0x5C)
+WINE = RGBColor(0xB4, 0x53, 0x2A)
 WHITE = RGBColor(0xFF, 0xFF, 0xFF)
-GREY = RGBColor(0xA8, 0xB2, 0xA6)
+GREY = RGBColor(0xB5, 0xAD, 0xA4)
 
 W, H = Inches(13.333), Inches(7.5)
 FD, FM = "Archivo", "Consolas"
@@ -94,11 +94,13 @@ def arrow(s, x, y, w, h, fill=RULE):
 
 
 def header(s, num, eyebrow, title, sub=None, accent=TEAL):
-    rect(s, Inches(0), Inches(0), W, Inches(0.055), fill=accent)
-    txt(s, Inches(0.55), Inches(0.34), Inches(0.42), Inches(0.3),
-        f"{num:02d}", 12, accent, True, FM)
-    txt(s, Inches(1.05), Inches(0.36), Inches(8), Inches(0.3),
-        eyebrow, 9.5, MUTE, False, FM, caps=True, space=1.6)
+    # No full-width stripe and no numbered eyebrow. A stripe across the top of
+    # every slide, and "01 / SECTION" over every title, are the two things that
+    # make a deck look generated rather than written. A single small square
+    # carries the accent instead.
+    rect(s, Inches(0.55), Inches(0.42), Inches(0.12), Inches(0.12), fill=accent)
+    txt(s, Inches(0.8), Inches(0.34), Inches(8), Inches(0.3),
+        eyebrow, 10, MUTE, False, FD, caps=False)
     # A title long enough to wrap overflows a fixed 0.62" box and draws straight
     # through the subtitle -- python-pptx never reflows, so it happens silently.
     # Shrink past ~52 characters and drop the subtitle to clear two lines.
