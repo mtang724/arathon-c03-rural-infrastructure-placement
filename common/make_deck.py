@@ -520,13 +520,15 @@ def n1_problem(prs, d):
     s = slide(prs)
     txt(s, Inches(0.55), Inches(1.0), Inches(9), Inches(0.35),
         "Arathon Challenge 03", 12, WINE, True, FD)
-    txt(s, Inches(0.55), Inches(1.55), Inches(11.9), Inches(1.5),
-        "Where do you build, when you have\nmeasured almost none of the map?",
-        38, INK, True, FD)
-    txt(s, Inches(0.55), Inches(3.2), Inches(10.4), Inches(0.95),
+    txt(s, Inches(0.55), Inches(1.6), Inches(11.9), Inches(0.85),
+        "Where should the next tower go?", 44, INK, True, FD)
+    txt(s, Inches(0.55), Inches(2.62), Inches(11.0), Inches(0.42),
+        "Rural network planning on 7% of the map", 19, WINE, False, FD)
+    txt(s, Inches(0.55), Inches(3.25), Inches(10.4), Inches(0.95),
         "A van drove one rural service area near Ames and logged 7,144 samples. "
-        "That covers about 7% of it. The other 93% is where the decision has to "
-        "be made.", 14.5, INK2, False, FD)
+        "They cover 7% of it. The decision has to be made about the other 93%, "
+        "so we build a model of the ground and let it stand in for the survey.",
+        14.5, INK2, False, FD)
     best, who = None, ""
     for nm, v in d["bench"].items():
         r = (v.get("kmeans_on_position") or {}).get("rmse")
@@ -562,7 +564,7 @@ def n2_gap(prs, d):
     # pair. Hard-coding x positions left three inches of gutter between them.
     panels = ROOT / "sionna-approach" / "deck_panels"
     items = [("measured.png", "What we measured"),
-             ("predicted.png", "What the twin fills in")]
+             ("predicted.png", "What the twin predicts")]
     PH, GAP = 3.85, 0.55
     widths = []
     for fn, _ in items:
